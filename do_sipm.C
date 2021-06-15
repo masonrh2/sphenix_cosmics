@@ -27,10 +27,10 @@ const int num_bins = 30;
 const double x_min = 0;
 const double x_max = 600;
 
-const std::vector<int> sectors {1, 2, 3, 4, 10, 16, 17};
+const std::vector<int> sectors {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17};
 const std::vector<int> interface_boards {0, 1, 2, 3, 4, 5};
 
-std::vector<EColor> hist_colors = {kRed, kOrange, kBlack, kGreen, kBlue, kCyan};
+std::vector<Color_t> hist_colors = {};
 int hist_color_idx = 0;
 std::vector<std::vector<double>> kelly_colors = {
   {255.0/255, 179.0/255, 0.0/255}, // vivid_yellow
@@ -330,7 +330,8 @@ void do_sipm() {
       hist->Fill(mpv);
     }
     hist->Fit("gaus", "Q");
-    EColor color = hist_colors[hist_color_idx];
+    Color_t color = vop_colors[vop];
+    hist_colors.push_back(color);
     hist->SetLineColor(color);
     hist->GetFunction("gaus")->SetLineColor(color);
     hist->Draw("E0 SAME");
@@ -355,6 +356,7 @@ void do_sipm() {
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
   hs->Draw("nostack");
+  canvas3->BuildLegend();
   canvas3->SaveAs("./vop_graphs/vop_stacked.svg");
 
   std::cout << "creating vop by sector histograms" << std::endl;
@@ -387,7 +389,7 @@ void do_sipm() {
       vop_hist->GetFunction("gaus")->SetLineColor(vop_colors[vop]);
       vop_hist->Draw("E0 SAME");
       std::stringstream fileName;
-      fileName << "./vop_by_sector/sector-" << sector << "_vop-" << vop << ".png";
+      fileName << "./vop_by_sector/sector-" << sector << "_vop-" << vop << ".svg";
       vop_canvas->SaveAs(fileName.str().c_str());
 
       stack_hist->SetFillColorAlpha(vop_colors[vop], 0.5);
@@ -401,7 +403,7 @@ void do_sipm() {
     gStyle->SetOptFit(0);
     hs->Draw("nostackb");
     std::stringstream fileName;
-    fileName << "./vop_by_sector/sector-" << sector << "_all.png";
+    fileName << "./vop_by_sector/sector-" << sector << "_all.svg";
     sector_canvas->BuildLegend();
     sector_canvas->SaveAs(fileName.str().c_str());
   }
@@ -450,7 +452,7 @@ void do_sipm() {
     gStyle->SetOptFit(0);
     hs->Draw("nostackb");
     std::stringstream fileName;
-    fileName << "./the_other_ones/vop-" << vop << "_all.png";
+    fileName << "./the_other_ones/vop-" << vop << "_all.svg";
     
     vop_canvas->BuildLegend();
     vop_canvas->SaveAs(fileName.str().c_str());
