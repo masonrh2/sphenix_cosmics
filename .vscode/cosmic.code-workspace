@@ -59,7 +59,9 @@
       "typeinfo": "cpp",
       "do_the_things.C": "cpp",
       "do_the_things copy.C": "cpp",
-      "do_sipm.C": "cpp"
+      "do_sipm.C": "cpp",
+      "good_bad_vop.C": "cpp",
+      "compare_vop.C": "cpp"
     },
     "C_Cpp.default.includePath": [
       "${default}",
