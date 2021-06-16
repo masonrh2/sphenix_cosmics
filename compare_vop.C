@@ -107,7 +107,8 @@ void compare_vop() {
     sector_colors[sector] = ci;
   }
 
-  std::map<double, std::vector<double>> histogram_data;
+  std::map<double, std::vector<double>> new_histogram_data;
+  std::map<double, std::vector<double>> old_histogram_data;
   
   std::vector<double> hist_vop;
   std::vector<double> hist_mpv_err;
@@ -390,7 +391,7 @@ void compare_vop() {
       double vop = new_sipm_map[sector][block_num];
       new_all_vop.push_back(vop);
       all_mpv.push_back(content);
-      histogram_data[vop].push_back(content);
+      new_histogram_data[vop].push_back(content);
       dbn_mpv[sector_map[sector][block_num]] = content;
       new_sector_vop_mpv[sector][vop].push_back(content);
       new_vop_sector_mpv[vop][sector].push_back(content);
@@ -398,23 +399,23 @@ void compare_vop() {
     }
   }
 
-  int num_vops = histogram_data.size();
-  std::cout << "there are " << num_vops << " vops" << std::endl;
-  std::map<double, Color_t> vop_colors;
-  int i = 0;
-  for (const auto & p : histogram_data) {
+  int new_num_vops = new_histogram_data.size();
+  std::cout << "there are " << new_num_vops << " new vops" << std::endl;
+  std::map<double, Color_t> new_vop_colors;
+  int new_i = 0;
+  for (const auto & p : new_histogram_data) {
     double vop = p.first;
     Color_t ci = TColor::GetFreeColorIndex();
-    TColor *color = new TColor(ci, kelly_colors[i][0], kelly_colors[i][1], kelly_colors[i][2]);
-    vop_colors[vop] = ci;
-    i++;
+    TColor *color = new TColor(ci, kelly_colors[new_i][0], kelly_colors[new_i][1], kelly_colors[new_i][2]);
+    new_vop_colors[vop] = ci;
+    new_i++;
   }
 
   THStack *new_hs = new THStack("hs", "distributions of mpv for each vop");
   csvfile new_vop_mpv("new_vop_mpv_fit_parameters.csv");
   new_vop_mpv << "vop" << "mean" << "mean err" << "sigma" << "sigma err" << csvfile::endrow;
 
-  for (auto const &p : histogram_data) {
+  for (auto const &p : new_histogram_data) {
     TCanvas* canvas = new TCanvas();
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(1);
@@ -427,7 +428,7 @@ void compare_vop() {
       hist->Fill(mpv);
     }
     hist->Fit("gaus", "Q");
-    Color_t color = vop_colors[vop];
+    Color_t color = new_vop_colors[vop];
     hist_colors.push_back(color);
     hist->SetLineColor(color);
     hist->GetFunction("gaus")->SetLineColor(color);
@@ -481,18 +482,18 @@ void compare_vop() {
         vop_hist->Fill(mpv);
         stack_hist->Fill(mpv);
       }
-      vop_hist->SetLineColor(vop_colors[vop]);
+      vop_hist->SetLineColor(new_vop_colors[vop]);
       vop_hist->Fit("gaus", "Q");
-      vop_hist->GetFunction("gaus")->SetLineColor(vop_colors[vop]);
+      vop_hist->GetFunction("gaus")->SetLineColor(new_vop_colors[vop]);
       vop_hist->Draw("E0 SAME");
       std::stringstream fileName;
       fileName << "./new_vop/sector_by_vop/sector-" << sector << "_vop-" << vop << ".svg";
       vop_canvas->SaveAs(fileName.str().c_str());
 
-      stack_hist->SetFillColorAlpha(vop_colors[vop], 0.5);
-      stack_hist->SetLineColorAlpha(vop_colors[vop], 0.0);
+      stack_hist->SetFillColorAlpha(new_vop_colors[vop], 0.5);
+      stack_hist->SetLineColorAlpha(new_vop_colors[vop], 0.0);
       stack_hist->Fit("gaus", "Q");
-      stack_hist->GetFunction("gaus")->SetLineColor(vop_colors[vop]);
+      stack_hist->GetFunction("gaus")->SetLineColor(new_vop_colors[vop]);
       hs->Add(stack_hist);
     }
     TCanvas* sector_canvas = new TCanvas("sector", "sector");
@@ -605,11 +606,11 @@ void compare_vop() {
       double content = data->GetBinContent(i);
       int block_num = data->GetBinLowEdge(i);
       // first check if this is data we are interested in...
-      if (new_sipm_map.find(sector) == new_sipm_map.end()) {
-        std::cout << "unable to find sector " << sector << " in new_sipm_map" << std::endl;
+      if (old_sipm_map.find(sector) == old_sipm_map.end()) {
+        std::cout << "unable to find sector " << sector << " in old_sipm_map" << std::endl;
         continue;
-      } else if (block_num < 0 || block_num >= new_sipm_map[sector].size()) {
-        std::cout << "block " << block_num << " was out of range for new_sipm_map sector " << sector << std::endl;
+      } else if (block_num < 0 || block_num >= old_sipm_map[sector].size()) {
+        std::cout << "block " << block_num << " was out of range for old_sipm_map sector " << sector << std::endl;
         continue;
       } else if (sector_map.find(sector) == sector_map.end()) {
         std::cout << "unable to find sector " << sector << " in sector_map" << std::endl;
@@ -625,22 +626,34 @@ void compare_vop() {
         continue;
       }
       // i guess this is valid data?
-      double vop = new_sipm_map[sector][block_num];
+      double vop = old_sipm_map[sector][block_num];
       old_all_vop.push_back(vop);
-      all_mpv.push_back(content);
-      histogram_data[vop].push_back(content);
-      dbn_mpv[sector_map[sector][block_num]] = content;
+      //all_mpv.push_back(content);
+      old_histogram_data[vop].push_back(content);
+      //dbn_mpv[sector_map[sector][block_num]] = content;
       old_sector_vop_mpv[sector][vop].push_back(content);
       old_vop_sector_mpv[vop][sector].push_back(content);
       //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
     }
   }
 
+  int old_num_vops = old_histogram_data.size();
+  std::cout << "there are " << old_num_vops << " old vops" << std::endl;
+  std::map<double, Color_t> old_vop_colors;
+  int old_i = 0;
+  for (const auto & p : old_histogram_data) {
+    double vop = p.first;
+    Color_t ci = TColor::GetFreeColorIndex();
+    TColor *color = new TColor(ci, kelly_colors[old_i][0], kelly_colors[old_i][1], kelly_colors[old_i][2]);
+    old_vop_colors[vop] = ci;
+    old_i++;
+  }
+
   THStack *hs = new THStack("hs", "distributions of mpv for each vop");
   csvfile vop_mpv("vop_mpv_fit_parameters.csv");
   vop_mpv << "vop" << "mean" << "mean err" << "sigma" << "sigma err" << csvfile::endrow;
 
-  for (auto const &p : histogram_data) {
+  for (auto const &p : old_histogram_data) {
     TCanvas* canvas = new TCanvas();
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(1);
@@ -653,7 +666,7 @@ void compare_vop() {
       hist->Fill(mpv);
     }
     hist->Fit("gaus", "Q");
-    Color_t color = vop_colors[vop];
+    Color_t color = old_vop_colors[vop];
     hist_colors.push_back(color);
     hist->SetLineColor(color);
     hist->GetFunction("gaus")->SetLineColor(color);
@@ -707,18 +720,18 @@ void compare_vop() {
         vop_hist->Fill(mpv);
         stack_hist->Fill(mpv);
       }
-      vop_hist->SetLineColor(vop_colors[vop]);
+      vop_hist->SetLineColor(old_vop_colors[vop]);
       vop_hist->Fit("gaus", "Q");
-      vop_hist->GetFunction("gaus")->SetLineColor(vop_colors[vop]);
+      vop_hist->GetFunction("gaus")->SetLineColor(old_vop_colors[vop]);
       vop_hist->Draw("E0 SAME");
       std::stringstream fileName;
       fileName << "./old_vop/sector_by_vop/sector-" << sector << "_vop-" << vop << ".svg";
       vop_canvas->SaveAs(fileName.str().c_str());
 
-      stack_hist->SetFillColorAlpha(vop_colors[vop], 0.5);
-      stack_hist->SetLineColorAlpha(vop_colors[vop], 0.0);
+      stack_hist->SetFillColorAlpha(old_vop_colors[vop], 0.5);
+      stack_hist->SetLineColorAlpha(old_vop_colors[vop], 0.0);
       stack_hist->Fit("gaus", "Q");
-      stack_hist->GetFunction("gaus")->SetLineColor(vop_colors[vop]);
+      stack_hist->GetFunction("gaus")->SetLineColor(old_vop_colors[vop]);
       hs->Add(stack_hist);
     }
     TCanvas* sector_canvas = new TCanvas("sector", "sector");
