@@ -641,7 +641,8 @@ void compare_vop() {
   tim_empty_hist->SetTitle("Mean Block MPV by SiPM PCB Series");
   tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
   tim_empty_hist->GetYaxis()->SetTitle("MPV");
-  tim_empty_hist->GetYaxis()->SetRange(200, 400);
+  //tim_empty_hist->GetYaxis()->SetRange(200, 400);
+  tim_empty_hist->SetAxisRange(200, 400, "Y");
   for (int i = 0; i < num_pcb_series_with_data; i++) {
     tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, pcb_series_with_data[i].c_str());
   }
