@@ -5,7 +5,7 @@
 </title>
 <desc>
 Creator: ROOT Version 6.24/00
-CreationDate: Wed Jun 16 22:18:42 2021</desc>
+CreationDate: Wed Jun 16 22:34:29 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -28,27 +28,36 @@ CreationDate: Wed Jun 16 22:18:42 2021</desc>
 <path d="M510.736,336.795v 9.22726" fill="none" stroke="black"/>
 <text xml:space="preserve" x="447.69" y="372.251" fill="black" font-size="12.8453" font-family="Helvetica">PCB Series</text>
 <path d="M57.1929,346.022v -307.575" fill="none" stroke="black"/>
-<path d="M57.1929,346.022z" fill="none" stroke="black"/>
-<path d="M57.1929,331.376z" fill="none" stroke="black"/>
-<path d="M57.1929,316.729z" fill="none" stroke="black"/>
-<path d="M57.1929,302.083z" fill="none" stroke="black"/>
-<path d="M57.1929,287.436z" fill="none" stroke="black"/>
-<path d="M57.1929,272.79z" fill="none" stroke="black"/>
-<path d="M57.1929,258.144z" fill="none" stroke="black"/>
-<path d="M57.1929,243.497z" fill="none" stroke="black"/>
-<path d="M57.1929,228.851z" fill="none" stroke="black"/>
-<path d="M57.1929,214.204z" fill="none" stroke="black"/>
-<path d="M57.1929,199.558z" fill="none" stroke="black"/>
-<path d="M57.1929,184.911z" fill="none" stroke="black"/>
-<path d="M57.1929,170.265z" fill="none" stroke="black"/>
-<path d="M57.1929,155.618z" fill="none" stroke="black"/>
-<path d="M57.1929,140.972z" fill="none" stroke="black"/>
-<path d="M57.1929,126.326z" fill="none" stroke="black"/>
-<path d="M57.1929,111.679z" fill="none" stroke="black"/>
-<path d="M57.1929,97.0327z" fill="none" stroke="black"/>
-<path d="M57.1929,82.3863z" fill="none" stroke="black"/>
-<path d="M57.1929,67.7398z" fill="none" stroke="black"/>
-<path d="M57.1929,53.0934z" fill="none" stroke="black"/>
-<path d="M57.1929,53.0934z" fill="none" stroke="black"/>
+<path d="M70.7992,346.022h -13.6063" fill="none" stroke="black"/>
+<path d="M63.9961,331.376h -6.80315" fill="none" stroke="black"/>
+<path d="M63.9961,316.729h -6.80315" fill="none" stroke="black"/>
+<path d="M63.9961,302.083h -6.80315" fill="none" stroke="black"/>
+<path d="M70.7992,287.436h -13.6063" fill="none" stroke="black"/>
+<path d="M63.9961,272.79h -6.80315" fill="none" stroke="black"/>
+<path d="M63.9961,258.144h -6.80315" fill="none" stroke="black"/>
+<path d="M63.9961,243.497h -6.80315" fill="none" stroke="black"/>
+<path d="M70.7992,228.851h -13.6063" fill="none" stroke="black"/>
+<path d="M63.9961,214.204h -6.80315" fill="none" stroke="black"/>
+<path d="M63.9961,199.558h -6.80315" fill="none" stroke="black"/>
+<path d="M63.9961,184.911h -6.80315" fill="none" stroke="black"/>
+<path d="M70.7992,170.265h -13.6063" fill="none" stroke="black"/>
+<path d="M63.9961,155.618h -6.80315" fill="none" stroke="black"/>
+<path d="M63.9961,140.972h -6.80315" fill="none" stroke="black"/>
+<path d="M63.9961,126.326h -6.80315" fill="none" stroke="black"/>
+<path d="M70.7992,111.679h -13.6063" fill="none" stroke="black"/>
+<path d="M63.9961,97.0327h -6.80315" fill="none" stroke="black"/>
+<path d="M63.9961,82.3863h -6.80315" fill="none" stroke="black"/>
+<path d="M63.9961,67.7398h -6.80315" fill="none" stroke="black"/>
+<path d="M70.7992,53.0934h -13.6063" fill="none" stroke="black"/>
+<path d="M70.7992,53.0934h -13.6063" fill="none" stroke="black"/>
+<text xml:space="preserve" x="47.7441" y="350.258" fill="black" font-size="12.8453" font-family="Helvetica">0</text>
+<text xml:space="preserve" x="37.1549" y="291.61" fill="black" font-size="12.8453" font-family="Helvetica">0.2</text>
+<text xml:space="preserve" x="37.1549" y="232.962" fill="black" font-size="12.8453" font-family="Helvetica">0.4</text>
+<text xml:space="preserve" x="37.1549" y="175.129" fill="black" font-size="12.8453" font-family="Helvetica">0.6</text>
+<text xml:space="preserve" x="37.1549" y="116.481" fill="black" font-size="12.8453" font-family="Helvetica">0.8</text>
+<text xml:space="preserve" x="49.3732" y="57.8333" fill="black" font-size="12.8453" font-family="Helvetica">1</text>
+<g transform="rotate(-90,24.9366,65.1643)">
+<text xml:space="preserve" x="24.9366" y="65.1643" fill="black" font-size="12.8453" font-family="Helvetica">MPV</text>
+</g>
 <text xml:space="preserve" x="123.498" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Mean Block MPV by SiPM PCB Series</text>
 <text xml:space="preserve" x="123.498" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Mean Block MPV by SiPM PCB Series</text></svg>

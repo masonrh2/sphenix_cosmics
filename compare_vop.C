@@ -640,9 +640,8 @@ void compare_vop() {
   TH1D* tim_empty_hist = new TH1D("h", "tim_empty", num_pcb_series_with_data, 0, num_pcb_series_with_data);
   tim_empty_hist->SetTitle("Mean Block MPV by SiPM PCB Series");
   tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
-  tim_empty_hist->GetYaxis()->SetTickLength(0);
-  tim_empty_hist->GetYaxis()->SetLabelOffset(999);
-  //tim_empty_hist->GetYaxis()->SetTitle("MPV");
+  tim_empty_hist->GetYaxis()->SetTitle("MPV");
+  tim_empty_hist->GetYaxis()->SetRange(200, 400);
   for (int i = 0; i < num_pcb_series_with_data; i++) {
     tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, pcb_series_with_data[i].c_str());
   }
@@ -666,6 +665,8 @@ void compare_vop() {
   }
   TGraphErrors* tim_graph = new TGraphErrors(num_pcb_series_with_data, &tim_x_axis[0], &tim_y_axis[0], &tim_x_axis_err[0], &tim_y_axis_err[0]);
 
+  tim_graph->GetYaxis()->SetTitle("MPV");
+  tim_graph->GetYaxis()->SetRange(200, 400);
   tim_graph->GetYaxis()->SetTitle("MPV");
   tim_graph->SetMarkerStyle(21);
   tim_graph->Write();
