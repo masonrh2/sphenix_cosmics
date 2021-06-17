@@ -614,9 +614,13 @@ void compare_vop() {
   TExec *new_ex = new TExec("ex","DrawCol();");
   new_graph2->GetListOfFunctions()->Add(new_ex);
   new_graph2->Draw("AP");
+  new_graph2->Write();
   new_canvas2->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete.svg");
 
   // tim's pcb series histogram
+  TFile* tim_outfile = new TFile("./new_vop/vop_graphs/tim_graphs.root","RECREATE");
+  //tim_graph->Write();
+  //tim_empty_hist->Write();
   TCanvas* new_tim_canvas = new TCanvas();
   // first find all pcb series whcih have current data...
   std::vector<std::string> pcb_series_with_data;
@@ -665,6 +669,7 @@ void compare_vop() {
   tim_graph->GetYaxis()->SetTitle("MPV");
   tim_graph->SetMarkerStyle(21);
   tim_graph->Draw("P SAME");
+  tim_graph->Write();
   new_tim_canvas->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete_tim.svg");
 
   // OLD VOP DATA
