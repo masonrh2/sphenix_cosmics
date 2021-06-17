@@ -18,6 +18,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <algorithm>
 #include "csvFile.h"
 #include <exception>
 
@@ -30,8 +31,33 @@ const double x_max = 600;
 const std::vector<int> sectors {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17};
 const std::vector<int> interface_boards {0, 1, 2, 3, 4, 5};
 
+std::map<double, std::string> vop_to_board_series = {
+  {69.13, "A"},
+  {69.18, "B"},
+  {69.08, "C"},
+  {69.23, "D"},
+  {69.03, "E"},
+  {69.28, "F"},
+  {69.33, "G"},
+  {68.93, "H"},
+  {69.38, "I"},
+  {68.88, "J"},
+  {69.43, "K"},
+  {68.83, "L"},
+  {69.48, "M"},
+  {68.78, "N"},
+  {69.53, "O"},
+  {68.58, "P"},
+  {68.63, "Q"},
+  //{, "R"},
+  {68.68, "S"}
+};
+
+
+
+
 std::vector<Color_t> hist_colors = {};
-int hist_color_idx = 0;
+
 std::vector<std::vector<double>> kelly_colors = {
   {255.0/255, 179.0/255, 0.0/255}, // vivid_yellow
   {128.0/255, 62.0/255, 117.0/255}, // strong_purple
@@ -108,11 +134,14 @@ void compare_vop() {
   }
 
   std::map<double, std::vector<double>> new_histogram_data;
+  std::vector<double> new_hist_vop;
+  std::vector<double> new_hist_mpv_err;
+  std::vector<double> new_hist_mpv;
+
   std::map<double, std::vector<double>> old_histogram_data;
-  
-  std::vector<double> hist_vop;
-  std::vector<double> hist_mpv_err;
-  std::vector<double> hist_mpv;
+  std::vector<double> old_hist_vop;
+  std::vector<double> old_hist_mpv_err;
+  std::vector<double> old_hist_mpv;
 
   std::fstream sector_map_file;
   sector_map_file.open("sector_maps.csv",std::ios::in);
@@ -415,6 +444,8 @@ void compare_vop() {
   csvfile new_vop_mpv("new_vop_mpv_fit_parameters.csv");
   new_vop_mpv << "vop" << "mean" << "mean err" << "sigma" << "sigma err" << csvfile::endrow;
 
+  std::map<double, std::pair<double, double>> tim_y_axis_data;
+
   for (auto const &p : new_histogram_data) {
     TCanvas* canvas = new TCanvas();
     gStyle->SetOptStat(0);
@@ -445,10 +476,10 @@ void compare_vop() {
     double sigma_err = gaus->GetParError(2);
     new_vop_mpv << vop << mean << mean_err << sigma << sigma_err << csvfile::endrow;
 
-    hist_vop.push_back(vop);
-    hist_mpv_err.push_back(hist->GetStdDev());
-    hist_mpv.push_back(hist->GetMean());
-    hist_color_idx++;
+    new_hist_vop.push_back(vop);
+    new_hist_mpv_err.push_back(mean_err); //hist_mpv_err.push_back(hist->GetStdDev());
+    new_hist_mpv.push_back(mean);
+    tim_y_axis_data[vop] = std::pair<double, double>(mean, mean_err);
   }
   TCanvas* new_canvas3 = new TCanvas();
   gStyle->SetOptStat(0);
@@ -569,13 +600,13 @@ void compare_vop() {
   new_canvas->SaveAs("./new_vop/vop_graphs/vop_mpv_scatter.svg");
 
   std::vector<double> new_err_x;
-  for (int i = 0; i < hist_vop.size(); i++) {
+  for (int i = 0; i < new_hist_vop.size(); i++) {
     new_err_x.push_back(0);
   }
 
   // discrete graph
   TCanvas* new_canvas2 = new TCanvas();
-  TGraphErrors* new_graph2 = new TGraphErrors(hist_vop.size(), &hist_vop[0], &hist_mpv[0], &new_err_x[0], &hist_mpv_err[0]);
+  TGraphErrors* new_graph2 = new TGraphErrors(new_hist_vop.size(), &new_hist_vop[0], &new_hist_mpv[0], &new_err_x[0], &new_hist_mpv_err[0]);
   new_graph2->SetTitle("mean block mpv vs sipm vop");
   new_graph2->GetXaxis()->SetTitle("vop");
   new_graph2->GetYaxis()->SetTitle("mpv");
@@ -584,6 +615,57 @@ void compare_vop() {
   new_graph2->GetListOfFunctions()->Add(new_ex);
   new_graph2->Draw("AP");
   new_canvas2->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete.svg");
+
+  // tim's pcb series histogram
+  TCanvas* new_tim_canvas = new TCanvas();
+  // first find all pcb series whcih have current data...
+  std::vector<std::string> pcb_series_with_data;
+  std::map<std::string, double> pcb_series_to_vop;
+  for (int i = 0; i < new_hist_vop.size(); i++) {
+    double vop = new_hist_vop[i];
+    if (vop_to_board_series.find(vop) == vop_to_board_series.end()) {
+      //std::cout << "*unable to find vop " << vop << " in pcb series map" << std::endl;
+    } else {
+      //std::cout << "vop " << vop << " matches to board " << vop_to_board_series[vop] << std::endl;
+      pcb_series_with_data.push_back(vop_to_board_series[vop]);
+      pcb_series_to_vop[vop_to_board_series[vop]] = vop;
+    }
+  }
+  int num_pcb_series_with_data = pcb_series_with_data.size();
+  std::sort(pcb_series_with_data.begin(), pcb_series_with_data.end());
+
+  TH1D* tim_empty_hist = new TH1D("h", "tim_empty", num_pcb_series_with_data, 0, num_pcb_series_with_data);
+  tim_empty_hist->SetTitle("Mean Block MPV by SiPM PCB Series");
+  tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
+  tim_empty_hist->GetYaxis()->SetTickLength(0);
+  tim_empty_hist->GetYaxis()->SetLabelOffset(999);
+  //tim_empty_hist->GetYaxis()->SetTitle("MPV");
+  for (int i = 0; i < num_pcb_series_with_data; i++) {
+    tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, pcb_series_with_data[i].c_str());
+  }
+  tim_empty_hist->Draw();
+
+  std::vector<double> tim_x_axis;
+  for (int i = 0; i < num_pcb_series_with_data; i++) {
+    tim_x_axis.push_back(i + 0.5);
+  }
+  std::vector<double> tim_x_axis_err;
+  for (int i = 0; i < num_pcb_series_with_data; i++) { tim_x_axis_err.push_back(0); }
+  std::vector<double> tim_y_axis;
+  std::vector<double> tim_y_axis_err;
+  for (std::string series : pcb_series_with_data) {
+    double vop = pcb_series_to_vop[series];
+    std::pair<double, double> p = tim_y_axis_data[vop];
+    tim_y_axis.push_back(p.first);
+    tim_y_axis_err.push_back(p.second);
+    std::cout << "y axis data for vop " << vop << ": (" << p.first << ", " << p.second << ")" << std::endl; 
+  }
+  TGraphErrors* tim_graph = new TGraphErrors(num_pcb_series_with_data, &tim_x_axis[0], &tim_y_axis[0], &tim_x_axis_err[0], &tim_y_axis_err[0]);
+
+  tim_graph->GetYaxis()->SetTitle("MPV");
+  tim_graph->SetMarkerStyle(21);
+  tim_graph->Draw("P SAME");
+  new_tim_canvas->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete_tim.svg");
 
   // OLD VOP DATA
   std::vector<double> old_all_vop;
@@ -683,10 +765,9 @@ void compare_vop() {
     double sigma_err = gaus->GetParError(2);
     vop_mpv << vop << mean << mean_err << sigma << sigma_err << csvfile::endrow;
 
-    hist_vop.push_back(vop);
-    hist_mpv_err.push_back(hist->GetStdDev());
-    hist_mpv.push_back(hist->GetMean());
-    hist_color_idx++;
+    old_hist_vop.push_back(vop);
+    old_hist_mpv_err.push_back(mean_err); //hist_mpv_err.push_back(hist->GetStdDev());
+    old_hist_mpv.push_back(mean);
   }
   TCanvas* canvas3 = new TCanvas();
   gStyle->SetOptStat(0);
@@ -806,14 +887,14 @@ void compare_vop() {
   // canvas->Update();
   canvas->SaveAs("./old_vop/vop_graphs/vop_mpv_scatter.svg");
 
-  std::vector<double> err_x;
-  for (int i = 0; i < hist_vop.size(); i++) {
-    err_x.push_back(0);
+  std::vector<double> old_err_x;
+  for (int i = 0; i < old_hist_vop.size(); i++) {
+    old_err_x.push_back(0);
   }
 
   // discrete graph
   TCanvas* canvas2 = new TCanvas();
-  TGraphErrors* graph2 = new TGraphErrors(hist_vop.size(), &hist_vop[0], &hist_mpv[0], &err_x[0], &hist_mpv_err[0]);
+  TGraphErrors* graph2 = new TGraphErrors(old_hist_vop.size(), &old_hist_vop[0], &old_hist_mpv[0], &old_err_x[0], &old_hist_mpv_err[0]);
   graph2->SetTitle("mean block mpv vs sipm vop");
   graph2->GetXaxis()->SetTitle("vop");
   graph2->GetYaxis()->SetTitle("mpv");
