@@ -607,7 +607,7 @@ void compare_vop() {
   // discrete graph
   TCanvas* new_canvas2 = new TCanvas();
   TGraphErrors* new_graph2 = new TGraphErrors(new_hist_vop.size(), &new_hist_vop[0], &new_hist_mpv[0], &new_err_x[0], &new_hist_mpv_err[0]);
-  new_graph2->SetTitle("mean block mpv vs sipm vop");
+  new_graph2->SetTitle("Block MPV vs SiPM VOp (After)");
   new_graph2->GetXaxis()->SetTitle("vop");
   new_graph2->GetYaxis()->SetTitle("mpv");
   new_graph2->GetXaxis()->SetLimits(68.85, 69.4);
@@ -905,7 +905,7 @@ void compare_vop() {
   // discrete graph
   TCanvas* canvas2 = new TCanvas();
   TGraphErrors* graph2 = new TGraphErrors(old_hist_vop.size(), &old_hist_vop[0], &old_hist_mpv[0], &old_err_x[0], &old_hist_mpv_err[0]);
-  graph2->SetTitle("mean block mpv vs sipm vop");
+  graph2->SetTitle("Block MPV vs SiPM VOp (Before)");
   graph2->GetXaxis()->SetTitle("vop");
   graph2->GetYaxis()->SetTitle("mpv");
   graph2->GetXaxis()->SetLimits(68.85, 69.4);
