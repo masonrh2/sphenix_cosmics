@@ -620,9 +620,7 @@ void compare_vop() {
   new_canvas2->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete.svg");
 
   // tim's pcb series histogram
-  TFile* tim_outfile = new TFile("./new_vop/vop_graphs/tim_graphs.root","RECREATE");
-  //tim_graph->Write();
-  //tim_empty_hist->Write();
+  //TFile* tim_outfile = new TFile("./new_vop/vop_graphs/tim_graphs.root","RECREATE");
   TCanvas* new_tim_canvas = new TCanvas();
   // first find all pcb series whcih have current data...
   std::vector<std::string> pcb_series_with_data;
@@ -630,7 +628,7 @@ void compare_vop() {
   for (int i = 0; i < new_hist_vop.size(); i++) {
     double vop = new_hist_vop[i];
     if (vop_to_board_series.find(vop) == vop_to_board_series.end()) {
-      //std::cout << "*unable to find vop " << vop << " in pcb series map" << std::endl;
+      std::cout << "*unable to find vop " << vop << " in pcb series map" << std::endl;
     } else {
       //std::cout << "vop " << vop << " matches to board " << vop_to_board_series[vop] << std::endl;
       pcb_series_with_data.push_back(vop_to_board_series[vop]);
@@ -649,7 +647,7 @@ void compare_vop() {
   for (int i = 0; i < num_pcb_series_with_data; i++) {
     tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, pcb_series_with_data[i].c_str());
   }
-  tim_empty_hist->Write();
+  //tim_empty_hist->Write();
   tim_empty_hist->Draw();
 
   std::vector<double> tim_x_axis;
@@ -673,7 +671,7 @@ void compare_vop() {
   tim_graph->GetYaxis()->SetRange(200, 400);
   tim_graph->GetYaxis()->SetTitle("MPV");
   tim_graph->SetMarkerStyle(21);
-  tim_graph->Write();
+  //tim_graph->Write();
   tim_graph->Draw("P SAME");
   new_tim_canvas->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete_tim.svg");
 
@@ -745,6 +743,8 @@ void compare_vop() {
   csvfile vop_mpv("vop_mpv_fit_parameters.csv");
   vop_mpv << "vop" << "mean" << "mean err" << "sigma" << "sigma err" << csvfile::endrow;
 
+  std::map<double, std::pair<double, double>> old_tim_y_axis_data;
+
   for (auto const &p : old_histogram_data) {
     TCanvas* canvas = new TCanvas();
     gStyle->SetOptStat(0);
@@ -778,6 +778,7 @@ void compare_vop() {
     old_hist_vop.push_back(vop);
     old_hist_mpv_err.push_back(mean_err); //hist_mpv_err.push_back(hist->GetStdDev());
     old_hist_mpv.push_back(mean);
+    old_tim_y_axis_data[vop] = std::pair<double, double>(mean, mean_err);
   }
   TCanvas* canvas3 = new TCanvas();
   gStyle->SetOptStat(0);
@@ -922,6 +923,62 @@ void compare_vop() {
   for (auto const &p : dbn_mpv) {
     csv << std::stoi(p.first) << p.second << csvfile::endrow;
   }
+
+  // tim's pcb series histogram
+  //TFile* old_tim_outfile = new TFile("./new_vop/vop_graphs/tim_graphs.root","RECREATE");
+  TCanvas* old_tim_canvas = new TCanvas();
+  // first find all pcb series whcih have current data...
+  std::vector<std::string> old_pcb_series_with_data;
+  std::map<std::string, double> old_pcb_series_to_vop;
+  for (int i = 0; i < old_hist_vop.size(); i++) {
+    double vop = old_hist_vop[i];
+    if (vop_to_board_series.find(vop) == vop_to_board_series.end()) {
+      std::cout << "*unable to find vop " << vop << " in pcb series map" << std::endl;
+    } else {
+      //std::cout << "vop " << vop << " matches to board " << vop_to_board_series[vop] << std::endl;
+      old_pcb_series_with_data.push_back(vop_to_board_series[vop]);
+      old_pcb_series_to_vop[vop_to_board_series[vop]] = vop;
+    }
+  }
+  int old_num_pcb_series_with_data = old_pcb_series_with_data.size();
+  std::sort(old_pcb_series_with_data.begin(), old_pcb_series_with_data.end());
+
+  TH1D* tim_empty_hist = new TH1D("h", "tim_empty", old_num_pcb_series_with_data, 0, old_num_pcb_series_with_data);
+  tim_empty_hist->SetTitle("Mean Block MPV by SiPM PCB Series");
+  tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
+  tim_empty_hist->GetYaxis()->SetTitle("MPV");
+  //tim_empty_hist->GetYaxis()->SetRange(200, 400);
+  tim_empty_hist->SetAxisRange(200, 400, "Y");
+  for (int i = 0; i < old_num_pcb_series_with_data; i++) {
+    tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, old_pcb_series_with_data[i].c_str());
+  }
+  //tim_empty_hist->Write();
+  tim_empty_hist->Draw();
+
+  std::vector<double> old_tim_x_axis;
+  for (int i = 0; i < old_num_pcb_series_with_data; i++) {
+    old_tim_x_axis.push_back(i + 0.5);
+  }
+  std::vector<double> old_tim_x_axis_err;
+  for (int i = 0; i < old_num_pcb_series_with_data; i++) { old_tim_x_axis_err.push_back(0); }
+  std::vector<double> old_tim_y_axis;
+  std::vector<double> old_tim_y_axis_err;
+  for (std::string series : old_pcb_series_with_data) {
+    double vop = old_pcb_series_to_vop[series];
+    std::pair<double, double> p = old_tim_y_axis_data[vop];
+    old_tim_y_axis.push_back(p.first);
+    old_tim_y_axis_err.push_back(p.second);
+    std::cout << "y axis data for vop " << vop << ": (" << p.first << ", " << p.second << ")" << std::endl; 
+  }
+  TGraphErrors* old_tim_graph = new TGraphErrors(old_num_pcb_series_with_data, &old_tim_x_axis[0], &old_tim_y_axis[0], &old_tim_x_axis_err[0], &old_tim_y_axis_err[0]);
+
+  old_tim_graph->GetYaxis()->SetTitle("MPV");
+  old_tim_graph->GetYaxis()->SetRange(200, 400);
+  old_tim_graph->GetYaxis()->SetTitle("MPV");
+  old_tim_graph->SetMarkerStyle(21);
+  //old_tim_graph->Write();
+  old_tim_graph->Draw("P SAME");
+  old_tim_canvas->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete_tim.svg");
 }
 
 void DrawCol()
