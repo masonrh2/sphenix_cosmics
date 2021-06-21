@@ -663,7 +663,7 @@ void compare_vop() {
     std::pair<double, double> p = tim_y_axis_data[vop];
     tim_y_axis.push_back(p.first);
     tim_y_axis_err.push_back(p.second);
-    std::cout << "y axis data for vop " << vop << ": (" << p.first << ", " << p.second << ")" << std::endl; 
+    //std::cout << "y axis data for vop " << vop << ": (" << p.first << ", " << p.second << ")" << std::endl; 
   }
   TGraphErrors* tim_graph = new TGraphErrors(num_pcb_series_with_data, &tim_x_axis[0], &tim_y_axis[0], &tim_x_axis_err[0], &tim_y_axis_err[0]);
 
@@ -968,7 +968,7 @@ void compare_vop() {
     std::pair<double, double> p = old_tim_y_axis_data[vop];
     old_tim_y_axis.push_back(p.first);
     old_tim_y_axis_err.push_back(p.second);
-    std::cout << "y axis data for vop " << vop << ": (" << p.first << ", " << p.second << ")" << std::endl; 
+    //std::cout << "y axis data for vop " << vop << ": (" << p.first << ", " << p.second << ")" << std::endl; 
   }
   TGraphErrors* old_tim_graph = new TGraphErrors(old_num_pcb_series_with_data, &old_tim_x_axis[0], &old_tim_y_axis[0], &old_tim_x_axis_err[0], &old_tim_y_axis_err[0]);
 
@@ -978,7 +978,7 @@ void compare_vop() {
   old_tim_graph->SetMarkerStyle(21);
   //old_tim_graph->Write();
   old_tim_graph->Draw("P SAME");
-  old_tim_canvas->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete_tim.svg");
+  old_tim_canvas->SaveAs("./old_vop/vop_graphs/vop_mpv_discrete_tim.svg");
 }
 
 void DrawCol()
