@@ -643,7 +643,7 @@ void compare_vop() {
   tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
   tim_empty_hist->GetYaxis()->SetTitle("MPV");
   //tim_empty_hist->GetYaxis()->SetRange(200, 400);
-  tim_empty_hist->SetAxisRange(200, 400, "Y");
+  tim_empty_hist->SetAxisRange(220., 380., "Y");
   for (int i = 0; i < num_pcb_series_with_data; i++) {
     tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, pcb_series_with_data[i].c_str());
   }
@@ -668,11 +668,12 @@ void compare_vop() {
   TGraphErrors* tim_graph = new TGraphErrors(num_pcb_series_with_data, &tim_x_axis[0], &tim_y_axis[0], &tim_x_axis_err[0], &tim_y_axis_err[0]);
 
   tim_graph->GetYaxis()->SetTitle("MPV");
-  tim_graph->GetYaxis()->SetRange(200, 400);
+  tim_graph->GetYaxis()->SetLimits(220., 380.);
   tim_graph->GetYaxis()->SetTitle("MPV");
   tim_graph->SetMarkerStyle(21);
   //tim_graph->Write();
   tim_graph->Draw("P SAME");
+  new_tim_canvas->SetGrid();
   new_tim_canvas->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete_tim.svg");
 
   // OLD VOP DATA
@@ -948,7 +949,7 @@ void compare_vop() {
   old_tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
   old_tim_empty_hist->GetYaxis()->SetTitle("MPV");
   //old_tim_empty_hist->GetYaxis()->SetRange(200, 400);
-  old_tim_empty_hist->SetAxisRange(200, 400, "Y");
+  old_tim_empty_hist->SetAxisRange(220, 380, "Y");
   for (int i = 0; i < old_num_pcb_series_with_data; i++) {
     old_tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, old_pcb_series_with_data[i].c_str());
   }
@@ -973,11 +974,12 @@ void compare_vop() {
   TGraphErrors* old_tim_graph = new TGraphErrors(old_num_pcb_series_with_data, &old_tim_x_axis[0], &old_tim_y_axis[0], &old_tim_x_axis_err[0], &old_tim_y_axis_err[0]);
 
   old_tim_graph->GetYaxis()->SetTitle("MPV");
-  old_tim_graph->GetYaxis()->SetRange(200, 400);
+  old_tim_graph->GetYaxis()->SetLimits(220., 380.);
   old_tim_graph->GetYaxis()->SetTitle("MPV");
   old_tim_graph->SetMarkerStyle(21);
   //old_tim_graph->Write();
   old_tim_graph->Draw("P SAME");
+  old_tim_canvas->SetGrid();
   old_tim_canvas->SaveAs("./old_vop/vop_graphs/vop_mpv_discrete_tim.svg");
 }
 
