@@ -56,7 +56,7 @@ std::map<double, std::string> vop_to_board_series = {
 
 
 
-std::vector<Color_t> hist_colors = {};
+std::vector<Color_t> hist_colors;
 
 std::vector<std::vector<double>> kelly_colors = {
   {255.0/255, 179.0/255, 0.0/255}, // vivid_yellow
@@ -610,10 +610,13 @@ void compare_vop() {
   new_graph2->SetTitle("mean block mpv vs sipm vop");
   new_graph2->GetXaxis()->SetTitle("vop");
   new_graph2->GetYaxis()->SetTitle("mpv");
+  new_graph2->GetXaxis()->SetLimits(68.85, 69.4);
+  new_graph2->GetYaxis()->SetLimits(220., 380.);
   new_graph2->SetMarkerStyle(21);
-  TExec *new_ex = new TExec("ex","DrawCol();");
-  new_graph2->GetListOfFunctions()->Add(new_ex);
+  //TExec *new_ex = new TExec("ex","DrawCol();");
+  //new_graph2->GetListOfFunctions()->Add(new_ex);
   new_graph2->Draw("AP");
+  new_canvas2->SetGrid();
   new_canvas2->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete.svg");
 
   // tim's pcb series histogram
@@ -905,10 +908,13 @@ void compare_vop() {
   graph2->SetTitle("mean block mpv vs sipm vop");
   graph2->GetXaxis()->SetTitle("vop");
   graph2->GetYaxis()->SetTitle("mpv");
+  graph2->GetXaxis()->SetLimits(68.85, 69.4);
+  graph2->GetYaxis()->SetLimits(220., 380.);
   graph2->SetMarkerStyle(21);
-  TExec *ex = new TExec("ex","DrawCol();");
-  graph2->GetListOfFunctions()->Add(ex);
+  //TExec *ex = new TExec("ex","DrawCol();");
+  //graph2->GetListOfFunctions()->Add(ex);
   graph2->Draw("AP");
+  canvas2->SetGrid();
   canvas2->SaveAs("./old_vop/vop_graphs/vop_mpv_discrete.svg");
 
   csvfile csv("dbn_to_mpv.csv");
