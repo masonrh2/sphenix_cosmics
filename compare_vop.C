@@ -943,17 +943,17 @@ void compare_vop() {
   int old_num_pcb_series_with_data = old_pcb_series_with_data.size();
   std::sort(old_pcb_series_with_data.begin(), old_pcb_series_with_data.end());
 
-  TH1D* tim_empty_hist = new TH1D("h", "tim_empty", old_num_pcb_series_with_data, 0, old_num_pcb_series_with_data);
-  tim_empty_hist->SetTitle("Mean Block MPV by SiPM PCB Series");
-  tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
-  tim_empty_hist->GetYaxis()->SetTitle("MPV");
-  //tim_empty_hist->GetYaxis()->SetRange(200, 400);
-  tim_empty_hist->SetAxisRange(200, 400, "Y");
+  TH1D* old_tim_empty_hist = new TH1D("h", "tim_empty", old_num_pcb_series_with_data, 0, old_num_pcb_series_with_data);
+  old_tim_empty_hist->SetTitle("Mean Block MPV by SiPM PCB Series");
+  old_tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
+  old_tim_empty_hist->GetYaxis()->SetTitle("MPV");
+  //old_tim_empty_hist->GetYaxis()->SetRange(200, 400);
+  old_tim_empty_hist->SetAxisRange(200, 400, "Y");
   for (int i = 0; i < old_num_pcb_series_with_data; i++) {
-    tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, old_pcb_series_with_data[i].c_str());
+    old_tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, old_pcb_series_with_data[i].c_str());
   }
-  //tim_empty_hist->Write();
-  tim_empty_hist->Draw();
+  //old_tim_empty_hist->Write();
+  old_tim_empty_hist->Draw();
 
   std::vector<double> old_tim_x_axis;
   for (int i = 0; i < old_num_pcb_series_with_data; i++) {
