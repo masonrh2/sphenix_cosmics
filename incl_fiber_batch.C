@@ -812,7 +812,9 @@ void incl_fiber_batch() {
       int fiber_batch = dbn_to_fiber_batch[dbn];
       if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
         double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
-        content = content * correction_factor;
+        double adjusted_content = content * correction_factor;
+        std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
+          << " (" << content << "->" << adjusted_content << ")" << std::endl;
         // i guess this is valid data?
         double vop = new_sipm_map[sector][block_num];
         //new_all_vop.push_back(vop);
@@ -823,7 +825,7 @@ void incl_fiber_batch() {
         adjusted_vop_sector_mpv[vop][sector].push_back(content);
         //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
       } else {
-        std::cout << "** failed to add DBN " << dbn << " since batch map does not contain batch " << fiber_batch << std::endl;
+        std::cout << "** failed to add DBN " << std::stoi(dbn) << " since batch map does not contain batch " << fiber_batch << std::endl;
       }
     }
   }
