@@ -123,7 +123,10 @@ std::vector<std::vector<double>> get_rainbow(int n) {
 }
 
 
-void compare_vop() {
+void incl_fiber_batch() {
+  
+  
+  
   gStyle->SetCanvasPreferGL(1);
   std::map<int, Color_t> sector_colors;
   for (int i = 0; i < sectors.size(); i++) {
@@ -144,7 +147,7 @@ void compare_vop() {
   std::vector<double> old_hist_mpv;
 
   std::fstream sector_map_file;
-  sector_map_file.open("sector_maps.csv",std::ios::in);
+  sector_map_file.open("sector_maps.csv", std::ios::in);
   std::map<int, std::vector<std::string>> sector_map;
   std::vector<std::string> row;
   std::string line, word, temp;
@@ -192,6 +195,136 @@ void compare_vop() {
     offset += 4;
   }
   
+  std::map<std::string, int> dbn_to_fiber_batch;
+
+  std::fstream blocks_1_12;
+  blocks_1_12.open("blocks_1-12.csv",std::ios::in);
+  // std::vector<std::string> row;
+  // std::string line, word, temp;
+  line_num = 1;
+  this_row_num = -1;
+  offset = 0;
+  std::cout << "reading blocks_1-12" << std::endl;
+  while (std::getline(blocks_1_12, line)) {
+    // std::cout << "...line " << line_num << std::endl;
+    row.clear();
+    // read an entire row and
+    // store it in a string variable 'line'
+    // std::getline(new_vop_file, line);
+    // used for breaking words
+    std::stringstream s(line);
+    // read every column data of a row and
+    // store it in a string variable, 'word'
+    while (std::getline(s, word, ',')) {
+      // add all the column data
+      // of a row to a vector
+      row.push_back(word);
+    }
+    // now row has the data for this row
+    if (line_num == 0) {
+      // don't do anything with the header
+      line_num++;
+      continue;
+    }
+    // check if this is a block...
+    bool is_int = true;
+    int block_type;
+    try {
+      block_type = std::stoi(row[2]);
+    } catch (std::exception &e) {
+      is_int = false;
+    }
+    if (is_int) {
+      // this row has block data
+      std::string dbn = row[0];
+      std::vector<std::string> split = split_string(row[9], "-");
+      if (split.size() < 2) {
+        std::cout << "skipped fiber batch for DBN " << dbn << " since it does not contain a '-'" << std::endl;
+      } else {
+        is_int = true;
+        int fiber_batch = 0;
+        try {
+          fiber_batch = std::stoi(split[0]);
+        } catch (std::exception &e) {
+          is_int = false;
+        }
+        if (is_int) {
+          dbn_to_fiber_batch[dbn] = fiber_batch;
+        } else {
+          std::cout << "error at DBN " << dbn << ": '" << split[0] << "' not castable to int" << std::endl; 
+        }
+      }
+    }
+    line_num++;
+  }
+
+  std::fstream blocks_13_64;
+  blocks_13_64.open("blocks_13-64.csv",std::ios::in);
+  // std::vector<std::string> row;
+  // std::string line, word, temp;
+  line_num = 1;
+  this_row_num = -1;
+  offset = 0;
+  std::cout << "reading blocks_13-64" << std::endl;
+  while (std::getline(blocks_13_64, line)) {
+    // std::cout << "...line " << line_num << std::endl;
+    row.clear();
+    // read an entire row and
+    // store it in a string variable 'line'
+    // std::getline(new_vop_file, line);
+    // used for breaking words
+    std::stringstream s(line);
+    // read every column data of a row and
+    // store it in a string variable, 'word'
+    while (std::getline(s, word, ',')) {
+      // add all the column data
+      // of a row to a vector
+      row.push_back(word);
+    }
+    // now row has the data for this row
+    if (line_num == 0) {
+      // don't do anything with the header
+      line_num++;
+      continue;
+    }
+    // check if this is a block...
+    bool is_int = true;
+    int block_type;
+    try {
+      block_type = std::stoi(row[2]);
+    } catch (std::exception &e) {
+      is_int = false;
+    }
+    if (is_int) {
+      // this row has block data
+      std::string dbn = row[0];
+      std::vector<std::string> split = split_string(row[9], "-");
+      if (split.size() < 2) {
+        std::cout << "skipped fiber batch for DBN " << dbn << " since it does not contain a '-'" << std::endl;
+      } else {
+        is_int = true;
+        int fiber_batch = 0;
+        try {
+          fiber_batch = std::stoi(split[0]);
+        } catch (std::exception &e) {
+          is_int = false;
+        }
+        if (is_int) {
+          dbn_to_fiber_batch[dbn] = fiber_batch;
+        } else {
+          std::cout << "error at DBN " << dbn << ": '" << split[0] << "' not castable to int" << std::endl; 
+        }
+      }
+    }
+    line_num++;
+  }
+
+  std::cout << "DBN to fiber batch:";
+  for (const auto &p : dbn_to_fiber_batch) { 
+    std::cout << "DBN " << p.first << ": " << p.second << "; ";
+  }
+  std::cout <<std::endl;
+
   std::fstream new_vop_file;
   new_vop_file.open("new_vop.csv",std::ios::in);
   std::map<int, std::vector<double>> new_sipm_map;
@@ -277,104 +410,14 @@ void compare_vop() {
     line_num++;
   }
 
-  std::fstream old_vop_file;
-  old_vop_file.open("old_vop_data.csv",std::ios::in);
-  std::map<int, std::vector<double>> old_sipm_map;
-  // std::vector<std::string> row;
-  // std::string line, word, temp;
-  line_num = 1;
-  this_row_num = -1;
-  offset = 0;
-  block_idx = -1;
-  possible_sectors = 0;
-  std::vector<int> old_sector_has_data;
-  std::map<int, int> old_sector_nums;
-  std::map<int, double> old_sector_sums;
-  std::cout << "reading old vop data" << std::endl;
-  while (std::getline(old_vop_file, line)) {
-    // std::cout << "...line " << line_num << std::endl;
-    row.clear();
-    // read an entire row and
-    // store it in a string variable 'line'
-    // std::getline(old_vop_file, line);
-    // used for breaking words
-    std::stringstream s(line);
-    // read every column data of a row and
-    // store it in a string variable, 'word'
-    while (std::getline(s, word, ',')) {
-      // add all the column data
-      // of a row to a vector
-      row.push_back(word);
-    }
-    // now row has the data for this row
-    if (line_num <= 1 || line_num == 3) {
-      // don't do anything with the header
-      line_num++;
-      continue;
-    } else if (line_num == 2) {
-      for (int idx = 3; idx < row.size(); idx++) {
-        std::vector<std::string> split = split_string(row[idx], " ");
-        int sector = std::stoi(split[1]);
-        old_sector_nums[idx] = sector;
-        old_sector_sums[idx] = 0;
-      }
-      line_num++;
-      continue;
-    } else if (line_num == 4) {
-      for (int idx = 3; idx < row.size(); idx++) {
-        bool is_double = true;
-        try {
-          double x = std::stod(row[idx]);
-        } catch (std::exception &e) {
-          is_double = false;
-        }
-        if (is_double) {
-          old_sector_has_data.push_back(idx);
-          old_sipm_map[old_sector_nums[idx]] = std::vector<double>(96);
-          std::cout << "sector " << old_sector_nums[idx] << " has old vop data" << std::endl;
-        }
-      }
-      block_idx = 3;
-    }
-    // std::cout << "block_idx = " << block_idx << std::endl;
-
-    for (int idx : old_sector_has_data) {
-      try {
-        double channel_vop = std::stod(row[idx]);
-        old_sector_sums[idx] += channel_vop;
-      } catch (std::exception& e) {
-        std::cout << "error:" << e.what() << " while converting [" << row[idx] << "] to double" << std::endl;
-      }
-    }
-
-    offset++;
-    if (offset == 4) {
-      for (int idx : old_sector_has_data) {
-        old_sipm_map[old_sector_nums[idx]][block_idx] = old_sector_sums[idx] / 4;
-        old_sector_sums[idx] = 0;
-      }
-      if (block_idx % 4 == 0) {
-        block_idx += 8;
-      }
-      offset = 0;
-      block_idx--;
-    }
-    line_num++;
-  }
-
-  // determine where there are differences in the vop per block
-  for (int sector : sectors) {
-    std::vector<double> old_vop = old_sipm_map[sector];
-    std::vector<double> new_vop = new_sipm_map[sector];
-    for (int i = 0; i < 96; i++) {
-      if (old_vop[i] != new_vop[i]) {
-        std::cout << "old and new vops do not match at sector " << sector << " block " << i << " (old " << old_vop[i] << ", new " << new_vop[i] << ")" << std::endl;
-      }
-    }
-  }
-
   std::vector<double> all_mpv;
   std::map<std::string, double> dbn_mpv;
+
+  csvfile csv("dbn_to_mpv.csv");
+  csv << "dbn" << "mpv" << csvfile::endrow;
+  for (auto const &p : dbn_mpv) {
+    csv << std::stoi(p.first) << p.second << csvfile::endrow;
+  }
 
   // NEW VOP DATA
   std::vector<double> new_all_vop;
@@ -686,312 +729,6 @@ void compare_vop() {
   tim_graph->Draw("P SAME");
   new_tim_canvas->SetGrid();
   new_tim_canvas->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete_tim.svg");
-
-  // OLD VOP DATA
-  std::vector<double> old_all_vop;
-  std::map<int, std::map<double, std::vector<double>>> old_sector_vop_mpv;
-  std::map<double, std::map<int, std::vector<double>>> old_vop_sector_mpv;
-
-  for (int sector : sectors) {
-    std::cout << "SECTOR " << sector << ":" << std::endl;
-    std::stringstream sectorFileName;
-    sectorFileName << "./sector_data/sector" << sector << ".root";
-    TFile* sectorFile = new TFile(sectorFileName.str().c_str());
-    TH1D* data;
-    std::stringstream blockFileName;
-    blockFileName << "h_run" << sector << "_block;1";
-    // std::cout << "getting object" << std::endl;
-    sectorFile->GetObject(blockFileName.str().c_str(), data);
-    // std::cout << "got object" << std::endl;
-    for (int i = 0; i < data->GetNcells(); i++) {
-      // std::cout << "reading bin " << i << std::endl;
-      double content = data->GetBinContent(i);
-      int block_num = data->GetBinLowEdge(i);
-      // first check if this is data we are interested in...
-      if (old_sipm_map.find(sector) == old_sipm_map.end()) {
-        std::cout << "unable to find sector " << sector << " in old_sipm_map" << std::endl;
-        continue;
-      } else if (block_num < 0 || block_num >= old_sipm_map[sector].size()) {
-        std::cout << "block " << block_num << " was out of range for old_sipm_map sector " << sector << std::endl;
-        continue;
-      } else if (sector_map.find(sector) == sector_map.end()) {
-        std::cout << "unable to find sector " << sector << " in sector_map" << std::endl;
-        continue;
-      } else if (block_num < 0 || block_num >= sector_map[sector].size()) {
-        std::cout << "block " << block_num << " was out of range for sector_map sector " << sector << std::endl;
-        continue;
-      } else if (sector_map[sector][block_num][0] == 'F' || std::stoi(sector_map[sector][block_num]) >= 10000) {
-        std::cout << "block " << block_num << ": rejected fudan block " << std::endl;
-        continue;
-      } else if (content <= 0 || content >= 1000) {
-        std::cout << "block " << block_num << ": rejected bin content " << content << std::endl;
-        continue;
-      }
-      // i guess this is valid data?
-      double vop = old_sipm_map[sector][block_num];
-      old_all_vop.push_back(vop);
-      //all_mpv.push_back(content);
-      old_histogram_data[vop].push_back(content);
-      //dbn_mpv[sector_map[sector][block_num]] = content;
-      old_sector_vop_mpv[sector][vop].push_back(content);
-      old_vop_sector_mpv[vop][sector].push_back(content);
-      //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
-    }
-  }
-
-  int old_num_vops = old_histogram_data.size();
-  std::cout << "there are " << old_num_vops << " old vops" << std::endl;
-  std::map<double, Color_t> old_vop_colors;
-  int old_i = 0;
-  for (const auto & p : old_histogram_data) {
-    double vop = p.first;
-    Color_t ci = TColor::GetFreeColorIndex();
-    TColor *color = new TColor(ci, kelly_colors[old_i][0], kelly_colors[old_i][1], kelly_colors[old_i][2]);
-    old_vop_colors[vop] = ci;
-    old_i++;
-  }
-
-  THStack *hs = new THStack("hs", "distributions of mpv for each vop");
-  csvfile vop_mpv("vop_mpv_fit_parameters.csv");
-  vop_mpv << "vop" << "mean" << "mean err" << "sigma" << "sigma err" << csvfile::endrow;
-
-  std::map<double, std::pair<double, double>> old_tim_y_axis_data;
-
-  for (auto const &p : old_histogram_data) {
-    TCanvas* canvas = new TCanvas();
-    gStyle->SetOptStat(0);
-    gStyle->SetOptFit(1);
-    std::stringstream title;
-    double vop = p.first;
-    title << "vop " << vop << ";mpv;n_blocks";
-    TH1D* hist = new TH1D("hist", title.str().c_str(), num_bins, x_min, x_max);
-    hist->GetSumw2();
-    for (double mpv : p.second) {
-      hist->Fill(mpv);
-    }
-    hist->Fit("gaus", "Q");
-    Color_t color = old_vop_colors[vop];
-    hist_colors.push_back(color);
-    hist->SetLineColor(color);
-    hist->GetFunction("gaus")->SetLineColor(color);
-    hist->Draw("E0 SAME");
-    hs->Add(hist);
-
-    std::stringstream fileName;
-    fileName << "./old_vop/vop_graphs/vop" << vop << ".svg";
-    canvas->SaveAs(fileName.str().c_str());
-    TF1* gaus = (TF1*) hist->GetListOfFunctions()->FindObject("gaus");
-    double mean = gaus->GetParameter(1);
-    double mean_err = gaus->GetParError(1);
-    double sigma = gaus->GetParameter(2);
-    double sigma_err = gaus->GetParError(2);
-    vop_mpv << vop << mean << mean_err << sigma << sigma_err << csvfile::endrow;
-
-    old_hist_vop.push_back(vop);
-    old_hist_mpv_err.push_back(mean_err); //hist_mpv_err.push_back(hist->GetStdDev());
-    old_hist_mpv.push_back(mean);
-    old_tim_y_axis_data[vop] = std::pair<double, double>(mean, mean_err);
-  }
-  TCanvas* canvas3 = new TCanvas();
-  gStyle->SetOptStat(0);
-  gStyle->SetOptFit(0);
-  hs->Draw("nostack");
-  canvas3->BuildLegend();
-  canvas3->SaveAs("./old_vop/vop_graphs/vop_stacked.svg");
-
-  std::cout << "creating vop by sector histograms" << std::endl;
-  for (const auto & p : old_sector_vop_mpv) {
-    int sector = p.first;
-    std::map<double, std::vector<double>> vop_mpv_map = p.second;
-    std::stringstream sector_title;
-    sector_title << "sector " << sector << ";mpv;n_blocks";
-    THStack *hs = new THStack("hs", sector_title.str().c_str());
-    for (const auto & q : vop_mpv_map) {
-      double vop = q.first;
-      std::vector<double> mpvs = q.second;
-      TCanvas* vop_canvas = new TCanvas("vop", "vop");
-      gStyle->SetOptStat(0);
-      gStyle->SetOptFit(1);
-      std::stringstream vop_title;
-      vop_title << "sector " << sector << ", vop " << vop << ";mpv;n_blocks";
-      TH1D* vop_hist = new TH1D("vop_hist", vop_title.str().c_str(), num_bins, x_min, x_max);
-      vop_hist->GetSumw2();
-      std::stringstream stack_title;
-      stack_title << "vop " << vop;
-      TH1D* stack_hist = new TH1D("stack_hist", stack_title.str().c_str(), num_bins, x_min, x_max);
-      stack_hist->GetSumw2();
-      for (double mpv : mpvs) {
-        vop_hist->Fill(mpv);
-        stack_hist->Fill(mpv);
-      }
-      vop_hist->SetLineColor(old_vop_colors[vop]);
-      vop_hist->Fit("gaus", "Q");
-      vop_hist->GetFunction("gaus")->SetLineColor(old_vop_colors[vop]);
-      vop_hist->Draw("E0 SAME");
-      std::stringstream fileName;
-      fileName << "./old_vop/sector_by_vop/sector-" << sector << "_vop-" << vop << ".svg";
-      vop_canvas->SaveAs(fileName.str().c_str());
-
-      stack_hist->SetFillColorAlpha(old_vop_colors[vop], 0.5);
-      stack_hist->SetLineColorAlpha(old_vop_colors[vop], 0.0);
-      stack_hist->Fit("gaus", "Q");
-      stack_hist->GetFunction("gaus")->SetLineColor(old_vop_colors[vop]);
-      hs->Add(stack_hist);
-    }
-    TCanvas* sector_canvas = new TCanvas("sector", "sector");
-    gStyle->SetOptStat(0);
-    gStyle->SetOptFit(0);
-    hs->Draw("nostackb");
-    std::stringstream fileName;
-    fileName << "./old_vop/sector_by_vop/sector-" << sector << "_all.svg";
-    sector_canvas->BuildLegend();
-    sector_canvas->SaveAs(fileName.str().c_str());
-  }
-
-  std::cout << "creating the other histograms" << std::endl;
-  for (const auto & p : old_vop_sector_mpv) {
-    double vop = p.first;
-    std::map<int, std::vector<double>> sector_mpv_map = p.second;
-    std::stringstream vop_title;
-    vop_title << "vop " << vop << ";mpv;n_blocks";
-    THStack *hs = new THStack("hs", vop_title.str().c_str());
-    for (const auto & q : sector_mpv_map) {
-      int sector = q.first;
-      std::vector<double> mpvs = q.second;
-      TCanvas* sector_canvas = new TCanvas();
-      // gStyle->SetOptStat(0);
-      // gStyle->SetOptFit(1);
-      std::stringstream sector_title;
-      sector_title << "sector " << sector << ", vop " << vop << ";mpv;n_blocks";
-      TH1D* vop_hist = new TH1D("vop_hist", sector_title.str().c_str(), num_bins, x_min, x_max);
-      vop_hist->GetSumw2();
-      std::stringstream stack_title;
-      stack_title << "sector " << sector;
-      TH1D* stack_hist = new TH1D("stack_hist", stack_title.str().c_str(), num_bins, x_min, x_max);
-      stack_hist->GetSumw2();
-      for (double mpv : mpvs) {
-        vop_hist->Fill(mpv);
-        stack_hist->Fill(mpv);
-      }
-      // vop_hist->SetLineColor(vop_colors[vop]);
-      // vop_hist->Fit("gaus", "Q");
-      // vop_hist->GetFunction("gaus")->SetLineColor(vop_colors[vop]);
-      // vop_hist->Draw("E0 SAME");
-      // std::stringstream fileName;
-      // fileName << "./vop_by_sector/sector-" << sector << "_vop-" << vop << ".png";
-      // sector_canvas->SaveAs(fileName.str().c_str());
-
-      stack_hist->SetFillColorAlpha(sector_colors[sector], 0.5);
-      stack_hist->SetLineColorAlpha(sector_colors[sector], 0.0);
-      stack_hist->Fit("gaus", "Q");
-      stack_hist->GetFunction("gaus")->SetLineColor(sector_colors[sector]);
-      hs->Add(stack_hist);
-    }
-    TCanvas* vop_canvas = new TCanvas();
-    gStyle->SetOptStat(0);
-    gStyle->SetOptFit(0);
-    hs->Draw("nostackb");
-    std::stringstream fileName;
-    fileName << "./old_vop/vop_by_sector/vop-" << vop << "_all.svg";
-    
-    vop_canvas->BuildLegend();
-    vop_canvas->SaveAs(fileName.str().c_str());
-  }
-
-  // scatter plot
-  TCanvas* canvas = new TCanvas();
-  TGraph* graph = new TGraph(old_all_vop.size(), &old_all_vop[0], &all_mpv[0]);
-  graph->SetTitle("block mpv vs sipm vop");
-  graph->GetXaxis()->SetTitle("vop");
-  graph->GetYaxis()->SetTitle("mpv");
-  graph->SetMarkerStyle(20);
-  graph->SetMarkerSize(0.5);
-  graph->Draw("AP");
-  // canvas->Update();
-  canvas->SaveAs("./old_vop/vop_graphs/vop_mpv_scatter.svg");
-
-  std::vector<double> old_err_x;
-  for (int i = 0; i < old_hist_vop.size(); i++) {
-    old_err_x.push_back(0);
-  }
-
-  // discrete graph
-  TCanvas* canvas2 = new TCanvas();
-  TGraphErrors* graph2 = new TGraphErrors(old_hist_vop.size(), &old_hist_vop[0], &old_hist_mpv[0], &old_err_x[0], &old_hist_mpv_err[0]);
-  graph2->SetTitle("Block MPV vs SiPM VOp (Before)");
-  graph2->GetXaxis()->SetTitle("vop");
-  graph2->GetYaxis()->SetTitle("mpv");
-  graph2->GetXaxis()->SetLimits(68.85, 69.4);
-  graph2->GetYaxis()->SetLimits(220., 380.);
-  graph2->SetMarkerStyle(21);
-  //TExec *ex = new TExec("ex","DrawCol();");
-  //graph2->GetListOfFunctions()->Add(ex);
-  graph2->Draw("AP");
-  canvas2->SetGrid();
-  canvas2->SaveAs("./old_vop/vop_graphs/vop_mpv_discrete.svg");
-
-  csvfile csv("dbn_to_mpv.csv");
-  csv << "dbn" << "mpv" << csvfile::endrow;
-  for (auto const &p : dbn_mpv) {
-    csv << std::stoi(p.first) << p.second << csvfile::endrow;
-  }
-
-  // tim's pcb series histogram
-  //TFile* old_tim_outfile = new TFile("./new_vop/vop_graphs/tim_graphs.root","RECREATE");
-  TCanvas* old_tim_canvas = new TCanvas();
-  // first find all pcb series whcih have current data...
-  std::vector<std::string> old_pcb_series_with_data;
-  std::map<std::string, double> old_pcb_series_to_vop;
-  for (int i = 0; i < old_hist_vop.size(); i++) {
-    double vop = old_hist_vop[i];
-    if (vop_to_board_series.find(vop) == vop_to_board_series.end()) {
-      std::cout << "*unable to find vop " << vop << " in pcb series map" << std::endl;
-    } else {
-      //std::cout << "vop " << vop << " matches to board " << vop_to_board_series[vop] << std::endl;
-      old_pcb_series_with_data.push_back(vop_to_board_series[vop]);
-      old_pcb_series_to_vop[vop_to_board_series[vop]] = vop;
-    }
-  }
-  int old_num_pcb_series_with_data = old_pcb_series_with_data.size();
-  std::sort(old_pcb_series_with_data.begin(), old_pcb_series_with_data.end());
-
-  TH1D* old_tim_empty_hist = new TH1D("h", "tim_empty", old_num_pcb_series_with_data, 0, old_num_pcb_series_with_data);
-  old_tim_empty_hist->SetTitle("Mean Block MPV by SiPM PCB Series");
-  old_tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
-  old_tim_empty_hist->GetYaxis()->SetTitle("MPV");
-  //old_tim_empty_hist->GetYaxis()->SetRange(200, 400);
-  old_tim_empty_hist->SetAxisRange(220, 380, "Y");
-  for (int i = 0; i < old_num_pcb_series_with_data; i++) {
-    old_tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, old_pcb_series_with_data[i].c_str());
-  }
-  //old_tim_empty_hist->Write();
-  old_tim_empty_hist->Draw();
-
-  std::vector<double> old_tim_x_axis;
-  for (int i = 0; i < old_num_pcb_series_with_data; i++) {
-    old_tim_x_axis.push_back(i + 0.5);
-  }
-  std::vector<double> old_tim_x_axis_err;
-  for (int i = 0; i < old_num_pcb_series_with_data; i++) { old_tim_x_axis_err.push_back(0); }
-  std::vector<double> old_tim_y_axis;
-  std::vector<double> old_tim_y_axis_err;
-  for (std::string series : old_pcb_series_with_data) {
-    double vop = old_pcb_series_to_vop[series];
-    std::pair<double, double> p = old_tim_y_axis_data[vop];
-    old_tim_y_axis.push_back(p.first);
-    old_tim_y_axis_err.push_back(p.second);
-    //std::cout << "y axis data for vop " << vop << ": (" << p.first << ", " << p.second << ")" << std::endl; 
-  }
-  TGraphErrors* old_tim_graph = new TGraphErrors(old_num_pcb_series_with_data, &old_tim_x_axis[0], &old_tim_y_axis[0], &old_tim_x_axis_err[0], &old_tim_y_axis_err[0]);
-
-  old_tim_graph->GetYaxis()->SetTitle("MPV");
-  old_tim_graph->GetYaxis()->SetLimits(220., 380.);
-  old_tim_graph->GetYaxis()->SetTitle("MPV");
-  old_tim_graph->SetMarkerStyle(21);
-  //old_tim_graph->Write();
-  old_tim_graph->Draw("P SAME");
-  old_tim_canvas->SetGrid();
-  old_tim_canvas->SaveAs("./old_vop/vop_graphs/vop_mpv_discrete_tim.svg");
 }
 
 void DrawCol()
