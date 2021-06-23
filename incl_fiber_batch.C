@@ -785,6 +785,13 @@ void incl_fiber_batch() {
     blockFileName << "h_run" << sector << "_block;1";
     // std::cout << "getting object" << std::endl;
     sectorFile->GetObject(blockFileName.str().c_str(), data);
+
+    TCanvas* sector_canvas = new TCanvas();
+    data->Draw();
+    std::stringstream sector_filename;
+    sector_filename << "./sector_diagrams/original/sector" << sector << ".svg";
+    sector_canvas->SaveAs();
+
     // std::cout << "got object" << std::endl;
     for (int i = 0; i < data->GetNcells(); i++) {
       // std::cout << "reading bin " << i << std::endl;
@@ -825,11 +832,17 @@ void incl_fiber_batch() {
         adjusted_dbn_mpv[dbn] = adjusted_content;
         adjusted_sector_vop_mpv[sector][vop].push_back(adjusted_content);
         adjusted_vop_sector_mpv[vop][sector].push_back(adjusted_content);
+        data->SetBinContent(i, adjusted_content);
         //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
       } else {
         std::cout << "** failed to add DBN " << std::stoi(dbn) << " since batch map does not contain batch " << fiber_batch << std::endl;
       }
     }
+    TCanvas* adj_sector_canvas = new TCanvas();
+    data->Draw();
+    std::stringstream adj_sector_filename;
+    adj_sector_filename << "./sector_diagrams/adjusted/sector" << sector << ".svg";
+    adj_sector_canvas->SaveAs();
   }
 
   // got all mpv data...calculate 
