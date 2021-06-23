@@ -1178,6 +1178,11 @@ void incl_fiber_batch() {
     sector_filename << "./sector_diagrams/original/sector" << sector << ".svg";
     hs->SetMinimum(0.);
     hs->SetMaximum(600.);
+    std::stringstream sector_title;
+    sector_title << "Sector " << sector;
+    hs->SetTitle(sector_title.str().c_str());
+    hs->GetXaxis()->SetTitle("Block Number");
+    hs->GetYaxis()->SetTitle("MPV");
     hs->Draw("NOSTACK");
     sector_canvas->SaveAs(sector_filename.str().c_str());
     std::stringstream adj_sector_filename;
@@ -1185,6 +1190,11 @@ void incl_fiber_batch() {
     adj_sector_filename << "./sector_diagrams/adjusted/sector" << sector << ".svg";
     adj_hs->SetMinimum(0.);
     adj_hs->SetMaximum(600.);
+    std::stringstream adj_sector_title;
+    adj_sector_title << "Sector " << sector << " (Adjusted)";
+    hs->SetTitle(adj_sector_title.str().c_str());
+    hs->GetXaxis()->SetTitle("Block Number");
+    hs->GetYaxis()->SetTitle("MPV");
     adj_hs->Draw("NOSTACK");
     adj_sector_canvas->SaveAs(adj_sector_filename.str().c_str());
     /*
