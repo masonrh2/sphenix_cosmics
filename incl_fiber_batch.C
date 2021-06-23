@@ -808,15 +808,23 @@ void incl_fiber_batch() {
         std::cout << "block " << block_num << ": rejected bin content " << content << std::endl;
         continue;
       }
-      // i guess this is valid data?
-      double vop = new_sipm_map[sector][block_num];
-      //new_all_vop.push_back(vop);
-      adjusted_all_mpv.push_back(content);
-      adjusted_histogram_data[vop].push_back(content);
-      adjusted_dbn_mpv[sector_map[sector][block_num]] = content;
-      adjusted_sector_vop_mpv[sector][vop].push_back(content);
-      adjusted_vop_sector_mpv[vop][sector].push_back(content);
-      //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
+      std::string dbn = sector_map[sector][block_num];
+      int fiber_batch = dbn_to_fiber_batch[dbn];
+      if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
+        double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
+        content = content * correction_factor;
+        // i guess this is valid data?
+        double vop = new_sipm_map[sector][block_num];
+        //new_all_vop.push_back(vop);
+        adjusted_all_mpv.push_back(content);
+        adjusted_histogram_data[vop].push_back(content);
+        adjusted_dbn_mpv[dbn] = content;
+        adjusted_sector_vop_mpv[sector][vop].push_back(content);
+        adjusted_vop_sector_mpv[vop][sector].push_back(content);
+        //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
+      } else {
+        std::cout << "** failed to add DBN " << dbn << " since batch map does not contain batch " << fiber_batch << std::endl;
+      }
     }
   }
 
