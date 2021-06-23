@@ -466,10 +466,10 @@ void incl_fiber_batch() {
     // std::cout << "getting object" << std::endl;
     sectorFile->GetObject(blockFileName.str().c_str(), data);
     // std::cout << "got object" << std::endl;
-    for (int i = 0; i < data->GetNcells(); i++) {
+    for (int i = 1; i < data->GetNbinsX(); i++) {
       // std::cout << "reading bin " << i << std::endl;
       double content = data->GetBinContent(i);
-      int block_num = data->GetBinLowEdge(i);
+      int block_num = i - 1;
       // first check if this is data we are interested in...
       if (new_sipm_map.find(sector) == new_sipm_map.end()) {
         std::cout << "unable to find sector " << sector << " in new_sipm_map" << std::endl;
@@ -793,10 +793,10 @@ void incl_fiber_batch() {
     //sector_canvas->SaveAs(sector_filename.str().c_str());
 
     // std::cout << "got object" << std::endl;
-    for (int i = 0; i < data->GetNcells(); i++) {
+    for (int i = 1; i < data->GetNbinsX(); i++) {
       // std::cout << "reading bin " << i << std::endl;
       double content = data->GetBinContent(i);
-      int block_num = data->GetBinLowEdge(i);
+      int block_num = i - 1;
       // first check if this is data we are interested in...
       if (new_sipm_map.find(sector) == new_sipm_map.end()) {
         std::cout << "unable to find sector " << sector << " in new_sipm_map" << std::endl;
@@ -1109,6 +1109,9 @@ void incl_fiber_batch() {
     std::stringstream adj_sector_title;
     adj_sector_title << "Sector " << sector << " (Adjusted);Block Number;MPV";
     THStack* adj_hs = new THStack("adj_hs", adj_sector_title.str().c_str());
+    std::stringstream combined_sector_title;
+    combined_sector_title << "Sector " << sector << " (Combined);Block Number;MPV";
+    THStack* combined_hs = new THStack("combined_hs", combined_sector_title.str().c_str());
 
     for (int ib : interface_boards) {
       TH1D* data;
@@ -1117,46 +1120,35 @@ void incl_fiber_batch() {
       // std::cout << "getting object" << std::endl;
       sectorFile->GetObject(ibFileName.str().c_str(), data);
       TH1D* adj_data = (TH1D*) data->Clone("new_h");
-
-      std::cout << "ib " << ib << " has " <<  data->GetNcells() << " cells" << std::endl;
-      for (int i = 0; i < data->GetNcells(); i++) {
+      int min_block_num = ib * 16;
+      int max_block_num = ib * 16 + 15;
+      //std::cout << "ib " << ib << " has " <<  data->GetNcells() << " cells" << std::endl;
+      for (int i = 1; i < data->GetNbinsX(); i++) {
         // std::cout << "reading bin " << i << std::endl;
         double content = data->GetBinContent(i);
-        int block_num = data->GetBinLowEdge(i);
-        // first check if this is data we are interested in...
-        if (new_sipm_map.find(sector) == new_sipm_map.end()) {
-          std::cout << "unable to find sector " << sector << " in new_sipm_map" << std::endl;
-          data->SetBinContent(i, -9000.);
-          adj_data->SetBinContent(i, -9000.);
-          continue;
-        } else if (block_num < 0 || block_num >= new_sipm_map[sector].size()) {
-          std::cout << "block " << block_num << " was out of range for new_sipm_map sector " << sector << std::endl;
-          data->SetBinContent(i, -9000.);
-          adj_data->SetBinContent(i, -9000.);
-          continue;
-        } else if (sector_map.find(sector) == sector_map.end()) {
-          std::cout << "unable to find sector " << sector << " in sector_map" << std::endl;
-          data->SetBinContent(i, -9000.);
-          adj_data->SetBinContent(i, -9000.);
-          continue;
-        } else if (block_num < 0 || block_num >= sector_map[sector].size()) {
-          std::cout << "block " << block_num << " was out of range for sector_map sector " << sector << std::endl;
-          data->SetBinContent(i, -9000.);
-          adj_data->SetBinContent(i, -9000.);
-          continue;
-        } else if (sector_map[sector][block_num][0] == 'F' || std::stoi(sector_map[sector][block_num]) >= 10000) {
-          //std::cout << "block " << block_num << ": rejected fudan block " << std::endl;
-          data->SetBinContent(i, -9000.);
-          adj_data->SetBinContent(i, -9000.);
-          continue;
-        } else if (content <= 0 || content >= 1000) {
-          std::cout << "block " << block_num << ": rejected bin content " << content << std::endl;
+        int block_num = i - 1;
+        if (block_num < min_block_num || block_num > max_block_num) {
+          // out of range for this ib
           data->SetBinContent(i, -9000.);
           adj_data->SetBinContent(i, -9000.);
           continue;
         }
+        std::cout << "sector " << sector << ", block " << block_num << " (bin " << i << "); ";
         std::string dbn = sector_map[sector][block_num];
         int fiber_batch = dbn_to_fiber_batch[dbn];
+        if (sector_map[sector][block_num][0] == 'F' || std::stoi(sector_map[sector][block_num]) >= 10000) {
+          std::cout << "rejected fudan block" << std::endl;
+          data->SetBinContent(i, -9000.);
+          adj_data->SetBinContent(i, -9000.);
+          continue;
+        }
+        std::cout << "DBN " << std::stoi(dbn) << ", FB " << fiber_batch << "; ";
+        if (content <= 0 || content >= 1000) {
+          std::cout << "rejected bin content " << content << std::endl;
+          data->SetBinContent(i, -9000.);
+          adj_data->SetBinContent(i, -9000.);
+          continue;
+        }
         if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
           double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
           double adjusted_content = content * correction_factor;
@@ -1166,16 +1158,21 @@ void incl_fiber_batch() {
           double vop = new_sipm_map[sector][block_num];
           data->SetBinContent(i, content);
           adj_data->SetBinContent(i, adjusted_content);
-          //std::cout << "changed sector " << sector << " block " << block_num << " from " << content << " to " << adjusted_content << std::endl;
+          std::cout << "mpv " << content << " -> " << adjusted_content << std::endl;
           //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
         } else {
           data->SetBinContent(i, -9000.);
           adj_data->SetBinContent(i, -9000.);
-          std::cout << "** failed to add DBN " << std::stoi(dbn) << " since batch map does not contain batch " << fiber_batch << std::endl;
+          std::cout << "batch map does not contain batch " << fiber_batch << std::endl;
         }
       }
       hs->Add(data);
       adj_hs->Add(adj_data);
+      
+      data->SetMarkerStyle(4);
+      adj_data->SetMarkerStyle(5);
+      combined_hs->Add(data);
+      combined_hs->Add(adj_data);
     }
     std::stringstream sector_filename;
     TCanvas* sector_canvas = new TCanvas();
@@ -1183,79 +1180,25 @@ void incl_fiber_batch() {
     hs->SetMinimum(0.);
     hs->SetMaximum(600.);
     hs->Draw("NOSTACK");
+    sector_canvas->SetGrid();
     sector_canvas->SaveAs(sector_filename.str().c_str());
+
     std::stringstream adj_sector_filename;
     TCanvas* adj_sector_canvas = new TCanvas();
     adj_sector_filename << "./sector_diagrams/adjusted/sector" << sector << ".svg";
     adj_hs->SetMinimum(0.);
     adj_hs->SetMaximum(600.);
     adj_hs->Draw("NOSTACK");
+    adj_sector_canvas->SetGrid();
     adj_sector_canvas->SaveAs(adj_sector_filename.str().c_str());
-    /*
-    TH1D* data;
-    std::stringstream blockFileName;
-    blockFileName << "h_run" << sector << "_block;1";
-    // std::cout << "getting object" << std::endl;
-    sectorFile->GetObject(blockFileName.str().c_str(), data);
 
-    TCanvas* sector_canvas = new TCanvas();
-    data->Draw();
-    std::stringstream sector_filename;
-    sector_filename << "./sector_diagrams/original/sector" << sector << ".svg";
-    sector_canvas->SaveAs(sector_filename.str().c_str());
-
-    // std::cout << "got object" << std::endl;
-    for (int i = 0; i < data->GetNcells(); i++) {
-      // std::cout << "reading bin " << i << std::endl;
-      double content = data->GetBinContent(i);
-      int block_num = data->GetBinLowEdge(i);
-      // first check if this is data we are interested in...
-      if (new_sipm_map.find(sector) == new_sipm_map.end()) {
-        std::cout << "unable to find sector " << sector << " in new_sipm_map" << std::endl;
-        continue;
-      } else if (block_num < 0 || block_num >= new_sipm_map[sector].size()) {
-        std::cout << "block " << block_num << " was out of range for new_sipm_map sector " << sector << std::endl;
-        continue;
-      } else if (sector_map.find(sector) == sector_map.end()) {
-        std::cout << "unable to find sector " << sector << " in sector_map" << std::endl;
-        continue;
-      } else if (block_num < 0 || block_num >= sector_map[sector].size()) {
-        std::cout << "block " << block_num << " was out of range for sector_map sector " << sector << std::endl;
-        continue;
-      } else if (sector_map[sector][block_num][0] == 'F' || std::stoi(sector_map[sector][block_num]) >= 10000) {
-        //std::cout << "block " << block_num << ": rejected fudan block " << std::endl;
-        continue;
-      } else if (content <= 0 || content >= 1000) {
-        std::cout << "block " << block_num << ": rejected bin content " << content << std::endl;
-        continue;
-      }
-      std::string dbn = sector_map[sector][block_num];
-      int fiber_batch = dbn_to_fiber_batch[dbn];
-      if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
-        double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
-        double adjusted_content = content * correction_factor;
-        //std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
-        //  << " (" << content << "->" << adjusted_content << ")" << std::endl;
-        // i guess this is valid data?
-        double vop = new_sipm_map[sector][block_num];
-        //new_all_vop.push_back(vop);
-        adjusted_all_mpv.push_back(adjusted_content);
-        adjusted_histogram_data[vop].push_back(adjusted_content);
-        adjusted_dbn_mpv[dbn] = adjusted_content;
-        adjusted_sector_vop_mpv[sector][vop].push_back(adjusted_content);
-        adjusted_vop_sector_mpv[vop][sector].push_back(adjusted_content);
-        data->SetBinContent(i, adjusted_content);
-        std::cout << "changed sector " << sector << " block " << block_num << " from " << content << " to " << adjusted_content << std::endl;
-        //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
-      } else {
-        std::cout << "** failed to add DBN " << std::stoi(dbn) << " since batch map does not contain batch " << fiber_batch << std::endl;
-      }
-    }
-    TCanvas* adj_sector_canvas = new TCanvas();
-    data->Draw();
-    std::stringstream adj_sector_filename;
-    adj_sector_filename << "./sector_diagrams/adjusted/sector" << sector << ".svg";
-    adj_sector_canvas->SaveAs(adj_sector_filename.str().c_str());
-    */
+    std::stringstream combined_sector_filename;
+    TCanvas* combined_sector_canvas = new TCanvas();
+    combined_sector_filename << "./sector_diagrams/combined/sector" << sector << ".svg";
+    combined_hs->SetMinimum(0.);
+    combined_hs->SetMaximum(600.);
+    combined_hs->Draw("NOSTACK");
+    combined_sector_canvas->SetGrid();
+    combined_sector_canvas->SaveAs(combined_sector_filename.str().c_str());
   }
 }

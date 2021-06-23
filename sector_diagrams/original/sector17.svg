@@ -4,13 +4,34 @@
 ./sector_diagrams/original/sector17.svg
 </title>
 <desc>
-Creator: ROOT Version 6.22/02
-CreationDate: Sat Jun 26 01:13:23 2021</desc>
+Creator: ROOT Version 6.24/00
+CreationDate: Wed Jun 23 15:10:16 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
 <rect x="57.1929" y="38.4469" width="453.543" height="307.575" fill="white"/>
 <rect x="57.1929" y="38.4469" width="453.543" height="307.575" fill="none" stroke="black"/>
+<path d="M57.1929,346.022h 453.543" fill="none" stroke="black"/>
+<path d="M59.5308,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M106.288,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M153.045,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M199.802,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M246.559,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M293.316,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M340.073,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M386.83,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M433.587,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M480.344,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M59.5308,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M480.344,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M57.1929,346.022v -307.575" fill="none" stroke="black"/>
+<path d="M510.736,346.022h -453.543" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M510.736,294.76h -453.543" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M510.736,243.497h -453.543" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M510.736,192.235h -453.543" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M510.736,140.972h -453.543" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M510.736,89.7095h -453.543" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M510.736,38.4469h -453.543" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
 <path d="M57.1929,346.022h 453.543" fill="none" stroke="#000099"/>
 <path d="M57.1929,346.022h 453.543" fill="none" stroke="black"/>
 <path d="M59.5308,336.795v 9.22726" fill="none" stroke="black"/>
@@ -117,159 +138,159 @@ CreationDate: Sat Jun 26 01:13:23 2021</desc>
 <g transform="rotate(-90,21.6784,65.1643)">
 <text xml:space="preserve" x="21.6784" y="65.1643" fill="black" font-size="12.8453" font-family="Helvetica">MPV</text>
 </g>
-<text xml:space="preserve" x="199.251" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Sector 17 (Adjusted)</text>
-<g fill="black">
-<rect x="79.6511" y="199.314" width="6.51643" height="6.51643"/>
+<text xml:space="preserve" x="247.31" y="18.7347" fill="black" font-size="16.9898" font-family="Helvetica">Sector 17</text>
+<g stroke="black" stroke-width="1" fill="none">
+<circle cx="78.2336" cy="218.88" r="3.25821"/>
 </g>
-<g fill="black">
-<rect x="84.3268" y="167.186" width="6.51643" height="6.51643"/>
+<g stroke="black" stroke-width="1" fill="none">
+<circle cx="82.9093" cy="202.572" r="3.25821"/>
 </g>
-<g fill="black">
-<rect x="89.0025" y="173.862" width="6.51643" height="6.51643"/>
+<g stroke="black" stroke-width="1" fill="none">
+<circle cx="87.585" cy="170.444" r="3.25821"/>
 </g>
-<g fill="black">
-<rect x="98.3539" y="211.34" width="6.51643" height="6.51643"/>
+<g stroke="black" stroke-width="1" fill="none">
+<circle cx="96.9364" cy="198.02" r="3.25821"/>
 </g>
-<g fill="black">
-<rect x="103.03" y="187.779" width="6.51643" height="6.51643"/>
+<g stroke="black" stroke-width="1" fill="none">
+<circle cx="101.612" cy="214.598" r="3.25821"/>
 </g>
-<g fill="black">
-<rect x="107.705" y="177.374" width="6.51643" height="6.51643"/>
+<g stroke="black" stroke-width="1" fill="none">
+<circle cx="106.288" cy="191.037" r="3.25821"/>
 </g>
-<g fill="black">
-<rect x="117.057" y="187.423" width="6.51643" height="6.51643"/>
+<g stroke="black" stroke-width="1" fill="none">
+<circle cx="115.639" cy="174.491" r="3.25821"/>
 </g>
-<g fill="black">
-<rect x="121.732" y="186.716" width="6.51643" height="6.51643"/>
+<g stroke="black" stroke-width="1" fill="none">
+<circle cx="120.315" cy="190.681" r="3.25821"/>
 </g>
-<g fill="black">
-<rect x="126.408" y="195.492" width="6.51643" height="6.51643"/>
+<g stroke="black" stroke-width="1" fill="none">
+<circle cx="124.991" cy="189.974" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="135.76" y="195.078" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="134.342" cy="173.523" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="140.435" y="198.969" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="139.018" cy="198.336" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="145.111" y="197.612" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="143.693" cy="202.228" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="154.462" y="172.805" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="153.045" cy="186.208" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="159.138" y="206.681" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="157.721" cy="176.063" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="163.814" y="197.551" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="162.396" cy="209.939" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="173.165" y="177.904" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="171.748" cy="168.164" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="177.841" y="176.034" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="176.423" cy="181.162" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="182.517" y="172.165" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="181.099" cy="179.292" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="191.868" y="159.305" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="190.45" cy="170.143" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="196.544" y="150.482" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="195.126" cy="162.563" r="3.25821"/>
 </g>
-<g fill="#ff0000">
-<rect x="201.219" y="177.184" width="6.51643" height="6.51643"/>
+<g stroke="#ff0000" stroke-width="1" fill="none">
+<circle cx="199.802" cy="153.741" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="210.571" y="173.444" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="209.153" cy="188.903" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="215.246" y="170.775" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="213.829" cy="176.702" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="219.922" y="172.023" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="218.505" cy="174.033" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="229.274" y="157.553" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="227.856" cy="171.878" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="233.949" y="184.803" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="232.532" cy="160.811" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="238.625" y="169.249" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="237.208" cy="188.061" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="247.976" y="162.681" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="246.559" cy="181.128" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="252.652" y="176.619" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="251.235" cy="165.939" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="257.328" y="168.026" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="255.91" cy="179.877" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="266.679" y="160.173" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="265.262" cy="183.903" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="271.355" y="176.119" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="269.937" cy="163.431" r="3.25821"/>
 </g>
-<g fill="#009900">
-<rect x="276.031" y="178.435" width="6.51643" height="6.51643"/>
+<g stroke="#009900" stroke-width="1" fill="none">
+<circle cx="274.613" cy="179.378" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="285.382" y="193.284" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="283.965" cy="201.729" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="290.058" y="182.782" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="288.64" cy="196.542" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="294.733" y="191.227" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="293.316" cy="186.041" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="304.085" y="185.954" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="302.667" cy="188.356" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="308.761" y="202.846" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="307.343" cy="189.212" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="313.436" y="195.669" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="312.019" cy="206.105" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="322.788" y="183.172" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="321.37" cy="190.958" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="327.463" y="208.821" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="326.046" cy="186.43" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="332.139" y="197.873" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="330.722" cy="212.079" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="341.491" y="181.999" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="340.073" cy="173.868" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="346.166" y="186.437" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="344.749" cy="185.257" r="3.25821"/>
 </g>
-<g fill="#0000ff">
-<rect x="350.842" y="219.64" width="6.51643" height="6.51643"/>
+<g stroke="#0000ff" stroke-width="1" fill="none">
+<circle cx="349.424" cy="189.696" r="3.25821"/>
 </g>
-<g fill="#cc00ff">
-<rect x="360.193" y="177.667" width="6.51643" height="6.51643"/>
+<g stroke="#cc00ff" stroke-width="1" fill="none">
+<circle cx="358.776" cy="180.277" r="3.25821"/>
 </g>
-<g fill="#cc00ff">
-<rect x="364.869" y="195.427" width="6.51643" height="6.51643"/>
+<g stroke="#cc00ff" stroke-width="1" fill="none">
+<circle cx="363.452" cy="180.926" r="3.25821"/>
 </g>
-<g fill="#cc00ff">
-<rect x="369.545" y="211.79" width="6.51643" height="6.51643"/>
+<g stroke="#cc00ff" stroke-width="1" fill="none">
+<circle cx="368.127" cy="198.686" r="3.25821"/>
 </g>
-<g fill="#cc00ff">
-<rect x="378.896" y="178.468" width="6.51643" height="6.51643"/>
+<g stroke="#cc00ff" stroke-width="1" fill="none">
+<circle cx="377.479" cy="171.837" r="3.25821"/>
 </g>
-<g fill="#cc00ff">
-<rect x="383.572" y="196.339" width="6.51643" height="6.51643"/>
+<g stroke="#cc00ff" stroke-width="1" fill="none">
+<circle cx="382.154" cy="181.726" r="3.25821"/>
 </g>
-<g fill="#cc00ff">
-<rect x="388.248" y="196.776" width="6.51643" height="6.51643"/>
+<g stroke="#cc00ff" stroke-width="1" fill="none">
+<circle cx="386.83" cy="199.597" r="3.25821"/>
 </g>
 <path d="M57.1929,346.022h 453.543" fill="none" stroke="black"/>
 <path d="M59.5308,336.795v 9.22726" fill="none" stroke="black"/>
@@ -355,4 +376,4 @@ CreationDate: Sat Jun 26 01:13:23 2021</desc>
 <path d="M63.9961,58.9519h -6.80315" fill="none" stroke="black"/>
 <path d="M63.9961,48.6994h -6.80315" fill="none" stroke="black"/>
 <path d="M70.7992,38.4469h -13.6063" fill="none" stroke="black"/>
-<text xml:space="preserve" x="199.251" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Sector 17 (Adjusted)</text></svg>
+<text xml:space="preserve" x="247.31" y="18.7347" fill="black" font-size="16.9898" font-family="Helvetica">Sector 17</text></svg>

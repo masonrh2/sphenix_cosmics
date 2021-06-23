@@ -4,8 +4,8 @@
 ./adjusted_vop/vop_by_sector/vop-69.23_all.svg
 </title>
 <desc>
-Creator: ROOT Version 6.22/02
-CreationDate: Sat Jun 26 01:13:23 2021</desc>
+Creator: ROOT Version 6.24/00
+CreationDate: Wed Jun 23 15:10:15 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -108,12 +108,12 @@ CreationDate: Sat Jun 26 01:13:23 2021</desc>
 <rect x="193.709" y="346.022" width="14.211" height="0" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="208.828" y="346.022" width="14.211" height="0" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="223.946" y="346.022" width="14.211" height="0" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="239.064" y="304.175" width="14.211" height="41.847" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="254.182" y="74.0169" width="14.211" height="272.005" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="269.3" y="53.0934" width="14.211" height="292.929" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="284.418" y="115.864" width="14.211" height="230.158" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="299.536" y="262.328" width="14.211" height="83.694" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="314.654" y="346.022" width="14.211" height="0" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="239.064" y="325.099" width="14.211" height="20.9235" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="254.182" y="53.0934" width="14.211" height="292.929" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="269.3" y="74.0169" width="14.211" height="272.005" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="284.418" y="178.634" width="14.211" height="167.388" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="299.536" y="220.481" width="14.211" height="125.541" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="314.654" y="325.099" width="14.211" height="20.9235" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="329.772" y="346.022" width="14.211" height="0" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="344.891" y="346.022" width="14.211" height="0" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="360.009" y="346.022" width="14.211" height="0" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
@@ -126,11 +126,10 @@ CreationDate: Sat Jun 26 01:13:23 2021</desc>
 <rect x="465.835" y="346.022" width="14.211" height="0" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="480.954" y="346.022" width="14.211" height="0" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="496.072" y="346.022" width="14.211" height="0" fill="#ff8e00" fill-opacity="0.50" stroke-opacity="0.50"/>
-<path d="M59.4606,346.022h 145.134l 4.53543, -0.082426l 4.53543, -0.155265l 4.53543, -0.399862l 4.53543, -0.953095l 4.53543, -2.10072l 4.53543, -4.27673l 4.53543, -8.03031l 4.53543, -13.8797l 4.53543, -22.024l 4.53543, -31.9611l 4.53543, -42.178l
- 4.53543, -50.1599l 4.53543, -52.9169l 4.53543, -47.9999l 3.9872, -30.4574" fill="none" stroke="#ff8e00" stroke-width="2"/>
-<path d="M283.202,38.4469l 3.03033, 20.0783" fill="none" stroke="#ff8e00" stroke-width="2"/>
-<path d="M286.232,58.5252l 4.53543, 45.3872l 4.53543, 52.4627l 4.53543, 51.4704l 4.53543, 44.5331l 4.53543, 34.6131l 4.53543, 24.4183l 4.53543, 15.735l 4.53543, 9.30082l 4.53543, 5.05759l 4.53543, 2.53542l 4.53543, 1.17361l 4.53543, 0.502215l
- 4.53543, 0.198864l 4.53543, 0.0729204l 4.53543, 0.0356796h 149.669" fill="none" stroke="#ff8e00" stroke-width="2"/>
+<path d="M59.4606,346.022h 145.134l 4.53543, -0.0622257l 4.53543, -0.113666l 4.53543, -0.288313l 4.53543, -0.679632l 4.53543, -1.48769l 4.53543, -3.02099l 4.53543, -5.68365l 4.53543, -9.89042l 4.53543, -15.8828l 4.53543, -23.4634l 4.53543, -31.7398l
+ 4.53543, -39.0386l 4.53543, -43.1495l 4.53543, -41.9455l 4.53543, -34.2182l 4.53543, -20.3705l 4.53543, -2.58495" fill="none" stroke="#ff8e00" stroke-width="2"/>
+<path d="M281.697,72.4023l 4.53543, 15.7148l 4.53543, 30.9385l 4.53543, 40.4773l 4.53543, 43.4236l 4.53543, 40.5933l 4.53543, 33.9444l 4.53543, 25.7403l 4.53543, 17.8441l 4.53543, 11.3671l 4.53543, 6.67721l 4.53543, 3.62584l 4.53543, 1.8234l 4.53543,
+ 0.850375l 4.53543, 0.368181l 4.53543, 0.148115l 4.53543, 0.0835149h 149.669" fill="none" stroke="#ff8e00" stroke-width="2"/>
 <path d="M503.933,346.022h 4.53543" fill="none" stroke="#ff8e00" stroke-width="2"/>
 <path d="M57.1929,346.022h 453.543" fill="none" stroke="black"/>
 <path d="M57.1929,336.795v 9.22726" fill="none" stroke="black"/>

@@ -392,10 +392,10 @@ void compare_vop() {
     // std::cout << "getting object" << std::endl;
     sectorFile->GetObject(blockFileName.str().c_str(), data);
     // std::cout << "got object" << std::endl;
-    for (int i = 0; i < data->GetNcells(); i++) {
+    for (int i = 1; i < data->GetNbinsX(); i++) {
       // std::cout << "reading bin " << i << std::endl;
       double content = data->GetBinContent(i);
-      int block_num = data->GetBinLowEdge(i);
+      int block_num = i - 1;
       // first check if this is data we are interested in...
       if (new_sipm_map.find(sector) == new_sipm_map.end()) {
         std::cout << "unable to find sector " << sector << " in new_sipm_map" << std::endl;
@@ -703,10 +703,10 @@ void compare_vop() {
     // std::cout << "getting object" << std::endl;
     sectorFile->GetObject(blockFileName.str().c_str(), data);
     // std::cout << "got object" << std::endl;
-    for (int i = 0; i < data->GetNcells(); i++) {
+    for (int i = 0; i < data->GetNbinsX(); i++) {
       // std::cout << "reading bin " << i << std::endl;
       double content = data->GetBinContent(i);
-      int block_num = data->GetBinLowEdge(i);
+      int block_num = i - 1;
       // first check if this is data we are interested in...
       if (old_sipm_map.find(sector) == old_sipm_map.end()) {
         std::cout << "unable to find sector " << sector << " in old_sipm_map" << std::endl;
