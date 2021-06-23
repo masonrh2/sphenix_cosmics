@@ -695,7 +695,9 @@ void incl_fiber_batch() {
   new_graph2->GetXaxis()->SetTitle("vop");
   new_graph2->GetYaxis()->SetTitle("mpv");
   new_graph2->GetXaxis()->SetLimits(68.85, 69.4);
-  new_graph2->GetYaxis()->SetLimits(220., 380.);
+  new_graph2->GetHistogram()->SetMinimum(220.);
+  new_graph2->GetHistogram()->SetMaximum(380.);
+  //new_graph2->GetYaxis()->SetLimits(220., 380.);
   new_graph2->SetMarkerStyle(21);
   //TExec *new_ex = new TExec("ex","DrawCol();");
   //new_graph2->GetListOfFunctions()->Add(new_ex);
@@ -818,11 +820,11 @@ void incl_fiber_batch() {
         // i guess this is valid data?
         double vop = new_sipm_map[sector][block_num];
         //new_all_vop.push_back(vop);
-        adjusted_all_mpv.push_back(content);
-        adjusted_histogram_data[vop].push_back(content);
-        adjusted_dbn_mpv[dbn] = content;
-        adjusted_sector_vop_mpv[sector][vop].push_back(content);
-        adjusted_vop_sector_mpv[vop][sector].push_back(content);
+        adjusted_all_mpv.push_back(adjusted_content);
+        adjusted_histogram_data[vop].push_back(adjusted_content);
+        adjusted_dbn_mpv[dbn] = adjusted_content;
+        adjusted_sector_vop_mpv[sector][vop].push_back(adjusted_content);
+        adjusted_vop_sector_mpv[vop][sector].push_back(adjusted_content);
         //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
       } else {
         std::cout << "** failed to add DBN " << std::stoi(dbn) << " since batch map does not contain batch " << fiber_batch << std::endl;
@@ -1013,7 +1015,9 @@ void incl_fiber_batch() {
   adjusted_graph2->GetXaxis()->SetTitle("vop");
   adjusted_graph2->GetYaxis()->SetTitle("mpv");
   adjusted_graph2->GetXaxis()->SetLimits(68.85, 69.4);
-  adjusted_graph2->GetYaxis()->SetLimits(220., 380.);
+  adjusted_graph2->GetHistogram()->SetMinimum(220.);
+  adjusted_graph2->GetHistogram()->SetMaximum(380.);
+  //adjusted_graph2->GetYaxis()->SetLimits(220., 380.);
   adjusted_graph2->SetMarkerStyle(21);
   //TExec *adjusted_ex = new TExec("ex","DrawCol();");
   //adjusted_graph2->GetListOfFunctions()->Add(adjusted_ex);
