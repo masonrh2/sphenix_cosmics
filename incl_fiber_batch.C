@@ -1166,6 +1166,9 @@ void incl_fiber_batch() {
           std::cout << "batch map does not contain batch " << fiber_batch << std::endl;
         }
       }
+      data->GetXaxis()->SetLimits(0.0, 95.0);
+      adj_data->GetXaxis()->SetLimits(0.0, 95.0);
+
       hs->Add(data);
       adj_hs->Add(adj_data);
       
@@ -1179,7 +1182,7 @@ void incl_fiber_batch() {
     sector_filename << "./sector_diagrams/original/sector" << sector << ".svg";
     hs->SetMinimum(0.);
     hs->SetMaximum(600.);
-    hs->Draw("NOSTACK");
+    hs->Draw("nostack");
     sector_canvas->SetGrid();
     sector_canvas->SaveAs(sector_filename.str().c_str());
 
@@ -1188,7 +1191,7 @@ void incl_fiber_batch() {
     adj_sector_filename << "./sector_diagrams/adjusted/sector" << sector << ".svg";
     adj_hs->SetMinimum(0.);
     adj_hs->SetMaximum(600.);
-    adj_hs->Draw("NOSTACK");
+    adj_hs->Draw("nostack");
     adj_sector_canvas->SetGrid();
     adj_sector_canvas->SaveAs(adj_sector_filename.str().c_str());
 
@@ -1197,7 +1200,7 @@ void incl_fiber_batch() {
     combined_sector_filename << "./sector_diagrams/combined/sector" << sector << ".svg";
     combined_hs->SetMinimum(0.);
     combined_hs->SetMaximum(600.);
-    combined_hs->Draw("NOSTACK");
+    combined_hs->Draw("nostack");
     combined_sector_canvas->SetGrid();
     combined_sector_canvas->SaveAs(combined_sector_filename.str().c_str());
   }
