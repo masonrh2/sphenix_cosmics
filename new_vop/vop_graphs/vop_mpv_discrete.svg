@@ -4,8 +4,13 @@
 ./new_vop/vop_graphs/vop_mpv_discrete.svg
 </title>
 <desc>
+<<<<<<< HEAD
 Creator: ROOT Version 6.24/00
 CreationDate: Wed Jun 23 02:37:50 2021</desc>
+=======
+Creator: ROOT Version 6.22/02
+CreationDate: Fri Jun 25 18:29:43 2021</desc>
+>>>>>>> 4c1192d112c443bd0763b0371751cb4aaac72c76
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -123,6 +128,7 @@ CreationDate: Wed Jun 23 02:37:50 2021</desc>
 <rect x="367.292" y="75.4077" width="6.51643" height="6.51643"/>
 <rect x="449.754" y="261.474" width="6.51643" height="6.51643"/>
 </g>
+<<<<<<< HEAD
 <path d="M123.163,160.785v -4.13072" fill="none" stroke="black"/>
 <path d="M121.534,156.654h 3.25821" fill="none" stroke="black"/>
 <path d="M123.163,167.301v 4.13072" fill="none" stroke="black"/>
@@ -155,4 +161,38 @@ CreationDate: Wed Jun 23 02:37:50 2021</desc>
 <path d="M451.383,257.686h 3.25821" fill="none" stroke="black"/>
 <path d="M453.013,267.99v 3.78793" fill="none" stroke="black"/>
 <path d="M451.383,271.778h 3.25821" fill="none" stroke="black"/>
+=======
+<path d="M123.163,166.855v -5.08136" fill="none" stroke="black"/>
+<path d="M121.534,161.774h 3.25821" fill="none" stroke="black"/>
+<path d="M123.163,173.371v 5.08136" fill="none" stroke="black"/>
+<path d="M121.534,178.453h 3.25821" fill="none" stroke="black"/>
+<path d="M164.394,208.291v -7.31509" fill="none" stroke="black"/>
+<path d="M162.765,200.976h 3.25821" fill="none" stroke="black"/>
+<path d="M164.394,214.808v 7.31509" fill="none" stroke="black"/>
+<path d="M162.765,222.123h 3.25821" fill="none" stroke="black"/>
+<path d="M205.625,261.036v -7.42959" fill="none" stroke="black"/>
+<path d="M203.996,253.607h 3.25821" fill="none" stroke="black"/>
+<path d="M205.625,267.553v 7.42959" fill="none" stroke="black"/>
+<path d="M203.996,274.983h 3.25821" fill="none" stroke="black"/>
+<path d="M246.856,236.226v -5.54646" fill="none" stroke="black"/>
+<path d="M245.227,230.679h 3.25821" fill="none" stroke="black"/>
+<path d="M246.856,242.742v 5.54646" fill="none" stroke="black"/>
+<path d="M245.227,248.288h 3.25821" fill="none" stroke="black"/>
+<path d="M288.088,311.113v -2.76189" fill="none" stroke="black"/>
+<path d="M286.459,308.351h 3.25821" fill="none" stroke="black"/>
+<path d="M288.088,317.629v 2.76189" fill="none" stroke="black"/>
+<path d="M286.459,320.391h 3.25821" fill="none" stroke="black"/>
+<path d="M329.319,275.481v -3.02725" fill="none" stroke="black"/>
+<path d="M327.69,272.453h 3.25821" fill="none" stroke="black"/>
+<path d="M329.319,281.997v 3.02725" fill="none" stroke="black"/>
+<path d="M327.69,285.024h 3.25821" fill="none" stroke="black"/>
+<path d="M370.55,70.4937v -6.4155" fill="none" stroke="black"/>
+<path d="M368.921,64.0782h 3.25821" fill="none" stroke="black"/>
+<path d="M370.55,77.0101v 6.4155" fill="none" stroke="black"/>
+<path d="M368.921,83.4256h 3.25821" fill="none" stroke="black"/>
+<path d="M453.013,280.499v -4.69447" fill="none" stroke="black"/>
+<path d="M451.383,275.804h 3.25821" fill="none" stroke="black"/>
+<path d="M453.013,287.015v 4.69447" fill="none" stroke="black"/>
+<path d="M451.383,291.71h 3.25821" fill="none" stroke="black"/>
+>>>>>>> 4c1192d112c443bd0763b0371751cb4aaac72c76
 <text xml:space="preserve" x="179.702" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Block MPV vs SiPM VOp</text></svg>
