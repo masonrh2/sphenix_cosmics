@@ -4,13 +4,8 @@
 ./adjusted_vop/sector_by_vop/sector-3_all.svg
 </title>
 <desc>
-<<<<<<< HEAD
-Creator: ROOT Version 6.24/00
-CreationDate: Wed Jun 23 02:37:50 2021</desc>
-=======
 Creator: ROOT Version 6.22/02
-CreationDate: Fri Jun 25 18:29:43 2021</desc>
->>>>>>> 4c1192d112c443bd0763b0371751cb4aaac72c76
+CreationDate: Fri Jun 25 18:59:30 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -101,11 +96,11 @@ CreationDate: Fri Jun 25 18:29:43 2021</desc>
 <rect x="163.473" y="346.022" width="7.10551" height="0" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="178.591" y="346.022" width="7.10551" height="0" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="193.709" y="316.729" width="7.10551" height="29.2929" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="208.828" y="199.558" width="7.10551" height="146.464" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="223.946" y="228.851" width="7.10551" height="117.172" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="239.064" y="287.436" width="7.10551" height="58.5858" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="208.828" y="316.729" width="7.10551" height="29.2929" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="223.946" y="170.265" width="7.10551" height="175.757" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="239.064" y="258.144" width="7.10551" height="87.8787" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="254.182" y="228.851" width="7.10551" height="117.172" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="269.3" y="199.558" width="7.10551" height="146.464" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="269.3" y="170.265" width="7.10551" height="175.757" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="284.418" y="287.436" width="7.10551" height="58.5858" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="299.536" y="346.022" width="7.10551" height="0" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="314.654" y="346.022" width="7.10551" height="0" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
@@ -121,13 +116,12 @@ CreationDate: Fri Jun 25 18:29:43 2021</desc>
 <rect x="465.835" y="346.022" width="7.10551" height="0" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="480.954" y="346.022" width="7.10551" height="0" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="496.072" y="346.022" width="7.10551" height="0" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
-<path d="M59.4606,346.022h 27.2126l 4.53543, -0.0406948l 4.53543, -0.0215957l 4.53543, -0.031929l 4.53543, -0.046611l 4.53543, -0.067182l 4.53543, -0.0955994l 4.53543, -0.134298l 4.53543, -0.186238l 4.53543, -0.254929l 4.53543, -0.34442l 4.53543,
- -0.459238l 4.53543, -0.60426l 4.53543, -0.78451l 4.53543, -1.00487l 4.53543, -1.26968l 4.53543, -1.58229l 4.53543, -1.94449l 4.53543, -2.35593l 4.53543, -2.81353l 4.53543, -3.31095l 4.53543, -3.83818l 4.53543, -4.38125l 4.53543, -4.92234l 4.53543,
- -5.44004l 4.53543, -5.91002l 4.53543, -6.30612l 4.53543, -6.60163l 4.53543, -6.7709l 4.53543, -6.79117l 4.53543, -6.64429l 4.53543, -6.31843l 4.53543, -5.80946l 4.53543, -5.12189l 4.53543, -4.26925l 4.53543, -3.27388l 4.53543, -2.16604l 4.53543,
- -0.982386l 4.53543, 0.236009l 4.53543, 1.44604l 4.53543, 2.60508l 4.53543, 3.67351l 4.53543, 4.61693l 4.53543, 5.40799" fill="none" stroke="#c10020" stroke-width="2"/>
-<path d="M281.697,261.107l 4.53543, 6.02768l 4.53543, 6.46596l 4.53543, 6.72175l 4.53543, 6.80228l 4.53543, 6.72201l 4.53543, 6.50108l 4.53543, 6.16359l 4.53543, 5.73578l 4.53543, 5.24434l 4.53543, 4.71486l 4.53543, 4.17065l 4.53543, 3.63179l
- 4.53543, 3.11465l 4.53543, 2.63162l 4.53543, 2.19129l 4.53543, 1.79867l 4.53543, 1.45572l 4.53543, 1.16188l 4.53543, 0.914702l 4.53543, 0.71039l 4.53543, 0.544341l 4.53543, 0.41158l 4.53543, 0.307108l 4.53543, 0.226163l 4.53543, 0.164394l 4.53543,
- 0.117954l 4.53543, 0.0835484l 4.53543, 0.0584231l 4.53543, 0.0403346l 4.53543, 0.0274943l 4.53543, 0.0185053l 4.53543, 0.0344145h 77.1024" fill="none" stroke="#c10020" stroke-width="2"/>
+<path d="M59.4606,346.022h 77.1024l 4.53543, -0.0542167l 4.53543, -0.0429708l 4.53543, -0.0731042l 4.53543, -0.121372l 4.53543, -0.196625l 4.53543, -0.310767l 4.53543, -0.479098l 4.53543, -0.720304l 4.53543, -1.05585l 4.53543, -1.50854l 4.53543,
+ -2.10008l 4.53543, -2.8475l 4.53543, -3.75866l 4.53543, -4.82713l 4.53543, -6.02728l 4.53543, -7.31043l 4.53543, -8.60318l 4.53543, -9.80915l 4.53543, -10.8146l 4.53543, -11.4981l 4.53543, -11.744l 4.53543, -11.4579l 4.53543, -10.5814l 4.53543,
+ -9.10437l 4.53543, -7.07269l 4.53543, -4.58769l 4.53543, -1.79878l 4.53543, 1.11132l 4.53543, 3.94641l 4.53543, 6.51865l 4.53543, 8.66916l 4.53543, 10.2842" fill="none" stroke="#c10020" stroke-width="2"/>
+<path d="M281.697,248.046l 4.53543, 11.3045l 4.53543, 11.7271l 4.53543, 11.6001l 4.53543, 11.0106l 4.53543, 10.0706l 4.53543, 8.90149l 4.53543, 7.61984l 4.53543, 6.32686l 4.53543, 5.10167l 4.53543, 3.99879l 4.53543, 3.04905l 4.53543, 2.26301l
+ 4.53543, 1.63572l 4.53543, 1.15191l 4.53543, 0.790612l 4.53543, 0.529024l 4.53543, 0.345196l 4.53543, 0.219699l 4.53543, 0.136411l 4.53543, 0.0826412l 4.53543, 0.0488583l 4.53543, 0.0281923l 4.53543, 0.0342145h 117.921" fill="none" stroke="#c10020"
+ stroke-width="2"/>
 <path d="M503.933,346.022h 4.53543" fill="none" stroke="#c10020" stroke-width="2"/>
 <rect x="64.752" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="79.8701" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
@@ -138,14 +132,14 @@ CreationDate: Fri Jun 25 18:29:43 2021</desc>
 <rect x="155.461" y="316.729" width="7.10551" height="29.2929" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="170.579" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="185.697" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="200.815" y="170.265" width="7.10551" height="175.757" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="215.933" y="140.972" width="7.10551" height="205.05" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="231.051" y="140.972" width="7.10551" height="205.05" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="246.169" y="53.0934" width="7.10551" height="292.929" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="261.287" y="53.0934" width="7.10551" height="292.929" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="276.406" y="316.729" width="7.10551" height="29.2929" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="291.524" y="287.436" width="7.10551" height="58.5858" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="306.642" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="200.815" y="287.436" width="7.10551" height="58.5858" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="215.933" y="199.558" width="7.10551" height="146.464" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="231.051" y="53.0934" width="7.10551" height="292.929" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="246.169" y="170.265" width="7.10551" height="175.757" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="261.287" y="140.972" width="7.10551" height="205.05" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="276.406" y="53.0934" width="7.10551" height="292.929" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="291.524" y="316.729" width="7.10551" height="29.2929" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="306.642" y="287.436" width="7.10551" height="58.5858" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="321.76" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="336.878" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="351.996" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
@@ -159,12 +153,12 @@ CreationDate: Fri Jun 25 18:29:43 2021</desc>
 <rect x="472.941" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="488.059" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="503.177" y="346.022" width="7.10551" height="0" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
-<path d="M59.4606,346.022h 36.2835l 4.53543, -0.0454306l 4.53543, -0.0377805l 4.53543, -0.0658713l 4.53543, -0.112184l 4.53543, -0.186606l 4.53543, -0.303123l 4.53543, -0.480783l 4.53543, -0.744465l 4.53543, -1.12518l 4.53543, -1.65953l 4.53543,
- -2.38796l 4.53543, -3.35131l 4.53543, -4.58561l 4.53543, -6.115l 4.53543, -7.94316l 4.53543, -10.0444l 4.53543, -12.3557l 4.53543, -14.7711l 4.53543, -17.1412l 4.53543, -19.2787l 4.53543, -20.9708l 4.53543, -21.9992l 4.53543, -22.1643l 4.53543,
- -21.3131l 4.53543, -19.3641l 4.53543, -16.3266l 4.53543, -12.3106l 4.53543, -7.52234l 4.53543, -2.24857l 4.53543, 3.17231l 4.53543, 8.38591l 4.53543, 13.0603l 4.53543, 16.9208l 4.53543, 19.7767l 4.53543, 21.5357l 4.53543, 22.2047l 4.53543, 21.8792l
- 4.53543, 20.7221l 4.53543, 18.938l 4.53543, 16.746l 4.53543, 14.3558" fill="none" stroke="#007d34" stroke-width="2"/>
-<path d="M281.697,296.765l 4.53543, 11.9488l 4.53543, 9.66726l 4.53543, 7.60943l 4.53543, 5.83155l 4.53543, 4.35367l 4.53543, 3.16792l 4.53543, 2.24759l 4.53543, 1.55536l 4.53543, 1.05013l 4.53543, 0.69192l 4.53543, 0.445007l 4.53543, 0.279419l
- 4.53543, 0.171314l 4.53543, 0.102575l 4.53543, 0.0599869l 4.53543, 0.0342678l 4.53543, 0.0408656h 145.134" fill="none" stroke="#007d34" stroke-width="2"/>
+<path d="M59.4606,346.022h 63.4961l 4.53543, -0.0368831l 4.53543, -0.035001l 4.53543, -0.0645677l 4.53543, -0.115819l 4.53543, -0.20198l 4.53543, -0.342396l 4.53543, -0.564098l 4.53543, -0.903008l 4.53543, -1.40419l 4.53543, -2.12044l 4.53543,
+ -3.1084l 4.53543, -4.42155l 4.53543, -6.09983l 4.53543, -8.15633l 4.53543, -10.5626l 4.53543, -13.2353l 4.53543, -16.0265l 4.53543, -18.7236l 4.53543, -21.0595l 4.53543, -22.7357l 4.53543, -23.4578l 4.53543, -22.9783l 4.53543, -21.1406l 4.53543,
+ -17.9157l 4.53543, -13.4228l 4.53543, -7.92912l 4.53543, -1.82499l 4.53543, 4.42161l 4.53543, 10.3243l 4.53543, 15.4409l 4.53543, 19.4281l 4.53543, 22.079l 4.53543, 23.3375l 4.53543, 23.2895l 4.53543, 22.1348" fill="none" stroke="#007d34"
+ stroke-width="2"/>
+<path d="M281.697,247.891l 4.53543, 20.146l 4.53543, 17.6239l 4.53543, 14.8577l 4.53543, 12.0938l 4.53543, 9.51832l 4.53543, 7.25149l 4.53543, 5.35234l 4.53543, 3.83014l 4.53543, 2.65881l 4.53543, 1.7913l 4.53543, 1.17174l 4.53543, 0.744412l 4.53543,
+ 0.459456l 4.53543, 0.275566l 4.53543, 0.160639l 4.53543, 0.0910334l 4.53543, 0.0501583l 4.53543, 0.0545633h 140.598" fill="none" stroke="#007d34" stroke-width="2"/>
 <path d="M503.933,346.022h 4.53543" fill="none" stroke="#007d34" stroke-width="2"/>
 <path d="M57.1929,346.022h 453.543" fill="none" stroke="black"/>
 <path d="M57.1929,336.795v 9.22726" fill="none" stroke="black"/>
@@ -222,21 +216,21 @@ CreationDate: Fri Jun 25 18:29:43 2021</desc>
 <path d="M70.7992,53.0934h -13.6063" fill="none" stroke="black"/>
 <path d="M70.7992,53.0934h -13.6063" fill="none" stroke="black"/>
 <path d="M63.9961,38.4469h -6.80315" fill="none" stroke="black"/>
-<rect x="58.0145" y="230.109" width="170.079" height="80.7385" fill="white"/>
-<path d="M58.0145,310.847h 170.079" fill="none" stroke="black"/>
-<path d="M228.093,310.847v -80.7385" fill="none" stroke="black"/>
-<path d="M228.093,230.109h -170.079" fill="none" stroke="black"/>
-<path d="M58.0145,230.109v 80.7385" fill="none" stroke="black"/>
-<text xml:space="preserve" x="99.8755" y="259.028" fill="black" font-size="26.0796" font-family="Helvetica">vop 69.13</text>
-<path d="M64.3925,264.423h 29.7638v -28.2585h -29.7638z" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
-<path d="M64.3925,250.294h 29.7638" fill="none" stroke="#c10020" fill-opacity="0.00" stroke-opacity="0.00"/>
+<rect x="58.0145" y="205.568" width="170.079" height="80.7385" fill="white"/>
+<path d="M58.0145,286.307h 170.079" fill="none" stroke="black"/>
+<path d="M228.093,286.307v -80.7385" fill="none" stroke="black"/>
+<path d="M228.093,205.568h -170.079" fill="none" stroke="black"/>
+<path d="M58.0145,205.568v 80.7385" fill="none" stroke="black"/>
+<text xml:space="preserve" x="99.8755" y="234.591" fill="black" font-size="26.0796" font-family="Helvetica">vop 69.13</text>
+<path d="M64.3925,239.882h 29.7638v -28.2585h -29.7638z" fill="#c10020" fill-opacity="0.50" stroke-opacity="0.50"/>
+<path d="M64.3925,225.753h 29.7638" fill="none" stroke="#c10020" fill-opacity="0.00" stroke-opacity="0.00"/>
 <g stroke="black" stroke-width="1" fill="none">
-<line x1="78.2744" y1="250.294" x2="79.2744" y2="250.294"/>
+<line x1="78.2744" y1="225.753" x2="79.2744" y2="225.753"/>
 </g>
-<text xml:space="preserve" x="99.8755" y="298.941" fill="black" font-size="26.0796" font-family="Helvetica">vop 69.33</text>
-<path d="M64.3925,304.792h 29.7638v -28.2585h -29.7638z" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
-<path d="M64.3925,290.663h 29.7638" fill="none" stroke="#007d34" fill-opacity="0.00" stroke-opacity="0.00"/>
+<text xml:space="preserve" x="99.8755" y="274.504" fill="black" font-size="26.0796" font-family="Helvetica">vop 69.33</text>
+<path d="M64.3925,280.251h 29.7638v -28.2585h -29.7638z" fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50"/>
+<path d="M64.3925,266.122h 29.7638" fill="none" stroke="#007d34" fill-opacity="0.00" stroke-opacity="0.00"/>
 <g stroke="black" stroke-width="1" fill="none">
-<line x1="78.2744" y1="290.663" x2="79.2744" y2="290.663"/>
+<line x1="78.2744" y1="266.122" x2="79.2744" y2="266.122"/>
 </g>
 <text xml:space="preserve" x="253.826" y="18.7347" fill="black" font-size="16.9898" font-family="Helvetica">sector 3</text></svg>
