@@ -813,8 +813,8 @@ void incl_fiber_batch() {
       if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
         double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
         double adjusted_content = content * correction_factor;
-        std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
-          << " (" << content << "->" << adjusted_content << ")" << std::endl;
+        //std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
+        //  << " (" << content << "->" << adjusted_content << ")" << std::endl;
         // i guess this is valid data?
         double vop = new_sipm_map[sector][block_num];
         //new_all_vop.push_back(vop);
@@ -992,7 +992,7 @@ void incl_fiber_batch() {
   // scatter plot
   TCanvas* adjusted_canvas = new TCanvas();
   TGraph* adjusted_graph = new TGraph(new_all_vop.size(), &new_all_vop[0], &adjusted_all_mpv[0]);
-  adjusted_graph->SetTitle("block mpv vs sipm vop");
+  adjusted_graph->SetTitle("block mpv vs sipm vop (adjusted)");
   adjusted_graph->GetXaxis()->SetTitle("vop");
   adjusted_graph->GetYaxis()->SetTitle("mpv");
   adjusted_graph->SetMarkerStyle(20);
@@ -1009,7 +1009,7 @@ void incl_fiber_batch() {
   // discrete graph
   TCanvas* adjusted_canvas2 = new TCanvas();
   TGraphErrors* adjusted_graph2 = new TGraphErrors(adjusted_hist_vop.size(), &adjusted_hist_vop[0], &adjusted_hist_mpv[0], &adjusted_err_x[0], &adjusted_hist_mpv_err[0]);
-  adjusted_graph2->SetTitle("Block MPV vs SiPM VOp (After)");
+  adjusted_graph2->SetTitle("Block MPV vs SiPM VOp (Adjusted)");
   adjusted_graph2->GetXaxis()->SetTitle("vop");
   adjusted_graph2->GetYaxis()->SetTitle("mpv");
   adjusted_graph2->GetXaxis()->SetLimits(68.85, 69.4);
@@ -1041,7 +1041,7 @@ void incl_fiber_batch() {
   std::sort(adjusted_pcb_series_with_data.begin(), adjusted_pcb_series_with_data.end());
 
   TH1D* adjusted_tim_empty_hist = new TH1D("h", "tim_empty", adjusted_num_pcb_series_with_data, 0, adjusted_num_pcb_series_with_data);
-  adjusted_tim_empty_hist->SetTitle("Mean Block MPV by SiPM PCB Series");
+  adjusted_tim_empty_hist->SetTitle("Mean Block MPV by SiPM PCB Series (Adjusted)");
   adjusted_tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
   adjusted_tim_empty_hist->GetYaxis()->SetTitle("MPV");
   //adjusted_tim_empty_hist->GetYaxis()->SetRange(200, 400);
