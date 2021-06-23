@@ -1108,7 +1108,6 @@ void incl_fiber_batch() {
     THStack* hs = new THStack("hs", sector_title.str().c_str());
     std::stringstream adj_sector_title;
     adj_sector_title << "Sector " << sector << " (Adjusted);Block Number;MPV";
-    hs->SetTitle(adj_sector_title.str().c_str());
     THStack* adj_hs = new THStack("adj_hs", adj_sector_title.str().c_str());
 
     for (int ib : interface_boards) {
