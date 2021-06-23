@@ -5,7 +5,7 @@
 </title>
 <desc>
 Creator: ROOT Version 6.22/02
-CreationDate: Fri Jun 25 18:14:08 2021</desc>
+CreationDate: Fri Jun 25 18:24:53 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -107,7 +107,7 @@ CreationDate: Fri Jun 25 18:14:08 2021</desc>
 <g transform="rotate(-90,19.2347,61.9061)">
 <text xml:space="preserve" x="19.2347" y="61.9061" fill="black" font-size="12.8453" font-family="Helvetica">mpv</text>
 </g>
-<text xml:space="preserve" x="151.192" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Block MPV vs SiPM VOp (After)</text>
+<text xml:space="preserve" x="134.901" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Block MPV vs SiPM VOp (Adjusted)</text>
 <g fill="black">
 <rect x="119.905" y="168.257" width="6.51643" height="6.51643"/>
 <rect x="161.136" y="207.855" width="6.51643" height="6.51643"/>
@@ -150,4 +150,4 @@ CreationDate: Fri Jun 25 18:14:08 2021</desc>
 <path d="M451.383,264.057h 3.25821" fill="none" stroke="black"/>
 <path d="M453.013,278.181v 7.60786" fill="none" stroke="black"/>
 <path d="M451.383,285.789h 3.25821" fill="none" stroke="black"/>
-<text xml:space="preserve" x="151.192" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Block MPV vs SiPM VOp (After)</text></svg>
+<text xml:space="preserve" x="134.901" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Block MPV vs SiPM VOp (Adjusted)</text></svg>
