@@ -53,9 +53,6 @@ std::map<double, std::string> vop_to_board_series = {
   {68.68, "S"}
 };
 
-
-
-
 std::vector<Color_t> hist_colors;
 
 std::vector<std::vector<double>> kelly_colors = {
@@ -135,16 +132,6 @@ void incl_fiber_batch() {
     TColor *color = new TColor(ci, kelly_colors[i][0], kelly_colors[i][1], kelly_colors[i][2]);
     sector_colors[sector] = ci;
   }
-
-  std::map<double, std::vector<double>> new_histogram_data;
-  std::vector<double> new_hist_vop;
-  std::vector<double> new_hist_mpv_err;
-  std::vector<double> new_hist_mpv;
-
-  std::map<double, std::vector<double>> old_histogram_data;
-  std::vector<double> old_hist_vop;
-  std::vector<double> old_hist_mpv_err;
-  std::vector<double> old_hist_mpv;
 
   std::fstream sector_map_file;
   sector_map_file.open("sector_maps.csv", std::ios::in);
@@ -319,11 +306,58 @@ void incl_fiber_batch() {
     line_num++;
   }
 
+  /*
   std::cout << "DBN to fiber batch:";
   for (const auto &p : dbn_to_fiber_batch) { 
     std::cout << "DBN " << p.first << ": " << p.second << "; ";
   }
   std::cout <<std::endl;
+  */
+
+ std::map<int, double> fiber_batch_to_scale_factor;
+  std::fstream fiber_batch_map;
+  fiber_batch_map.open("fiberbatchmeans.csv",std::ios::in);
+  // std::vector<std::string> row;
+  // std::string line, word, temp;
+  line_num = 1;
+  this_row_num = -1;
+  offset = 0;
+  std::cout << "reading fiber batch means" << std::endl;
+  while (std::getline(fiber_batch_map, line)) {
+    // std::cout << "...line " << line_num << std::endl;
+    row.clear();
+    // read an entire row and
+    // store it in a string variable 'line'
+    // std::getline(new_vop_file, line);
+    // used for breaking words
+    std::stringstream s(line);
+    // read every column data of a row and
+    // store it in a string variable, 'word'
+    while (std::getline(s, word, ',')) {
+      // add all the column data
+      // of a row to a vector
+      row.push_back(word);
+    }
+    // now row has the data for this row
+    if (line_num == 0) {
+      // don't do anything with the header
+      line_num++;
+      continue;
+    }
+    // check if this is a block...
+    bool is_double = true;
+    double scale_factor;
+    try {
+      scale_factor = std::stod(row[2]);
+    } catch (std::exception &e) {
+      is_double = false;
+    }
+    if (is_double) {
+      int fiber_batch = std::stoi(row[0]);
+      fiber_batch_to_scale_factor[fiber_batch] = scale_factor;
+    }
+    line_num++;
+  }
 
   std::fstream new_vop_file;
   new_vop_file.open("new_vop.csv",std::ios::in);
@@ -410,19 +444,16 @@ void incl_fiber_batch() {
     line_num++;
   }
 
+  // NEW VOP DATA
   std::vector<double> all_mpv;
   std::map<std::string, double> dbn_mpv;
-
-  csvfile csv("dbn_to_mpv.csv");
-  csv << "dbn" << "mpv" << csvfile::endrow;
-  for (auto const &p : dbn_mpv) {
-    csv << std::stoi(p.first) << p.second << csvfile::endrow;
-  }
-
-  // NEW VOP DATA
   std::vector<double> new_all_vop;
   std::map<int, std::map<double, std::vector<double>>> new_sector_vop_mpv;
   std::map<double, std::map<int, std::vector<double>>> new_vop_sector_mpv;
+  std::map<double, std::vector<double>> new_histogram_data;
+  std::vector<double> new_hist_vop;
+  std::vector<double> new_hist_mpv_err;
+  std::vector<double> new_hist_mpv;
 
   for (int sector : sectors) {
     std::cout << "SECTOR " << sector << ":" << std::endl;
@@ -474,7 +505,6 @@ void incl_fiber_batch() {
   // got all mpv data...calculate 
   int num_dbns_with_mpv = 0;
   double sum_for_mpv_mean = 0;
-  std::map<std::string, double> mpv_correction_factors;
   for (double mpv : all_mpv) {
     num_dbns_with_mpv++;
     sum_for_mpv_mean += mpv;
@@ -729,21 +759,312 @@ void incl_fiber_batch() {
   tim_graph->Draw("P SAME");
   new_tim_canvas->SetGrid();
   new_tim_canvas->SaveAs("./new_vop/vop_graphs/vop_mpv_discrete_tim.svg");
-}
 
-void DrawCol()
-{
-   Int_t i,n;
-   Double_t x,y;
-   TLatex *l;
 
-   TGraph *g = (TGraph*)gPad->GetListOfPrimitives()->FindObject("Graph");
-   n = g->GetN();
-   TMarker *m;
-   for (i=0; i<n; i++) {
-      g->GetPoint(i,x,y);
-      m = new TMarker(x,y,20);
-      m->SetMarkerColor(hist_colors[i]);
-      m->Paint();
-   }
+
+  // ADJUSTED NEW VOP DATA
+  std::vector<double> adjusted_all_mpv;
+  std::map<std::string, double> adjusted_dbn_mpv;
+  //std::vector<double> new_all_vop;
+  std::map<int, std::map<double, std::vector<double>>> adjusted_sector_vop_mpv;
+  std::map<double, std::map<int, std::vector<double>>> adjusted_vop_sector_mpv;
+  std::map<double, std::vector<double>> adjusted_histogram_data;
+  std::vector<double> adjusted_hist_vop;
+  std::vector<double> adjusted_hist_mpv_err;
+  std::vector<double> adjusted_hist_mpv;
+
+  for (int sector : sectors) {
+    std::cout << "SECTOR " << sector << ":" << std::endl;
+    std::stringstream sectorFileName;
+    sectorFileName << "./sector_data/sector" << sector << ".root";
+    TFile* sectorFile = new TFile(sectorFileName.str().c_str());
+    TH1D* data;
+    std::stringstream blockFileName;
+    blockFileName << "h_run" << sector << "_block;1";
+    // std::cout << "getting object" << std::endl;
+    sectorFile->GetObject(blockFileName.str().c_str(), data);
+    // std::cout << "got object" << std::endl;
+    for (int i = 0; i < data->GetNcells(); i++) {
+      // std::cout << "reading bin " << i << std::endl;
+      double content = data->GetBinContent(i);
+      int block_num = data->GetBinLowEdge(i);
+      // first check if this is data we are interested in...
+      if (new_sipm_map.find(sector) == new_sipm_map.end()) {
+        std::cout << "unable to find sector " << sector << " in new_sipm_map" << std::endl;
+        continue;
+      } else if (block_num < 0 || block_num >= new_sipm_map[sector].size()) {
+        std::cout << "block " << block_num << " was out of range for new_sipm_map sector " << sector << std::endl;
+        continue;
+      } else if (sector_map.find(sector) == sector_map.end()) {
+        std::cout << "unable to find sector " << sector << " in sector_map" << std::endl;
+        continue;
+      } else if (block_num < 0 || block_num >= sector_map[sector].size()) {
+        std::cout << "block " << block_num << " was out of range for sector_map sector " << sector << std::endl;
+        continue;
+      } else if (sector_map[sector][block_num][0] == 'F' || std::stoi(sector_map[sector][block_num]) >= 10000) {
+        std::cout << "block " << block_num << ": rejected fudan block " << std::endl;
+        continue;
+      } else if (content <= 0 || content >= 1000) {
+        std::cout << "block " << block_num << ": rejected bin content " << content << std::endl;
+        continue;
+      }
+      // i guess this is valid data?
+      double vop = new_sipm_map[sector][block_num];
+      //new_all_vop.push_back(vop);
+      adjusted_all_mpv.push_back(content);
+      adjusted_histogram_data[vop].push_back(content);
+      adjusted_dbn_mpv[sector_map[sector][block_num]] = content;
+      adjusted_sector_vop_mpv[sector][vop].push_back(content);
+      adjusted_vop_sector_mpv[vop][sector].push_back(content);
+      //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
+    }
+  }
+
+  // got all mpv data...calculate 
+  int adjusted_num_dbns_with_mpv = 0;
+  double adjusted_sum_for_mpv_mean = 0;
+  for (double mpv : adjusted_all_mpv) {
+    adjusted_num_dbns_with_mpv++;
+    adjusted_sum_for_mpv_mean += mpv;
+  }
+  double adjusted_mean_mpv = adjusted_sum_for_mpv_mean / adjusted_num_dbns_with_mpv;
+  std::cout << "ADJUSTED MEAN MPV: " << adjusted_mean_mpv << std::endl;
+
+  int adjusted_num_vops = adjusted_histogram_data.size();
+
+  THStack *adjusted_hs = new THStack("hs", "distributions of mpv for each vop");
+  csvfile adjusted_vop_mpv("adjusted_vop_mpv_fit_parameters.csv");
+  adjusted_vop_mpv << "vop" << "mean" << "mean err" << "sigma" << "sigma err" << csvfile::endrow;
+
+  std::map<double, std::pair<double, double>> adjusted_tim_y_axis_data;
+
+  for (auto const &p : adjusted_histogram_data) {
+    TCanvas* canvas = new TCanvas();
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(1);
+    std::stringstream title;
+    double vop = p.first;
+    title << "vop " << vop << ";mpv;n_blocks";
+    TH1D* hist = new TH1D("hist", title.str().c_str(), num_bins, x_min, x_max);
+    hist->GetSumw2();
+    for (double mpv : p.second) {
+      hist->Fill(mpv);
+    }
+    hist->Fit("gaus", "Q");
+    Color_t color = new_vop_colors[vop];
+    hist_colors.push_back(color);
+    hist->SetLineColor(color);
+    hist->GetFunction("gaus")->SetLineColor(color);
+    hist->Draw("E0 SAME");
+    adjusted_hs->Add(hist);
+
+    std::stringstream fileName;
+    fileName << "./adjusted_vop/vop_graphs/vop" << vop << ".svg";
+    canvas->SaveAs(fileName.str().c_str());
+    TF1* gaus = (TF1*) hist->GetListOfFunctions()->FindObject("gaus");
+    double mean = gaus->GetParameter(1);
+    double mean_err = gaus->GetParError(1);
+    double sigma = gaus->GetParameter(2);
+    double sigma_err = gaus->GetParError(2);
+    adjusted_vop_mpv << vop << mean << mean_err << sigma << sigma_err << csvfile::endrow;
+
+    adjusted_hist_vop.push_back(vop);
+    adjusted_hist_mpv_err.push_back(mean_err); //hist_mpv_err.push_back(hist->GetStdDev());
+    adjusted_hist_mpv.push_back(mean);
+    adjusted_tim_y_axis_data[vop] = std::pair<double, double>(mean, mean_err);
+  }
+  TCanvas* adjusted_canvas3 = new TCanvas();
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
+  adjusted_hs->Draw("nostack");
+  adjusted_canvas3->BuildLegend();
+  adjusted_canvas3->SaveAs("./adjusted_vop/vop_graphs/vop_stacked.svg");
+
+  std::cout << "creating vop by sector histograms" << std::endl;
+  for (const auto & p : adjusted_sector_vop_mpv) {
+    int sector = p.first;
+    std::map<double, std::vector<double>> vop_mpv_map = p.second;
+    std::stringstream sector_title;
+    sector_title << "sector " << sector << ";mpv;n_blocks";
+    THStack *hs = new THStack("hs", sector_title.str().c_str());
+    for (const auto & q : vop_mpv_map) {
+      double vop = q.first;
+      std::vector<double> mpvs = q.second;
+      TCanvas* vop_canvas = new TCanvas("vop", "vop");
+      gStyle->SetOptStat(0);
+      gStyle->SetOptFit(1);
+      std::stringstream vop_title;
+      vop_title << "sector " << sector << ", vop " << vop << ";mpv;n_blocks";
+      TH1D* vop_hist = new TH1D("vop_hist", vop_title.str().c_str(), num_bins, x_min, x_max);
+      vop_hist->GetSumw2();
+      std::stringstream stack_title;
+      stack_title << "vop " << vop;
+      TH1D* stack_hist = new TH1D("stack_hist", stack_title.str().c_str(), num_bins, x_min, x_max);
+      stack_hist->GetSumw2();
+      for (double mpv : mpvs) {
+        vop_hist->Fill(mpv);
+        stack_hist->Fill(mpv);
+      }
+      vop_hist->SetLineColor(new_vop_colors[vop]);
+      vop_hist->Fit("gaus", "Q");
+      vop_hist->GetFunction("gaus")->SetLineColor(new_vop_colors[vop]);
+      vop_hist->Draw("E0 SAME");
+      std::stringstream fileName;
+      fileName << "./adjusted_vop/sector_by_vop/sector-" << sector << "_vop-" << vop << ".svg";
+      vop_canvas->SaveAs(fileName.str().c_str());
+
+      stack_hist->SetFillColorAlpha(new_vop_colors[vop], 0.5);
+      stack_hist->SetLineColorAlpha(new_vop_colors[vop], 0.0);
+      stack_hist->Fit("gaus", "Q");
+      stack_hist->GetFunction("gaus")->SetLineColor(new_vop_colors[vop]);
+      hs->Add(stack_hist);
+    }
+    TCanvas* sector_canvas = new TCanvas("sector", "sector");
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    hs->Draw("nostackb");
+    std::stringstream fileName;
+    fileName << "./adjusted_vop/sector_by_vop/sector-" << sector << "_all.svg";
+    sector_canvas->BuildLegend();
+    sector_canvas->SaveAs(fileName.str().c_str());
+  }
+
+  std::cout << "creating the other histograms" << std::endl;
+  for (const auto & p : adjusted_vop_sector_mpv) {
+    double vop = p.first;
+    std::map<int, std::vector<double>> sector_mpv_map = p.second;
+    std::stringstream vop_title;
+    vop_title << "vop " << vop << ";mpv;n_blocks";
+    THStack *hs = new THStack("hs", vop_title.str().c_str());
+    for (const auto & q : sector_mpv_map) {
+      int sector = q.first;
+      std::vector<double> mpvs = q.second;
+      TCanvas* sector_canvas = new TCanvas();
+      // gStyle->SetOptStat(0);
+      // gStyle->SetOptFit(1);
+      std::stringstream sector_title;
+      sector_title << "sector " << sector << ", vop " << vop << ";mpv;n_blocks";
+      TH1D* vop_hist = new TH1D("vop_hist", sector_title.str().c_str(), num_bins, x_min, x_max);
+      vop_hist->GetSumw2();
+      std::stringstream stack_title;
+      stack_title << "sector " << sector;
+      TH1D* stack_hist = new TH1D("stack_hist", stack_title.str().c_str(), num_bins, x_min, x_max);
+      stack_hist->GetSumw2();
+      for (double mpv : mpvs) {
+        vop_hist->Fill(mpv);
+        stack_hist->Fill(mpv);
+      }
+      // vop_hist->SetLineColor(vop_colors[vop]);
+      // vop_hist->Fit("gaus", "Q");
+      // vop_hist->GetFunction("gaus")->SetLineColor(vop_colors[vop]);
+      // vop_hist->Draw("E0 SAME");
+      // std::stringstream fileName;
+      // fileName << "./vop_by_sector/sector-" << sector << "_vop-" << vop << ".png";
+      // sector_canvas->SaveAs(fileName.str().c_str());
+
+      stack_hist->SetFillColorAlpha(sector_colors[sector], 0.5);
+      stack_hist->SetLineColorAlpha(sector_colors[sector], 0.0);
+      stack_hist->Fit("gaus", "Q");
+      stack_hist->GetFunction("gaus")->SetLineColor(sector_colors[sector]);
+      hs->Add(stack_hist);
+    }
+    TCanvas* vop_canvas = new TCanvas();
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    hs->Draw("nostackb");
+    std::stringstream fileName;
+    fileName << "./adjusted_vop/vop_by_sector/vop-" << vop << "_all.svg";
+    
+    vop_canvas->BuildLegend();
+    vop_canvas->SaveAs(fileName.str().c_str());
+  }
+
+  // scatter plot
+  TCanvas* adjusted_canvas = new TCanvas();
+  TGraph* adjusted_graph = new TGraph(new_all_vop.size(), &new_all_vop[0], &adjusted_all_mpv[0]);
+  adjusted_graph->SetTitle("block mpv vs sipm vop");
+  adjusted_graph->GetXaxis()->SetTitle("vop");
+  adjusted_graph->GetYaxis()->SetTitle("mpv");
+  adjusted_graph->SetMarkerStyle(20);
+  adjusted_graph->SetMarkerSize(0.5);
+  adjusted_graph->Draw("AP");
+  // canvas->Update();
+  adjusted_canvas->SaveAs("./adjusted_vop/vop_graphs/vop_mpv_scatter.svg");
+
+  std::vector<double> adjusted_err_x;
+  for (int i = 0; i < adjusted_hist_vop.size(); i++) {
+    adjusted_err_x.push_back(0);
+  }
+
+  // discrete graph
+  TCanvas* adjusted_canvas2 = new TCanvas();
+  TGraphErrors* adjusted_graph2 = new TGraphErrors(adjusted_hist_vop.size(), &adjusted_hist_vop[0], &adjusted_hist_mpv[0], &adjusted_err_x[0], &adjusted_hist_mpv_err[0]);
+  adjusted_graph2->SetTitle("Block MPV vs SiPM VOp (After)");
+  adjusted_graph2->GetXaxis()->SetTitle("vop");
+  adjusted_graph2->GetYaxis()->SetTitle("mpv");
+  adjusted_graph2->GetXaxis()->SetLimits(68.85, 69.4);
+  adjusted_graph2->GetYaxis()->SetLimits(220., 380.);
+  adjusted_graph2->SetMarkerStyle(21);
+  //TExec *adjusted_ex = new TExec("ex","DrawCol();");
+  //adjusted_graph2->GetListOfFunctions()->Add(adjusted_ex);
+  adjusted_graph2->Draw("AP");
+  adjusted_canvas2->SetGrid();
+  adjusted_canvas2->SaveAs("./adjusted_vop/vop_graphs/vop_mpv_discrete.svg");
+
+  // tim's pcb series histogram
+  //TFile* tim_outfile = new TFile("./adjusted_vop/vop_graphs/tim_graphs.root","RECREATE");
+  TCanvas* adjusted_tim_canvas = new TCanvas();
+  // first find all pcb series whcih have current data...
+  std::vector<std::string> adjusted_pcb_series_with_data;
+  std::map<std::string, double> adjusted_pcb_series_to_vop;
+  for (int i = 0; i < adjusted_hist_vop.size(); i++) {
+    double vop = adjusted_hist_vop[i];
+    if (vop_to_board_series.find(vop) == vop_to_board_series.end()) {
+      std::cout << "*unable to find vop " << vop << " in pcb series map" << std::endl;
+    } else {
+      //std::cout << "vop " << vop << " matches to board " << vop_to_board_series[vop] << std::endl;
+      adjusted_pcb_series_with_data.push_back(vop_to_board_series[vop]);
+      adjusted_pcb_series_to_vop[vop_to_board_series[vop]] = vop;
+    }
+  }
+  int adjusted_num_pcb_series_with_data = adjusted_pcb_series_with_data.size();
+  std::sort(adjusted_pcb_series_with_data.begin(), adjusted_pcb_series_with_data.end());
+
+  TH1D* adjusted_tim_empty_hist = new TH1D("h", "tim_empty", adjusted_num_pcb_series_with_data, 0, adjusted_num_pcb_series_with_data);
+  adjusted_tim_empty_hist->SetTitle("Mean Block MPV by SiPM PCB Series");
+  adjusted_tim_empty_hist->GetXaxis()->SetTitle("PCB Series");
+  adjusted_tim_empty_hist->GetYaxis()->SetTitle("MPV");
+  //adjusted_tim_empty_hist->GetYaxis()->SetRange(200, 400);
+  adjusted_tim_empty_hist->SetAxisRange(220., 380., "Y");
+  for (int i = 0; i < adjusted_num_pcb_series_with_data; i++) {
+    adjusted_tim_empty_hist->GetXaxis()->SetBinLabel(i + 1, adjusted_pcb_series_with_data[i].c_str());
+  }
+  //adjusted_tim_empty_hist->Write();
+  adjusted_tim_empty_hist->Draw();
+
+  std::vector<double> adjusted_tim_x_axis;
+  for (int i = 0; i < adjusted_num_pcb_series_with_data; i++) {
+    adjusted_tim_x_axis.push_back(i + 0.5);
+  }
+  std::vector<double> adjusted_tim_x_axis_err;
+  for (int i = 0; i < adjusted_num_pcb_series_with_data; i++) { adjusted_tim_x_axis_err.push_back(0); }
+  std::vector<double> adjusted_tim_y_axis;
+  std::vector<double> adjusted_tim_y_axis_err;
+  for (std::string series : adjusted_pcb_series_with_data) {
+    double vop = adjusted_pcb_series_to_vop[series];
+    std::pair<double, double> p = adjusted_tim_y_axis_data[vop];
+    adjusted_tim_y_axis.push_back(p.first);
+    adjusted_tim_y_axis_err.push_back(p.second);
+    //std::cout << "y axis data for vop " << vop << ": (" << p.first << ", " << p.second << ")" << std::endl; 
+  }
+  TGraphErrors* adjusted_tim_graph = new TGraphErrors(adjusted_num_pcb_series_with_data, &adjusted_tim_x_axis[0], &adjusted_tim_y_axis[0], &adjusted_tim_x_axis_err[0], &adjusted_tim_y_axis_err[0]);
+
+  adjusted_tim_graph->GetYaxis()->SetTitle("MPV");
+  adjusted_tim_graph->GetYaxis()->SetLimits(220., 380.);
+  adjusted_tim_graph->GetYaxis()->SetTitle("MPV");
+  adjusted_tim_graph->SetMarkerStyle(21);
+  //adjusted_tim_graph->Write();
+  adjusted_tim_graph->Draw("P SAME");
+  adjusted_tim_canvas->SetGrid();
+  adjusted_tim_canvas->SaveAs("./adjusted_vop/vop_graphs/vop_mpv_discrete_tim.svg");
 }
