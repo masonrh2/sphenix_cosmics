@@ -5,7 +5,7 @@
 </title>
 <desc>
 Creator: ROOT Version 6.22/02
-CreationDate: Tue Jun 22 22:25:05 2021</desc>
+CreationDate: Tue Jun 22 22:29:36 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -13,10 +13,11 @@ CreationDate: Tue Jun 22 22:25:05 2021</desc>
 <rect x="57.1929" y="38.4469" width="453.543" height="307.575" fill="none" stroke="black"/>
 <path d="M57.1929,346.022h 453.543" fill="none" stroke="black"/>
 <path d="M57.1929,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
-<path d="M147.902,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
-<path d="M238.61,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
-<path d="M329.319,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
-<path d="M420.028,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M132.783,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M208.374,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M283.965,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M359.555,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
+<path d="M435.146,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
 <path d="M510.736,38.4469v 307.575" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
 <path d="M57.1929,346.022v -307.575" fill="none" stroke="black"/>
 <path d="M510.736,346.022h -453.543" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
@@ -30,16 +31,18 @@ CreationDate: Tue Jun 22 22:25:05 2021</desc>
 <path d="M510.736,38.4469h -453.543" fill="none" stroke="black" stroke-dasharray=" 1, 2"/>
 <path d="M57.1929,346.022h 453.543" fill="none" stroke="#000099"/>
 <path d="M57.1929,346.022h 453.543" fill="none" stroke="black"/>
-<text xml:space="preserve" x="99.061" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">A</text>
-<text xml:space="preserve" x="189.476" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">C</text>
-<text xml:space="preserve" x="280.706" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">D</text>
-<text xml:space="preserve" x="371.122" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">G</text>
-<text xml:space="preserve" x="461.537" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">H</text>
+<text xml:space="preserve" x="91.73" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">A</text>
+<text xml:space="preserve" x="166.669" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">C</text>
+<text xml:space="preserve" x="242.422" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">D</text>
+<text xml:space="preserve" x="318.176" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">E</text>
+<text xml:space="preserve" x="393.929" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">G</text>
+<text xml:space="preserve" x="469.683" y="356.774" fill="black" font-size="8.73015" font-family="Helvetica">H</text>
 <path d="M57.1929,336.795v 9.22726" fill="none" stroke="black"/>
-<path d="M147.902,336.795v 9.22726" fill="none" stroke="black"/>
-<path d="M238.61,336.795v 9.22726" fill="none" stroke="black"/>
-<path d="M329.319,336.795v 9.22726" fill="none" stroke="black"/>
-<path d="M420.028,336.795v 9.22726" fill="none" stroke="black"/>
+<path d="M132.783,336.795v 9.22726" fill="none" stroke="black"/>
+<path d="M208.374,336.795v 9.22726" fill="none" stroke="black"/>
+<path d="M283.965,336.795v 9.22726" fill="none" stroke="black"/>
+<path d="M359.555,336.795v 9.22726" fill="none" stroke="black"/>
+<path d="M435.146,336.795v 9.22726" fill="none" stroke="black"/>
 <path d="M510.736,336.795v 9.22726" fill="none" stroke="black"/>
 <text xml:space="preserve" x="447.69" y="372.251" fill="black" font-size="12.8453" font-family="Helvetica">PCB Series</text>
 <path d="M57.1929,346.022v -307.575" fill="none" stroke="black"/>
@@ -89,31 +92,36 @@ CreationDate: Tue Jun 22 22:25:05 2021</desc>
 <text xml:space="preserve" x="21.6784" y="65.1643" fill="black" font-size="12.8453" font-family="Helvetica">MPV</text>
 </g>
 <text xml:space="preserve" x="123.498" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Mean Block MPV by SiPM PCB Series</text>
-<path d="M102.547,288.598v -2.07565" fill="none" stroke="black"/>
-<path d="M100.918,286.523h 3.25821" fill="none" stroke="black"/>
-<path d="M102.547,295.115v 2.07565" fill="none" stroke="black"/>
-<path d="M100.918,297.19h 3.25821" fill="none" stroke="black"/>
-<path d="M193.256,169.036v -14.2691" fill="none" stroke="black"/>
-<path d="M191.627,154.766h 3.25821" fill="none" stroke="black"/>
-<path d="M193.256,175.552v 14.2691" fill="none" stroke="black"/>
-<path d="M191.627,189.821h 3.25821" fill="none" stroke="black"/>
-<path d="M283.965,75.4077v -5.31278" fill="none" stroke="black"/>
-<path d="M282.335,70.095h 3.25821" fill="none" stroke="black"/>
-<path d="M283.965,81.9242v 5.31278" fill="none" stroke="black"/>
-<path d="M282.335,87.2369h 3.25821" fill="none" stroke="black"/>
-<path d="M374.673,261.474v -3.78793" fill="none" stroke="black"/>
-<path d="M373.044,257.686h 3.25821" fill="none" stroke="black"/>
-<path d="M374.673,267.99v 3.78793" fill="none" stroke="black"/>
-<path d="M373.044,271.778h 3.25821" fill="none" stroke="black"/>
-<path d="M465.382,160.785v -4.13072" fill="none" stroke="black"/>
-<path d="M463.753,156.654h 3.25821" fill="none" stroke="black"/>
-<path d="M465.382,167.301v 4.13072" fill="none" stroke="black"/>
-<path d="M463.753,171.432h 3.25821" fill="none" stroke="black"/>
+<path d="M94.9882,288.598v -2.07565" fill="none" stroke="black"/>
+<path d="M93.3591,286.523h 3.25821" fill="none" stroke="black"/>
+<path d="M94.9882,295.115v 2.07565" fill="none" stroke="black"/>
+<path d="M93.3591,297.19h 3.25821" fill="none" stroke="black"/>
+<path d="M170.579,192.628v -9.0323" fill="none" stroke="black"/>
+<path d="M168.95,183.596h 3.25821" fill="none" stroke="black"/>
+<path d="M170.579,199.145v 9.0323" fill="none" stroke="black"/>
+<path d="M168.95,208.177h 3.25821" fill="none" stroke="black"/>
+<path d="M246.169,75.4077v -5.31278" fill="none" stroke="black"/>
+<path d="M244.54,70.095h 3.25821" fill="none" stroke="black"/>
+<path d="M246.169,81.9242v 5.31278" fill="none" stroke="black"/>
+<path d="M244.54,87.2369h 3.25821" fill="none" stroke="black"/>
+<path d="M321.76,246.206v -6.39228" fill="none" stroke="black"/>
+<path d="M320.131,239.814h 3.25821" fill="none" stroke="black"/>
+<path d="M321.76,252.723v 6.39228" fill="none" stroke="black"/>
+<path d="M320.131,259.115h 3.25821" fill="none" stroke="black"/>
+<path d="M397.35,261.474v -3.78793" fill="none" stroke="black"/>
+<path d="M395.721,257.686h 3.25821" fill="none" stroke="black"/>
+<path d="M397.35,267.99v 3.78793" fill="none" stroke="black"/>
+<path d="M395.721,271.778h 3.25821" fill="none" stroke="black"/>
+<path d="M472.941,160.785v -4.13072" fill="none" stroke="black"/>
+<path d="M471.312,156.654h 3.25821" fill="none" stroke="black"/>
+<path d="M472.941,167.301v 4.13072" fill="none" stroke="black"/>
+<path d="M471.312,171.432h 3.25821" fill="none" stroke="black"/>
 <g fill="black">
-<rect x="99.289" y="288.598" width="6.51643" height="6.51643"/>
-<rect x="189.998" y="169.036" width="6.51643" height="6.51643"/>
-<rect x="280.706" y="75.4077" width="6.51643" height="6.51643"/>
-<rect x="371.415" y="261.474" width="6.51643" height="6.51643"/>
-<rect x="462.124" y="160.785" width="6.51643" height="6.51643"/>
+<rect x="91.73" y="288.598" width="6.51643" height="6.51643"/>
+<rect x="167.321" y="192.628" width="6.51643" height="6.51643"/>
+<rect x="242.911" y="75.4077" width="6.51643" height="6.51643"/>
+<rect x="318.502" y="246.206" width="6.51643" height="6.51643"/>
+<rect x="394.092" y="261.474" width="6.51643" height="6.51643"/>
+<rect x="469.683" y="160.785" width="6.51643" height="6.51643"/>
 </g>
 <text xml:space="preserve" x="123.498" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Mean Block MPV by SiPM PCB Series</text></svg>
