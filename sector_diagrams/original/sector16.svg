@@ -4,8 +4,13 @@
 ./sector_diagrams/original/sector16.svg
 </title>
 <desc>
+<<<<<<< HEAD
 Creator: ROOT Version 6.24/00
 CreationDate: Wed Jun 23 15:10:15 2021</desc>
+=======
+Creator: ROOT Version 6.22/02
+CreationDate: Sat Jun 26 01:19:18 2021</desc>
+>>>>>>> bd65bf56ff8c942af07df4757cf418fec0f618e3
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -139,8 +144,16 @@ CreationDate: Wed Jun 23 15:10:15 2021</desc>
 <text xml:space="preserve" x="21.6784" y="65.1643" fill="black" font-size="12.8453" font-family="Helvetica">MPV</text>
 </g>
 <text xml:space="preserve" x="247.31" y="18.7347" fill="black" font-size="16.9898" font-family="Helvetica">Sector 16</text>
+<<<<<<< HEAD
 <g stroke="black" stroke-width="1" fill="none">
 <circle cx="115.639" cy="170.942" r="3.25821"/>
+=======
+<g fill="black">
+<rect x="107.705" y="177.509" width="6.51643" height="6.51643"/>
+</g>
+<g fill="black">
+<rect x="117.057" y="153.595" width="6.51643" height="6.51643"/>
+>>>>>>> bd65bf56ff8c942af07df4757cf418fec0f618e3
 </g>
 <g stroke="black" stroke-width="1" fill="none">
 <circle cx="120.315" cy="156.854" r="3.25821"/>
