@@ -1224,6 +1224,7 @@ void incl_fiber_batch() {
     combined_sector_canvas->SaveAs(combined_sector_filename.str().c_str());
 
     // create sector hists
+    gStyle->SetOptFit(1);
     TCanvas* sector_hist_canvas = new TCanvas();
     sector_hist->Fit("gaus", "Q");
     TF1* gaus = (TF1*) sector_hist->GetListOfFunctions()->FindObject("gaus");
@@ -1237,6 +1238,7 @@ void incl_fiber_batch() {
     sector_hist_filename << "./new_vop/sector/sector" << sector << ".svg";
     sector_hist_canvas->SaveAs(sector_hist_filename.str().c_str());
 
+    gStyle->SetOptFit(1);
     TCanvas* adj_sector_hist_canvas = new TCanvas();
     adj_sector_hist->Fit("gaus", "Q");
     TF1* adj_gaus = (TF1*) adj_sector_hist->GetListOfFunctions()->FindObject("gaus");
