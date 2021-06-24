@@ -1096,6 +1096,11 @@ void incl_fiber_batch() {
   adjusted_tim_canvas->SetGrid();
   adjusted_tim_canvas->SaveAs("./adjusted_vop/vop_graphs/vop_mpv_discrete_tim.svg");
 
+  csvfile sector_csv("./new_vop/sector/fit_parameters.csv");
+  sector_csv << "sector" << "mean" << "mean err" << "sigma" << "sigma err" << csvfile::endrow;
+  csvfile adj_sector_csv("./adjusted_vop/sector/fit_parameters.csv");
+  adj_sector_csv << "sector" << "mean" << "mean err" << "sigma" << "sigma err" << csvfile::endrow;
+
   // create sector diagrams
   for (int sector : sectors) {
     std::cout << "SECTOR " << sector << ":" << std::endl;
@@ -1112,6 +1117,16 @@ void incl_fiber_batch() {
     std::stringstream combined_sector_title;
     combined_sector_title << "Sector " << sector << " (Combined);Block Number;MPV";
     THStack* combined_hs = new THStack("combined_hs", combined_sector_title.str().c_str());
+
+    std::stringstream sector_hist_title;
+    sector_hist_title << "sector " << sector << ";MPV;Num Blocks";
+    TH1D* sector_hist = new TH1D("h", sector_hist_title.str().c_str(), num_bins, x_min, x_max);
+    sector_hist->GetSumw2();
+
+    std::stringstream adj_sector_hist_title;
+    adj_sector_hist_title << "sector " << sector << " (adjusted);MPV;Num Blocks";
+    TH1D* adj_sector_hist = new TH1D("adj_h", adj_sector_hist_title.str().c_str(), num_bins, x_min, x_max);
+    adj_sector_hist->GetSumw2();
 
     for (int ib : interface_boards) {
       TH1D* data;
@@ -1158,6 +1173,8 @@ void incl_fiber_batch() {
           double vop = new_sipm_map[sector][block_num];
           data->SetBinContent(i, content);
           adj_data->SetBinContent(i, adjusted_content);
+          sector_hist->Fill(content);
+          adj_sector_hist->Fill(adjusted_content);
           std::cout << "mpv " << content << " -> " << adjusted_content << std::endl;
           //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
         } else {
@@ -1167,7 +1184,9 @@ void incl_fiber_batch() {
         }
       }
       data->GetXaxis()->SetLimits(0.0, 95.0);
+      //data->SetNdivisions(6, "X");
       adj_data->GetXaxis()->SetLimits(0.0, 95.0);
+      //adj_data->SetNdivisions(6, "X");
 
       hs->Add(data);
       adj_hs->Add(adj_data);
@@ -1203,5 +1222,32 @@ void incl_fiber_batch() {
     combined_hs->Draw("nostack");
     combined_sector_canvas->SetGrid();
     combined_sector_canvas->SaveAs(combined_sector_filename.str().c_str());
+
+    // create sector hists
+    TCanvas* sector_hist_canvas = new TCanvas();
+    sector_hist->Fit("gaus", "Q");
+    TF1* gaus = (TF1*) sector_hist->GetListOfFunctions()->FindObject("gaus");
+    double mean = gaus->GetParameter(1);
+    double mean_err = gaus->GetParError(1);
+    double sigma = gaus->GetParameter(2);
+    double sigma_err = gaus->GetParError(2);
+    sector_csv << sector << mean << mean_err << sigma << sigma_err << csvfile::endrow;
+    sector_hist->Draw("E0 SAME");
+    std::stringstream sector_hist_filename;
+    sector_hist_filename << "./new_vop/sector/sector" << sector << ".svg";
+    sector_hist_canvas->SaveAs(sector_hist_filename.str().c_str());
+
+    TCanvas* adj_sector_hist_canvas = new TCanvas();
+    adj_sector_hist->Fit("gaus", "Q");
+    TF1* adj_gaus = (TF1*) adj_sector_hist->GetListOfFunctions()->FindObject("gaus");
+    double adj_mean = adj_gaus->GetParameter(1);
+    double adj_mean_err = adj_gaus->GetParError(1);
+    double adj_sigma = adj_gaus->GetParameter(2);
+    double adj_sigma_err = adj_gaus->GetParError(2);
+    adj_sector_csv << sector << adj_mean << adj_mean_err << adj_sigma << adj_sigma_err << csvfile::endrow;
+    adj_sector_hist->Draw("E0 SAME");
+    std::stringstream adj_sector_hist_filename;
+    adj_sector_hist_filename << "./adjusted_vop/sector/sector" << sector << ".svg";
+    adj_sector_hist_canvas->SaveAs(adj_sector_hist_filename.str().c_str());
   }
 }
