@@ -4,13 +4,8 @@
 ./adjusted_vop/sector_by_vop/sector-17_all.svg
 </title>
 <desc>
-<<<<<<< HEAD
-Creator: ROOT Version 6.24/00
-CreationDate: Wed Jun 23 02:37:51 2021</desc>
-=======
 Creator: ROOT Version 6.22/02
-CreationDate: Fri Jun 25 18:29:43 2021</desc>
->>>>>>> 4c1192d112c443bd0763b0371751cb4aaac72c76
+CreationDate: Fri Jun 25 18:59:31 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -116,15 +111,15 @@ CreationDate: Fri Jun 25 18:29:43 2021</desc>
 <rect x="163.473" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="178.591" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="193.709" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="208.828" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="223.946" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="239.064" y="291.098" width="14.211" height="54.9242" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="254.182" y="272.79" width="14.211" height="73.2322" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="269.3" y="126.326" width="14.211" height="219.697" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="284.418" y="181.25" width="14.211" height="164.773" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="299.536" y="53.0934" width="14.211" height="292.929" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="314.654" y="254.482" width="14.211" height="91.5403" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<rect x="329.772" y="309.406" width="14.211" height="36.6161" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="208.828" y="272.79" width="14.211" height="73.2322" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="223.946" y="181.25" width="14.211" height="164.773" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="239.064" y="108.018" width="14.211" height="238.005" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="254.182" y="53.0934" width="14.211" height="292.929" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="269.3" y="236.174" width="14.211" height="109.848" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="284.418" y="291.098" width="14.211" height="54.9242" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="299.536" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="314.654" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
+<rect x="329.772" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="344.891" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="360.009" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="375.127" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
@@ -136,11 +131,11 @@ CreationDate: Fri Jun 25 18:29:43 2021</desc>
 <rect x="465.835" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="480.954" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
 <rect x="496.072" y="346.022" width="14.211" height="0" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<path d="M59.4606,346.022h 126.992l 4.53543, -0.0333192l 4.53543, -0.0383782l 4.53543, -0.077281l 4.53543, -0.149941l 4.53543, -0.280239l 4.53543, -0.504398l 4.53543, -0.874011l 4.53543, -1.45745l 4.53543, -2.33781l 4.53543, -3.60512l 4.53543,
- -5.34116l 4.53543, -7.59617l 4.53543, -10.3594l 4.53543, -13.5292l 4.53543, -16.8895l 4.53543, -20.1055l 4.53543, -22.7444l 4.53543, -24.3277l 4.53543, -24.4105l 4.53543, -22.6735l 4.53543, -19.0092" fill="none" stroke="#ffb300" stroke-width="2"/>
-<path d="M281.697,149.678l 4.53543, -13.5754l 4.53543, -6.80052l 4.53543, 0.668876l 4.53543, 8.06931l 4.53543, 14.649l 4.53543, 19.7939l 4.53543, 23.121l 4.53543, 24.5215l 4.53543, 24.1454l 4.53543, 22.341l 4.53543, 19.5657l 4.53543, 16.295l 4.53543,
- 12.9472l 4.53543, 9.83711l 4.53543, 7.15924l 4.53543, 4.99734l 4.53543, 3.34906l 4.53543, 2.1566l 4.53543, 1.33524l 4.53543, 0.795283l 4.53543, 0.455879l 4.53543, 0.251595l 4.53543, 0.133726l 4.53543, 0.0684712l 4.53543, 0.0627737h 108.85"
- fill="none" stroke="#ffb300" stroke-width="2"/>
+<path d="M59.4606,346.022h 99.7795l 4.53543, -0.066614l 4.53543, -0.0870569l 4.53543, -0.185428l 4.53543, -0.376663l 4.53543, -0.729409l 4.53543, -1.34594l 4.53543, -2.36526l 4.53543, -3.95574l 4.53543, -6.29076l 4.53543, -9.50247l 4.53543, -13.6151l
+ 4.53543, -18.4695l 4.53543, -23.6617l 4.53543, -28.5266l 4.53543, -32.195l 4.53543, -33.7349l 4.53543, -32.361l 4.53543, -27.6612l 4.53543, -19.7709l 4.53543, -9.42679l 4.53543, 2.13416l 4.53543, 13.4171l 4.53543, 22.9865l 4.53543, 29.7665l 4.53543,
+ 33.2366l 4.53543, 33.4749l 4.53543, 31.0544" fill="none" stroke="#ffb300" stroke-width="2"/>
+<path d="M281.697,247.764l 4.53543, 26.8407l 4.53543, 21.7641l 4.53543, 16.6315l 4.53543, 12.0149l 4.53543, 8.22392l 4.53543, 5.34231l 4.53543, 3.29778l 4.53543, 1.93636l 4.53543, 1.08234l 4.53543, 0.576276l 4.53543, 0.292425l 4.53543, 0.141482l
+ 4.53543, 0.0652905l 4.53543, 0.0485578h 158.74" fill="none" stroke="#ffb300" stroke-width="2"/>
 <path d="M503.933,346.022h 4.53543" fill="none" stroke="#ffb300" stroke-width="2"/>
 <path d="M57.1929,346.022h 453.543" fill="none" stroke="black"/>
 <path d="M57.1929,336.795v 9.22726" fill="none" stroke="black"/>
@@ -210,15 +205,15 @@ CreationDate: Fri Jun 25 18:29:43 2021</desc>
 <path d="M70.7992,53.0934h -13.6063" fill="none" stroke="black"/>
 <path d="M70.7992,53.0934h -13.6063" fill="none" stroke="black"/>
 <path d="M63.9961,43.9393h -6.80315" fill="none" stroke="black"/>
-<rect x="58.0145" y="262.83" width="170.079" height="80.7385" fill="white"/>
-<path d="M58.0145,343.568h 170.079" fill="none" stroke="black"/>
-<path d="M228.093,343.568v -80.7385" fill="none" stroke="black"/>
-<path d="M228.093,262.83h -170.079" fill="none" stroke="black"/>
-<path d="M58.0145,262.83v 80.7385" fill="none" stroke="black"/>
-<text xml:space="preserve" x="99.8755" y="310.345" fill="black" font-size="25.7855" font-family="Helvetica">vop 68.93</text>
-<path d="M64.3925,331.457h 29.7638v -56.517h -29.7638z" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
-<path d="M64.3925,303.199h 29.7638" fill="none" stroke="#ffb300" fill-opacity="0.00" stroke-opacity="0.00"/>
+<rect x="58.0145" y="189.208" width="170.079" height="80.7385" fill="white"/>
+<path d="M58.0145,269.946h 170.079" fill="none" stroke="black"/>
+<path d="M228.093,269.946v -80.7385" fill="none" stroke="black"/>
+<path d="M228.093,189.208h -170.079" fill="none" stroke="black"/>
+<path d="M58.0145,189.208v 80.7385" fill="none" stroke="black"/>
+<text xml:space="preserve" x="99.8755" y="236.22" fill="black" font-size="25.7855" font-family="Helvetica">vop 68.93</text>
+<path d="M64.3925,257.836h 29.7638v -56.517h -29.7638z" fill="#ffb300" fill-opacity="0.50" stroke-opacity="0.50"/>
+<path d="M64.3925,229.577h 29.7638" fill="none" stroke="#ffb300" fill-opacity="0.00" stroke-opacity="0.00"/>
 <g stroke="black" stroke-width="1" fill="none">
-<line x1="78.2744" y1="303.199" x2="79.2744" y2="303.199"/>
+<line x1="78.2744" y1="229.577" x2="79.2744" y2="229.577"/>
 </g>
 <text xml:space="preserve" x="248.939" y="18.7347" fill="black" font-size="16.9898" font-family="Helvetica">sector 17</text></svg>
