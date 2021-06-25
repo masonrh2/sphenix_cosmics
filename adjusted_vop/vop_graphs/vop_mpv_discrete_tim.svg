@@ -5,7 +5,7 @@
 </title>
 <desc>
 Creator: ROOT Version 6.22/02
-CreationDate: Fri Jun 25 18:14:08 2021</desc>
+CreationDate: Fri Jun 25 18:24:53 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -94,7 +94,7 @@ CreationDate: Fri Jun 25 18:14:08 2021</desc>
 <g transform="rotate(-90,21.6784,65.1643)">
 <text xml:space="preserve" x="21.6784" y="65.1643" fill="black" font-size="12.8453" font-family="Helvetica">MPV</text>
 </g>
-<text xml:space="preserve" x="123.498" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Mean Block MPV by SiPM PCB Series</text>
+<text xml:space="preserve" x="105.577" y="17.9202" fill="black" font-size="16.7693" font-family="Helvetica">Mean Block MPV by SiPM PCB Series (Adjusted)</text>
 <path d="M89.5889,291.463v -2.43952" fill="none" stroke="black"/>
 <path d="M87.9598,289.023h 3.25821" fill="none" stroke="black"/>
 <path d="M89.5889,297.979v 2.43952" fill="none" stroke="black"/>
@@ -132,4 +132,4 @@ CreationDate: Fri Jun 25 18:14:08 2021</desc>
 <rect x="410.29" y="257.143" width="6.51643" height="6.51643"/>
 <rect x="475.082" y="166.132" width="6.51643" height="6.51643"/>
 </g>
-<text xml:space="preserve" x="123.498" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Mean Block MPV by SiPM PCB Series</text></svg>
+<text xml:space="preserve" x="105.577" y="17.9202" fill="black" font-size="16.7693" font-family="Helvetica">Mean Block MPV by SiPM PCB Series (Adjusted)</text></svg>
