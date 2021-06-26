@@ -4,13 +4,8 @@
 ./sector_diagrams/original/sector6.svg
 </title>
 <desc>
-<<<<<<< HEAD
-Creator: ROOT Version 6.24/00
-CreationDate: Wed Jun 23 15:10:15 2021</desc>
-=======
 Creator: ROOT Version 6.22/02
-CreationDate: Sat Jun 26 01:19:18 2021</desc>
->>>>>>> bd65bf56ff8c942af07df4757cf418fec0f618e3
+CreationDate: Sat Jun 26 16:52:27 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -144,13 +139,8 @@ CreationDate: Sat Jun 26 01:19:18 2021</desc>
 <text xml:space="preserve" x="21.6784" y="65.1643" fill="black" font-size="12.8453" font-family="Helvetica">MPV</text>
 </g>
 <text xml:space="preserve" x="252.197" y="18.7347" fill="black" font-size="16.9898" font-family="Helvetica">Sector 6</text>
-<<<<<<< HEAD
 <g stroke="black" stroke-width="1" fill="none">
 <circle cx="78.2336" cy="199.24" r="3.25821"/>
-=======
-<g fill="black">
-<rect x="79.6511" y="213.439" width="6.51643" height="6.51643"/>
->>>>>>> bd65bf56ff8c942af07df4757cf418fec0f618e3
 </g>
 <g stroke="black" stroke-width="1" fill="none">
 <circle cx="82.9093" cy="216.697" r="3.25821"/>

@@ -4,8 +4,8 @@
 ./sector_diagrams/combined/sector10.svg
 </title>
 <desc>
-Creator: ROOT Version 6.24/00
-CreationDate: Wed Jun 23 15:10:15 2021</desc>
+Creator: ROOT Version 6.22/02
+CreationDate: Sat Jun 26 16:52:27 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -601,81 +601,4 @@ CreationDate: Wed Jun 23 15:10:15 2021</desc>
 <path d="M63.9961,58.9519h -6.80315" fill="none" stroke="black"/>
 <path d="M63.9961,48.6994h -6.80315" fill="none" stroke="black"/>
 <path d="M70.7992,38.4469h -13.6063" fill="none" stroke="black"/>
-<rect x="58.0145" y="66.505" width="170.079" height="80.7385" fill="white"/>
-<path d="M58.0145,147.244h 170.079" fill="none" stroke="black"/>
-<path d="M228.093,147.244v -80.7385" fill="none" stroke="black"/>
-<path d="M228.093,66.505h -170.079" fill="none" stroke="black"/>
-<path d="M58.0145,66.505v 80.7385" fill="none" stroke="black"/>
-<text xml:space="preserve" x="99.8755" y="70.8661" fill="black" font-size="6.0554" font-family="Helvetica">h_run10_block_ib_0</text>
-<path d="M64.3925,72.224h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,69.8691h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="black" stroke-width="1" fill="none">
-<circle cx="79.2744" cy="69.8691" r="3.25821"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="77.3826" fill="black" font-size="6.0554" font-family="Helvetica">new_h</text>
-<path d="M64.3925,78.9522h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,76.5973h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="black" stroke-width="1" fill="none">
-<line x1="76.9708" y1="74.2937" x2="81.5779" y2="78.9009"/><line x1="76.9708" y1="78.9009" x2="81.5779" y2="74.2937"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="84.7135" fill="black" font-size="6.0554" font-family="Helvetica">h_run10_block_ib_1</text>
-<path d="M64.3925,85.6804h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,83.3255h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="#ff0000" stroke-width="1" fill="none">
-<circle cx="79.2744" cy="83.3255" r="3.25821"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="91.23" fill="black" font-size="6.0554" font-family="Helvetica">new_h</text>
-<path d="M64.3925,92.4086h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,90.0537h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="#ff0000" stroke-width="1" fill="none">
-<line x1="76.9708" y1="87.7502" x2="81.5779" y2="92.3573"/><line x1="76.9708" y1="92.3573" x2="81.5779" y2="87.7502"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="97.7464" fill="black" font-size="6.0554" font-family="Helvetica">h_run10_block_ib_2</text>
-<path d="M64.3925,99.1368h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,96.7819h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="#009900" stroke-width="1" fill="none">
-<circle cx="79.2744" cy="96.7819" r="3.25821"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="104.263" fill="black" font-size="6.0554" font-family="Helvetica">new_h</text>
-<path d="M64.3925,105.865h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,103.51h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="#009900" stroke-width="1" fill="none">
-<line x1="76.9708" y1="101.207" x2="81.5779" y2="105.814"/><line x1="76.9708" y1="105.814" x2="81.5779" y2="101.207"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="111.594" fill="black" font-size="6.0554" font-family="Helvetica">h_run10_block_ib_3</text>
-<path d="M64.3925,112.593h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,110.238h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="#0000ff" stroke-width="1" fill="none">
-<circle cx="79.2744" cy="110.238" r="3.25821"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="118.11" fill="black" font-size="6.0554" font-family="Helvetica">new_h</text>
-<path d="M64.3925,119.321h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,116.967h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="#0000ff" stroke-width="1" fill="none">
-<line x1="76.9708" y1="114.663" x2="81.5779" y2="119.27"/><line x1="76.9708" y1="119.27" x2="81.5779" y2="114.663"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="124.627" fill="black" font-size="6.0554" font-family="Helvetica">h_run10_block_ib_4</text>
-<path d="M64.3925,126.05h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,123.695h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="#cc00ff" stroke-width="1" fill="none">
-<circle cx="79.2744" cy="123.695" r="3.25821"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="131.143" fill="black" font-size="6.0554" font-family="Helvetica">new_h</text>
-<path d="M64.3925,132.778h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,130.423h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="#cc00ff" stroke-width="1" fill="none">
-<line x1="76.9708" y1="128.119" x2="81.5779" y2="132.727"/><line x1="76.9708" y1="132.727" x2="81.5779" y2="128.119"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="138.474" fill="black" font-size="6.0554" font-family="Helvetica">h_run10_block_ib_5</text>
-<path d="M64.3925,139.506h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,137.151h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="#00ffff" stroke-width="1" fill="none">
-<circle cx="79.2744" cy="137.151" r="3.25821"/>
-</g>
-<text xml:space="preserve" x="99.8755" y="144.99" fill="black" font-size="6.0554" font-family="Helvetica">new_h</text>
-<path d="M64.3925,146.234h 29.7638v -4.70975h -29.7638z" fill="white"/>
-<path d="M64.3925,143.879h 29.7638" fill="none" stroke="#000099"/>
-<g stroke="#00ffff" stroke-width="1" fill="none">
-<line x1="76.9708" y1="141.576" x2="81.5779" y2="146.183"/><line x1="76.9708" y1="146.183" x2="81.5779" y2="141.576"/>
-</g>
 <text xml:space="preserve" x="196.807" y="18.7347" fill="black" font-size="18.0316" font-family="Helvetica">Sector 10 (Combined)</text></svg>
