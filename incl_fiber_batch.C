@@ -31,6 +31,8 @@ const double x_max = 600;
 const std::vector<int> sectors {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17};
 const std::vector<int> interface_boards {0, 1, 2, 3, 4, 5};
 
+const std::vector<Color_t> ib_colors {1, 2, 3, 4, 6, 7};
+
 std::map<double, std::string> vop_to_board_series = {
   {69.13, "A"},
   {69.18, "B"},
@@ -1275,8 +1277,8 @@ std::map<int, double> fiber_batch_to_scale_factor;
     combined_sector_canvas->SaveAs(combined_sector_filename.str().c_str());
 
     // create sector hists
-    gStyle->SetOptFit(1);
     TCanvas* sector_hist_canvas = new TCanvas();
+    gStyle->SetOptFit(1);
     sector_hist->Fit("gaus", "Q");
     TF1* gaus = (TF1*) sector_hist->GetListOfFunctions()->FindObject("gaus");
     double mean = gaus->GetParameter(1);
@@ -1289,8 +1291,8 @@ std::map<int, double> fiber_batch_to_scale_factor;
     sector_hist_filename << "./new_vop/sector/sector" << sector << ".svg";
     sector_hist_canvas->SaveAs(sector_hist_filename.str().c_str());
 
-    gStyle->SetOptFit(1);
     TCanvas* adj_sector_hist_canvas = new TCanvas();
+    gStyle->SetOptFit(1);
     adj_sector_hist->Fit("gaus", "Q");
     TF1* adj_gaus = (TF1*) adj_sector_hist->GetListOfFunctions()->FindObject("gaus");
     double adj_mean = adj_gaus->GetParameter(1);
