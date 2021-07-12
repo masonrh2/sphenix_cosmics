@@ -234,7 +234,7 @@ void incl_fiber_batch() {
         }
         if (is_int) {
           dbn_to_fiber_batch[dbn] = fiber_batch;
-          std::cout << "good at DBN " << dbn << ": FB " << fiber_batch << std::endl;
+          std::cout << "good at DBN [" << std::stoi(dbn) << "]: FB " << fiber_batch << std::endl;
         } else {
           std::cout << "error at DBN " << dbn << ": '" << split[0] << "' not castable to int" << std::endl; 
         }
