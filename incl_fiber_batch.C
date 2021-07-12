@@ -121,9 +121,6 @@ std::vector<std::vector<double>> get_rainbow(int n) {
 
 
 void incl_fiber_batch() {
-  
-  
-  
   gStyle->SetCanvasPreferGL(1);
   std::map<int, Color_t> sector_colors;
   for (int i = 0; i < sectors.size(); i++) {
@@ -237,6 +234,7 @@ void incl_fiber_batch() {
         }
         if (is_int) {
           dbn_to_fiber_batch[dbn] = fiber_batch;
+          std::cout << "good at DBN " << dbn << ": FB " << fiber_batch << std::endl;
         } else {
           std::cout << "error at DBN " << dbn << ": '" << split[0] << "' not castable to int" << std::endl; 
         }
