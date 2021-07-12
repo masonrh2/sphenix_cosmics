@@ -496,17 +496,17 @@ void do_sipm() {
 
 void DrawCol()
 {
-   Int_t i,n;
-   Double_t x,y;
-   TLatex *l;
+  Int_t i,n;
+  Double_t x,y;
+  TLatex *l;
 
-   TGraph *g = (TGraph*)gPad->GetListOfPrimitives()->FindObject("Graph");
-   n = g->GetN();
-   TMarker *m;
-   for (i=0; i<n; i++) {
-      g->GetPoint(i,x,y);
-      m = new TMarker(x,y,20);
-      m->SetMarkerColor(hist_colors[i]);
-      m->Paint();
-   }
+  TGraph *g = (TGraph*)gPad->GetListOfPrimitives()->FindObject("Graph");
+  n = g->GetN();
+  TMarker *m;
+  for (i=0; i<n; i++) {
+    g->GetPoint(i,x,y);
+    m = new TMarker(x,y,20);
+    m->SetMarkerColor(hist_colors[i]);
+    m->Paint();
+  }
 }

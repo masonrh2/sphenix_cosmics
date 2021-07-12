@@ -502,6 +502,12 @@ void incl_fiber_batch() {
     }
   }
 
+  csvfile csv("dbn_to_mpv.csv");
+  csv << "dbn" << "mpv" << csvfile::endrow;
+  for (auto const &p : dbn_mpv) {
+    csv << std::stoi(p.first) << p.second << csvfile::endrow;
+  }
+
   // got all mpv data...calculate 
   int num_dbns_with_mpv = 0;
   double sum_for_mpv_mean = 0;
