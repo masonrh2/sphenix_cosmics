@@ -179,7 +179,7 @@ void incl_fiber_batch() {
     offset += 4;
   }
   
-  std::map<std::string, int> dbn_to_fiber_batch;
+  std::map<int, int> dbn_to_fiber_batch;
 
   std::fstream blocks_1_12;
   blocks_1_12.open("blocks_1-12.csv",std::ios::in);
@@ -225,18 +225,27 @@ void incl_fiber_batch() {
       if (split.size() < 2) {
         std::cout << "skipped fiber batch for DBN " << dbn << " since it does not contain a '-'" << std::endl;
       } else {
-        is_int = true;
+        bool is_int_batch = true;
         int fiber_batch = 0;
         try {
           fiber_batch = std::stoi(split[0]);
         } catch (std::exception &e) {
-          is_int = false;
+          is_int_batch = false;
         }
-        if (is_int) {
-          dbn_to_fiber_batch[dbn] = fiber_batch;
-          std::cout << "good at DBN [" << std::stoi(dbn) << "]: FB " << fiber_batch << std::endl;
+        bool is_int_dbn = true;
+        int int_dbn = 0;
+        try {
+          int_dbn = std::stoi(dbn);
+        } catch (std::exception &e) {
+          is_int_dbn = false;
+        }
+        if (!is_int_batch) {
+          std::cout << "error at DBN " << dbn << ": '" << split[0] << "' not castable to int!" << std::endl; 
+        } else if (!is_int_dbn) {
+          std::cout << 'error at DBN ' << dbn << ': ' << ' dbn not castable to int!' << std::endl; 
         } else {
-          std::cout << "error at DBN " << dbn << ": '" << split[0] << "' not castable to int" << std::endl; 
+          dbn_to_fiber_batch[int_dbn] = fiber_batch;
+          //std::cout << 'good at DBN [' << std::stoi(dbn) << ']: FB ' << fiber_batch << std::endl;
         }
       }
     }
@@ -287,17 +296,27 @@ void incl_fiber_batch() {
       if (split.size() < 2) {
         std::cout << "skipped fiber batch for DBN " << dbn << " since it does not contain a '-'" << std::endl;
       } else {
-        is_int = true;
+        bool is_int_batch = true;
         int fiber_batch = 0;
         try {
           fiber_batch = std::stoi(split[0]);
         } catch (std::exception &e) {
-          is_int = false;
+          is_int_batch = false;
         }
-        if (is_int) {
-          dbn_to_fiber_batch[dbn] = fiber_batch;
+        bool is_int_dbn = true;
+        int int_dbn = 0;
+        try {
+          int_dbn = std::stoi(dbn);
+        } catch (std::exception &e) {
+          is_int_dbn = false;
+        }
+        if (!is_int_batch) {
+          std::cout << "error at DBN " << dbn << ": '" << split[0] << "' not castable to int!" << std::endl; 
+        } else if (!is_int_dbn) {
+          std::cout << 'error at DBN ' << dbn << ': ' << ' dbn not castable to int!' << std::endl; 
         } else {
-          std::cout << "error at DBN " << dbn << ": '" << split[0] << "' not castable to int" << std::endl; 
+          dbn_to_fiber_batch[int_dbn] = fiber_batch;
+          //std::cout << 'good at DBN [' << std::stoi(dbn) << ']: FB ' << fiber_batch << std::endl;
         }
       }
     }
@@ -822,10 +841,21 @@ void incl_fiber_batch() {
         continue;
       }
       std::string dbn = sector_map[sector][block_num];
-      if (dbn_to_fiber_batch.find(dbn) == dbn_to_fiber_batch.end()) {
-        std::cout << "** failed to add DBN [" << std::stoi(dbn) << "] since dbn batch map does not contain this dbn!" << std::endl;
+      bool is_int_dbn = true;
+      int int_dbn = 0;
+      try {
+        int_dbn = std::stoi(dbn);
+      } catch (std::exception &e) {
+        is_int_dbn = false;
+      }
+      if (!is_int_dbn) {
+        std::cout << "** failed to add DBN " << std::stoi(dbn) << " since dbn batch map does not contain this dbn!" << std::endl;
+        continue;
+      }
+      if (dbn_to_fiber_batch.find(int_dbn) == dbn_to_fiber_batch.end()) {
+        std::cout << "** failed to add DBN " << std::stoi(dbn) << " since dbn not castable to int!" << std::endl;
       } else {
-        int fiber_batch = dbn_to_fiber_batch[dbn];
+        int fiber_batch = dbn_to_fiber_batch[int_dbn];
         if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
           double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
           double adjusted_content = content * correction_factor;
@@ -1158,13 +1188,26 @@ void incl_fiber_batch() {
         }
         std::cout << "sector " << sector << ", block " << block_num << " (bin " << i << "); ";
         std::string dbn = sector_map[sector][block_num];
-        int fiber_batch = dbn_to_fiber_batch[dbn];
         if (sector_map[sector][block_num][0] == 'F' || std::stoi(sector_map[sector][block_num]) >= 10000) {
           std::cout << "rejected fudan block" << std::endl;
           data->SetBinContent(i, -9000.);
           adj_data->SetBinContent(i, -9000.);
           continue;
         }
+
+        bool is_int_dbn = true;
+        int int_dbn = 0;
+        try {
+          int_dbn = std::stoi(dbn);
+        } catch (std::exception &e) {
+          is_int_dbn = false;
+        }
+        if (!is_int_dbn) {
+          std::cout << "DBN " << std::stoi(dbn) << "; not castable to int!";
+          continue;
+        }
+
+        int fiber_batch = dbn_to_fiber_batch[int_dbn];
         std::cout << "DBN " << std::stoi(dbn) << ", FB " << fiber_batch << "; ";
         if (content <= 0 || content >= 1000) {
           std::cout << "rejected bin content " << content << std::endl;
