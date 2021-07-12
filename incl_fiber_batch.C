@@ -822,25 +822,29 @@ void incl_fiber_batch() {
         continue;
       }
       std::string dbn = sector_map[sector][block_num];
-      int fiber_batch = dbn_to_fiber_batch[dbn];
-      if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
-        double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
-        double adjusted_content = content * correction_factor;
-        //std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
-        //  << " (" << content << "->" << adjusted_content << ")" << std::endl;
-        // i guess this is valid data?
-        double vop = new_sipm_map[sector][block_num];
-        //new_all_vop.push_back(vop);
-        adjusted_all_mpv.push_back(adjusted_content);
-        adjusted_histogram_data[vop].push_back(adjusted_content);
-        adjusted_dbn_mpv[dbn] = adjusted_content;
-        adjusted_sector_vop_mpv[sector][vop].push_back(adjusted_content);
-        adjusted_vop_sector_mpv[vop][sector].push_back(adjusted_content);
-        data->SetBinContent(i, adjusted_content);
-        std::cout << "changed sector " << sector << " block " << block_num << " from " << content << " to " << adjusted_content << std::endl;
-        //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
+      if (dbn_to_fiber_batch.find(dbn) == dbn_to_fiber_batch.end()) {
+        std::cout << "** failed to add DBN [" << std::stoi(dbn) << "] since dbn batch map does not contain this dbn!" << std::endl;
       } else {
-        std::cout << "** failed to add DBN " << std::stoi(dbn) << " since batch map does not contain batch " << fiber_batch << std::endl;
+        int fiber_batch = dbn_to_fiber_batch[dbn];
+        if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
+          double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
+          double adjusted_content = content * correction_factor;
+          //std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
+          //  << " (" << content << "->" << adjusted_content << ")" << std::endl;
+          // i guess this is valid data?
+          double vop = new_sipm_map[sector][block_num];
+          //new_all_vop.push_back(vop);
+          adjusted_all_mpv.push_back(adjusted_content);
+          adjusted_histogram_data[vop].push_back(adjusted_content);
+          adjusted_dbn_mpv[dbn] = adjusted_content;
+          adjusted_sector_vop_mpv[sector][vop].push_back(adjusted_content);
+          adjusted_vop_sector_mpv[vop][sector].push_back(adjusted_content);
+          data->SetBinContent(i, adjusted_content);
+          std::cout << "changed sector " << sector << " block " << block_num << " from " << content << " to " << adjusted_content << std::endl;
+          //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
+        } else {
+          std::cout << "** failed to add DBN " << std::stoi(dbn) << " since batch map does not contain batch " << fiber_batch << std::endl;
+        }
       }
     }
     TCanvas* adj_sector_canvas = new TCanvas();
