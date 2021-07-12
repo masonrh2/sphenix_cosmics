@@ -242,10 +242,10 @@ void incl_fiber_batch() {
         if (!is_int_batch) {
           std::cout << "error at DBN " << dbn << ": '" << split[0] << "' not castable to int!" << std::endl; 
         } else if (!is_int_dbn) {
-          std::cout << 'error at DBN ' << dbn << ': ' << ' dbn not castable to int!' << std::endl; 
+          std::cout << "error at DBN " << dbn << ": " << " dbn not castable to int!" << std::endl; 
         } else {
           dbn_to_fiber_batch[int_dbn] = fiber_batch;
-          //std::cout << 'good at DBN [' << std::stoi(dbn) << ']: FB ' << fiber_batch << std::endl;
+          //std::cout << "good at DBN [" << std::stoi(dbn) << "]: FB " << fiber_batch << std::endl;
         }
       }
     }
@@ -313,10 +313,10 @@ void incl_fiber_batch() {
         if (!is_int_batch) {
           std::cout << "error at DBN " << dbn << ": '" << split[0] << "' not castable to int!" << std::endl; 
         } else if (!is_int_dbn) {
-          std::cout << 'error at DBN ' << dbn << ': ' << ' dbn not castable to int!' << std::endl; 
+          std::cout << "error at DBN " << dbn << ": " << " dbn not castable to int!" << std::endl; 
         } else {
           dbn_to_fiber_batch[int_dbn] = fiber_batch;
-          //std::cout << 'good at DBN [' << std::stoi(dbn) << ']: FB ' << fiber_batch << std::endl;
+          //std::cout << "good at DBN [" << std::stoi(dbn) << "]: FB " << fiber_batch << std::endl;
         }
       }
     }
