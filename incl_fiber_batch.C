@@ -331,7 +331,7 @@ void incl_fiber_batch() {
   std::cout <<std::endl;
   */
 
- std::map<int, double> fiber_batch_to_scale_factor;
+std::map<int, double> fiber_batch_to_scale_factor;
   std::fstream fiber_batch_map;
   fiber_batch_map.open("fiberbatchmeans.csv",std::ios::in);
   // std::vector<std::string> row;
@@ -1242,8 +1242,8 @@ void incl_fiber_batch() {
       hs->Add(data);
       adj_hs->Add(adj_data);
       
-      data->SetMarkerStyle(4);
-      adj_data->SetMarkerStyle(5);
+      data->SetMarkerStyle(1);
+      adj_data->SetMarkerStyle(1);
       combined_hs->Add(data);
       combined_hs->Add(adj_data);
     }
