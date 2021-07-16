@@ -1242,8 +1242,8 @@ std::map<int, double> fiber_batch_to_scale_factor;
       hs->Add(data);
       adj_hs->Add(adj_data);
       
-      data->SetMarkerStyle(1);
-      adj_data->SetMarkerStyle(1);
+      data->SetMarkerStyle(21);
+      adj_data->SetMarkerStyle(21);
       combined_hs->Add(data);
       combined_hs->Add(adj_data);
     }
