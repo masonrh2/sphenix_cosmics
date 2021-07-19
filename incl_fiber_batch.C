@@ -1251,7 +1251,7 @@ void incl_fiber_batch() {
         }
         if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
           double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
-          double adjusted_content = content * correction_factor;
+          double adjusted_content = content * correction_factor * correction_factor;
           //std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
           //  << " (" << content << "->" << adjusted_content << ")" << std::endl;
           // i guess this is valid data?
