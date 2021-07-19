@@ -1158,7 +1158,11 @@ void incl_fiber_batch() {
   std::vector<double> adj_sigmas;
   std::vector<double> adj_sigma_errs;
 
+  int total_num_blocks = 0;
   double max_diff = 0;
+  double original_mean = 0;
+  double adjusted_mean = 0;
+
 
   gStyle->SetOptStat(1000000001); // stats, just header
   gStyle->SetOptFit(1); // fit, default
@@ -1193,8 +1197,8 @@ void incl_fiber_batch() {
     adj_sector_hist->GetSumw2();
   
     int num_blocks = 0;
-    double original_mean_mpv = 0;
-    double adj_mean_mpv = 0;
+    double total_original_mean_mpv = 0;
+    double total_adj_mean_mpv = 0;
 
     for (int ib : interface_boards) {
       TH1D* data;
@@ -1264,6 +1268,10 @@ void incl_fiber_batch() {
           num_blocks++;
           original_mean_mpv += content;
           adj_mean_mpv += adjusted_content;
+
+          total_num_blocks++;
+          total_original_mean_mpv += content;
+          total_adj_mean_mpv += adjusted_content;
 
           sector_hist->Fill(content);
           adj_sector_hist->Fill(adjusted_content);
@@ -1413,6 +1421,10 @@ void incl_fiber_batch() {
     combined_sector_hist_canvas->SaveAs(combined_sector_hist_filename.str().c_str());
 
   }
+
+  total_original_mean_mpv = total_original_mean_mpv / total_num_blocks;
+  total_adj_mean_mpv = total_adj_mean_mpv / total_num_blocks;
+
   std::vector<double> sectors_as_double;
   std::vector<double> sector_err;
   for (int i = 0; i < sectors.size(); i++) {
@@ -1482,4 +1494,5 @@ void incl_fiber_batch() {
     std::cout << "sector " << sectors[i] << " mean " << original_means[i] << " -> " << adj_means[i] << ", sigma " << original_sigmas[i] << " -> " << adj_sigmas[i] << std::endl;
   }
   std::cout << "max diff: " << max_diff << std::endl;
+  std::cout << "mean over all sectors " << total_original_mean_mpv << " -> " << total_adj_mean_mpv << std::endl;
 }
