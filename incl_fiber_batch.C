@@ -1158,6 +1158,8 @@ void incl_fiber_batch() {
   std::vector<double> adj_sigmas;
   std::vector<double> adj_sigma_errs;
 
+  double max_diff = 0;
+
   gStyle->SetOptStat(1000000001); // stats, just header
   gStyle->SetOptFit(1); // fit, default
 
@@ -1258,6 +1260,7 @@ void incl_fiber_batch() {
           adj_data->SetBinContent(i, adjusted_content);
           diff_data->SetBinContent(i, adjusted_content - content);
 
+          if (std::abs(adjusted_content - content) > max_diff) { max_diff = std::abs(adjusted_content - content); }
           num_blocks++;
           original_mean_mpv += content;
           adj_mean_mpv += adjusted_content;
@@ -1478,4 +1481,5 @@ void incl_fiber_batch() {
   for (int i = 0; i < sectors.size(); i++) {
     std::cout << "sector " << sectors[i] << " mean " << original_means[i] << " -> " << adj_means[i] << ", sigma " << original_sigmas[i] << " -> " << adj_sigmas[i] << std::endl;
   }
+  std::cout << "max diff: " << max_diff << std::endl;
 }
