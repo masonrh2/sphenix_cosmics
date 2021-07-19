@@ -5,7 +5,7 @@
 </title>
 <desc>
 Creator: ROOT Version 6.24/00
-CreationDate: Mon Jul 19 12:15:41 2021</desc>
+CreationDate: Mon Jul 19 13:27:57 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -135,7 +135,7 @@ CreationDate: Mon Jul 19 12:15:41 2021</desc>
 <g transform="rotate(-90,21.6784,65.1643)">
 <text xml:space="preserve" x="21.6784" y="65.1643" fill="black" font-size="12.8453" font-family="Helvetica">MPV</text>
 </g>
-<text xml:space="preserve" x="252.197" y="18.7347" fill="black" font-size="16.9898" font-family="Helvetica">Sector 4</text>
+<text xml:space="preserve" x="208.211" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Sector 4 (Original)</text>
 <g fill="black">
 <rect x="60.9483" y="241.549" width="6.51643" height="6.51643"/>
 </g>
@@ -485,4 +485,9 @@ CreationDate: Mon Jul 19 12:15:41 2021</desc>
 <path d="M63.9961,58.9519h -6.80315" fill="none" stroke="black"/>
 <path d="M63.9961,48.6994h -6.80315" fill="none" stroke="black"/>
 <path d="M70.7992,38.4469h -13.6063" fill="none" stroke="black"/>
-<text xml:space="preserve" x="252.197" y="18.7347" fill="black" font-size="16.9898" font-family="Helvetica">Sector 4</text></svg>
+<path d="M57.1929,223.326h 453.543" fill="none" stroke="black" stroke-width="2" stroke-dasharray=" 3, 3"/>
+<rect x="397.35" y="38.4469" width="113.386" height="38.4469" fill="#f2f2f2"/>
+<path d="M402.238,76.8938v 3.25821h 111.757v -36.8178h -3.25821v 33.5596z" fill="black"/>
+<path d="M397.35,76.8938v -38.4469h 113.386v 38.4469h -113.386z" fill="none" stroke="black"/>
+<text xml:space="preserve" x="400.446" y="61.9061" fill="black" font-size="13.3413" font-family="Helvetica" font-weight="bold">Mean MPV: 239.3</text>
+<text xml:space="preserve" x="208.211" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Sector 4 (Original)</text></svg>

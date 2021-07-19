@@ -4,6 +4,7 @@
 #include <TStyle.h>
 #include <TH1D.h>
 #include <TF1.h>
+#include <TLine.h>
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TGraphErrors.h>
@@ -31,6 +32,7 @@ const double x_min = 0;
 const double x_max = 600;
 
 const std::vector<int> sectors {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17};
+int max_sector = sectors[sectors.size() - 1];
 const std::vector<int> interface_boards {0, 1, 2, 3, 4, 5};
 
 const std::vector<Color_t> ib_colors {1, 2, 3, 4, 6, 7};
@@ -1145,7 +1147,17 @@ void incl_fiber_batch() {
   csvfile adj_sector_csv("./adjusted_vop/sector/fit_parameters.csv");
   adj_sector_csv << "sector" << "mean" << "mean err" << "sigma" << "sigma err" << csvfile::endrow;
 
+  
   // create sector diagrams
+  std::vector<double> original_means;
+  std::vector<double> original_mean_errs;
+  std::vector<double> original_sigmas;
+  std::vector<double> original_sigma_errs;
+  std::vector<double> adj_means;
+  std::vector<double> adj_mean_errs;
+  std::vector<double> adj_sigmas;
+  std::vector<double> adj_sigma_errs;
+
   gStyle->SetOptStat(1000000001); // stats, just header
   gStyle->SetOptFit(1); // fit, default
 
@@ -1156,7 +1168,7 @@ void incl_fiber_batch() {
     TFile* sectorFile = new TFile(sectorFileName.str().c_str());
 
     std::stringstream sector_title;
-    sector_title << "Sector " << sector << ";Block Number;MPV";
+    sector_title << "Sector " << sector << " (Original);Block Number;MPV";
     THStack* hs = new THStack("hs", sector_title.str().c_str());
     std::stringstream adj_sector_title;
     adj_sector_title << "Sector " << sector << " (Adjusted);Block Number;MPV";
@@ -1177,6 +1189,10 @@ void incl_fiber_batch() {
     adj_sector_hist_title << "sector " << sector << " (adjusted);MPV;Num Blocks";
     TH1D* adj_sector_hist = new TH1D("adj_h", adj_sector_hist_title.str().c_str(), num_bins, x_min, x_max);
     adj_sector_hist->GetSumw2();
+  
+    int num_blocks = 0;
+    double original_mean_mpv = 0;
+    double adj_mean_mpv = 0;
 
     for (int ib : interface_boards) {
       TH1D* data;
@@ -1241,6 +1257,11 @@ void incl_fiber_batch() {
           data->SetBinContent(i, content);
           adj_data->SetBinContent(i, adjusted_content);
           diff_data->SetBinContent(i, adjusted_content - content);
+
+          num_blocks++;
+          original_mean_mpv += content;
+          adj_mean_mpv += adjusted_content;
+
           sector_hist->Fill(content);
           adj_sector_hist->Fill(adjusted_content);
           std::cout << "mpv " << content << " -> " << adjusted_content << std::endl;
@@ -1265,6 +1286,9 @@ void incl_fiber_batch() {
       combined_hs->Add(data);
       combined_hs->Add(adj_data);
     }
+    original_mean_mpv = original_mean_mpv / num_blocks;
+    adj_mean_mpv = adj_mean_mpv / num_blocks;
+
     std::stringstream sector_filename;
     TCanvas* sector_canvas = new TCanvas();
     sector_filename << "./sector_diagrams/original/sector" << sector << ".svg";
@@ -1272,6 +1296,16 @@ void incl_fiber_batch() {
     hs->SetMaximum(600.);
     hs->Draw("nostack");
     sector_canvas->SetGrid();
+    TLine* original_mean_line = new TLine(0.0, original_mean_mpv, 95.0, original_mean_mpv);
+    //original_mean_line->SetLineColor(kRed);
+    original_mean_line->SetLineStyle(2);
+    original_mean_line->SetLineWidth(2);
+    original_mean_line->Draw();
+    TPaveText* original_pave_text = new TPaveText(0.7, 0.8, 0.9, 0.9, "NDC");
+    std::stringstream original_mean_text;
+    original_mean_text << "Mean MPV: " << Form("%.1f", original_mean_mpv);
+    original_pave_text->AddText(original_mean_text.str().c_str());
+    original_pave_text->Draw();
     sector_canvas->SaveAs(sector_filename.str().c_str());
 
     std::stringstream adj_sector_filename;
@@ -1281,6 +1315,16 @@ void incl_fiber_batch() {
     adj_hs->SetMaximum(600.);
     adj_hs->Draw("nostack");
     adj_sector_canvas->SetGrid();
+    TLine* adj_mean_line = new TLine(0.0, adj_mean_mpv, 95.0, adj_mean_mpv);
+    //adj_mean_line->SetLineColor(kRed);
+    adj_mean_line->SetLineStyle(2);
+    adj_mean_line->SetLineWidth(2);
+    adj_mean_line->Draw();
+    TPaveText* adj_pave_text = new TPaveText(0.7, 0.8, 0.9, 0.9, "NDC");
+    std::stringstream adj_mean_text;
+    adj_mean_text << "Mean MPV: " << Form("%.1f", adj_mean_mpv);
+    adj_pave_text->AddText(adj_mean_text.str().c_str());
+    adj_pave_text->Draw();
     adj_sector_canvas->SaveAs(adj_sector_filename.str().c_str());
 
     std::stringstream combined_sector_filename;
@@ -1306,10 +1350,10 @@ void incl_fiber_batch() {
     //gStyle->SetOptFit(1);
     TFitResultPtr gaus_fit = sector_hist->Fit("gaus", "Q");
     TF1* gaus = (TF1*) sector_hist->GetListOfFunctions()->FindObject("gaus");
-    double mean = gaus->GetParameter(1);
-    double mean_err = gaus->GetParError(1);
-    double sigma = gaus->GetParameter(2);
-    double sigma_err = gaus->GetParError(2);
+    double mean = gaus->GetParameter(1); original_means.push_back(mean);
+    double mean_err = gaus->GetParError(1); original_mean_errs.push_back(mean_err);
+    double sigma = gaus->GetParameter(2); original_sigmas.push_back(sigma);
+    double sigma_err = gaus->GetParError(2); original_sigma_errs.push_back(sigma_err);
     sector_csv << sector << mean << mean_err << sigma << sigma_err << csvfile::endrow;
     sector_hist->Draw("E0 SAME");
     std::stringstream sector_hist_filename;
@@ -1320,10 +1364,10 @@ void incl_fiber_batch() {
     //gStyle->SetOptFit(1);
     TFitResultPtr adj_gaus_fit = adj_sector_hist->Fit("gaus", "Q");
     TF1* adj_gaus = (TF1*) adj_sector_hist->GetListOfFunctions()->FindObject("gaus");
-    double adj_mean = adj_gaus->GetParameter(1);
-    double adj_mean_err = adj_gaus->GetParError(1);
-    double adj_sigma = adj_gaus->GetParameter(2);
-    double adj_sigma_err = adj_gaus->GetParError(2);
+    double adj_mean = adj_gaus->GetParameter(1); adj_means.push_back(adj_mean);
+    double adj_mean_err = adj_gaus->GetParError(1); adj_mean_errs.push_back(adj_mean_err);
+    double adj_sigma = adj_gaus->GetParameter(2); adj_sigmas.push_back(adj_sigma);
+    double adj_sigma_err = adj_gaus->GetParError(2); adj_sigma_errs.push_back(adj_sigma_err);
     adj_sector_csv << sector << adj_mean << adj_mean_err << adj_sigma << adj_sigma_err << csvfile::endrow;
     adj_sector_hist->Draw("E0 SAME");
     std::stringstream adj_sector_hist_filename;
@@ -1336,8 +1380,10 @@ void incl_fiber_batch() {
     combined_hist_title << "Sector " << sector << " Before and After FB Adjustment;MPV;Num Blocks";
     THStack* combined_hist = new THStack("hs", combined_hist_title.str().c_str());
     sector_hist->SetLineColorAlpha(kRed, 0.5);
+    //sector_hist->SetFillColorAlpha(kRed, 0.5);
     sector_hist->GetFunction("gaus")->SetLineColor(kRed);
     adj_sector_hist->SetLineColorAlpha(kBlue, 0.5);
+    //adj_sector_hist->SetFillColorAlpha(kBlue, 0.5);
     adj_sector_hist->GetFunction("gaus")->SetLineColor(kBlue);
     combined_hist->Add(sector_hist);
     combined_hist->Add(adj_sector_hist);
@@ -1362,5 +1408,74 @@ void incl_fiber_batch() {
     std::stringstream combined_sector_hist_filename;
     combined_sector_hist_filename << "./new_vop/sector/sector" << sector << "_combined.svg";
     combined_sector_hist_canvas->SaveAs(combined_sector_hist_filename.str().c_str());
+
+  }
+  std::vector<double> sectors_as_double;
+  std::vector<double> sector_err;
+  for (int i = 0; i < sectors.size(); i++) {
+    sectors_as_double.push_back(sectors[i]);
+    sector_err.push_back(0.0);
+  }
+  
+  // create sigma and mean plots
+  TCanvas* original_mean_canvas = new TCanvas();
+  TGraphErrors* original_mean_graph = new TGraphErrors(sectors.size(), &sectors_as_double[0], &original_means[0], &sector_err[0], &original_mean_errs[0]);
+  original_mean_graph->SetTitle("Sector MPV Means (Original)");
+  original_mean_graph->GetXaxis()->SetTitle("Sector");
+  original_mean_graph->GetYaxis()->SetTitle("Mean (MPV)");
+  original_mean_graph->GetXaxis()->SetLimits(0.0, max_sector + 1);
+  original_mean_graph->GetHistogram()->SetMinimum(0.0);
+  original_mean_graph->GetHistogram()->SetMaximum(600.0);
+  //original_mean_graph->GetYaxis()->SetLimits(220., 380.);
+  //original_mean_graph->SetMarkerStyle(5);
+  original_mean_graph->Draw("AP");
+  original_mean_canvas->SetGrid();
+  original_mean_canvas->SaveAs("./sector_diagrams/original_means.svg");
+
+  TCanvas* adj_mean_canvas = new TCanvas();
+  TGraphErrors* adj_mean_graph = new TGraphErrors(sectors.size(), &sectors_as_double[0], &adj_means[0], &sector_err[0], &adj_mean_errs[0]);
+  adj_mean_graph->SetTitle("Sector MPV Means (Adjusted)");
+  adj_mean_graph->GetXaxis()->SetTitle("Sector");
+  adj_mean_graph->GetYaxis()->SetTitle("Mean (MPV)");
+  adj_mean_graph->GetXaxis()->SetLimits(0.0, max_sector + 1);
+  adj_mean_graph->GetHistogram()->SetMinimum(0.0);
+  adj_mean_graph->GetHistogram()->SetMaximum(600.0);
+  //adj_mean_graph->GetYaxis()->SetLimits(220., 380.);
+  //adj_mean_graph->SetMarkerStyle(5);
+  adj_mean_graph->Draw("AP");
+  adj_mean_canvas->SetGrid();
+  adj_mean_canvas->SaveAs("./sector_diagrams/adj_means.svg");
+
+  TCanvas* original_sigma_canvas = new TCanvas();
+  TGraphErrors* original_sigma_graph = new TGraphErrors(sectors.size(), &sectors_as_double[0], &original_sigmas[0], &sector_err[0], &original_sigma_errs[0]);
+  original_sigma_graph->SetTitle("Sector MPV Sigmas (Original)");
+  original_sigma_graph->GetXaxis()->SetTitle("Sector");
+  original_sigma_graph->GetYaxis()->SetTitle("Sigma (MPV)");
+  original_sigma_graph->GetXaxis()->SetLimits(0.0, max_sector + 1);
+  original_sigma_graph->GetHistogram()->SetMinimum(0.0);
+  original_sigma_graph->GetHistogram()->SetMaximum(100.0);
+  //original_sigma_graph->GetYaxis()->SetLimits(220., 380.);
+  original_sigma_graph->SetMarkerStyle(21);
+  original_sigma_graph->Draw("AP");
+  original_sigma_canvas->SetGrid();
+  original_sigma_canvas->SaveAs("./sector_diagrams/original_sigmas.svg");
+
+  TCanvas* adj_sigma_canvas = new TCanvas();
+  TGraphErrors* adj_sigma_graph = new TGraphErrors(sectors.size(), &sectors_as_double[0], &adj_sigmas[0], &sector_err[0], &adj_sigma_errs[0]);
+  adj_sigma_graph->SetTitle("Sector MPV Sigmas (Adjusted)");
+  adj_sigma_graph->GetXaxis()->SetTitle("Sector");
+  adj_sigma_graph->GetYaxis()->SetTitle("Sigma (MPV)");
+  adj_sigma_graph->GetXaxis()->SetLimits(0.0, max_sector + 1);
+  adj_sigma_graph->GetHistogram()->SetMinimum(0.0);
+  adj_sigma_graph->GetHistogram()->SetMaximum(100.0);
+  //adj_sigma_graph->GetYaxis()->SetLimits(220., 380.);
+  adj_sigma_graph->SetMarkerStyle(21);
+  adj_sigma_graph->Draw("AP");
+  adj_sigma_canvas->SetGrid();
+  adj_sigma_canvas->SaveAs("./sector_diagrams/adj_sigmas.svg");
+
+
+  for (int i = 0; i < sectors.size(); i++) {
+    std::cout << "sector " << sectors[i] << " mean " << original_means[i] << " -> " << adj_means[i] << ", sigma " << original_sigmas[i] << " -> " << adj_sigmas[i] << std::endl;
   }
 }
