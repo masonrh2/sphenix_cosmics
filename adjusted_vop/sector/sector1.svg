@@ -4,8 +4,8 @@
 ./adjusted_vop/sector/sector1.svg
 </title>
 <desc>
-Creator: ROOT Version 6.22/02
-CreationDate: Fri Jul 16 02:50:51 2021</desc>
+Creator: ROOT Version 6.24/00
+CreationDate: Mon Jul 19 12:15:41 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -120,6 +120,29 @@ CreationDate: Fri Jul 16 02:50:51 2021</desc>
 <text xml:space="preserve" x="27.3803" y="103.448" fill="black" font-size="12.8453" font-family="Helvetica">Num Blocks</text>
 </g>
 <text xml:space="preserve" x="206.582" y="17.9202" fill="black" font-size="18.7938" font-family="Helvetica">sector 1 (adjusted)</text>
+<rect x="351.996" y="24.9905" width="204.094" height="92.2726" fill="white"/>
+<path d="M351.996,117.263h 204.094" fill="none" stroke="black"/>
+<path d="M556.091,117.263v -92.2726" fill="none" stroke="black"/>
+<path d="M556.091,24.9905h -204.094" fill="none" stroke="black"/>
+<path d="M351.996,24.9905v 92.2726" fill="none" stroke="black"/>
+<text xml:space="preserve" x="434.657" y="38.284" fill="black" font-size="16.0763" font-family="Helvetica">adj_h</text>
+<path d="M351.996,43.445h 204.094" fill="none" stroke="black"/>
+<text xml:space="preserve" x="376.009" y="57.8333" fill="black" font-size="16.0763" font-family="Helvetica"> / ndf </text>
+<text xml:space="preserve" x="370.307" y="52.946" fill="black" font-size="10.8842" font-family="Helvetica">2</text>
+<text xml:space="preserve" x="362.162" y="57.8333" fill="black" font-size="16.0763" font-family="Times">&#0967;</text>
+<text xml:space="preserve" x="481.086" y="57.8333" fill="black" font-size="16.0763" font-family="Helvetica"> 9.327 / 8</text>
+<text xml:space="preserve" x="362.162" y="77.3826" fill="black" font-size="16.0763" font-family="Helvetica">Constant </text>
+<text xml:space="preserve" x="511.225" y="76.568" fill="black" font-size="16.0763" font-family="Helvetica"> 2.28</text>
+<text xml:space="preserve" x="502.265" y="76.568" fill="black" font-size="16.0763" font-family="Times">&#0177;</text>
+<text xml:space="preserve" x="455.021" y="76.568" fill="black" font-size="16.0763" font-family="Helvetica"> 16.12 </text>
+<text xml:space="preserve" x="362.162" y="94.4882" fill="black" font-size="16.0763" font-family="Helvetica">Mean     </text>
+<text xml:space="preserve" x="520.185" y="94.4882" fill="black" font-size="16.0763" font-family="Helvetica"> 4.7</text>
+<text xml:space="preserve" x="511.225" y="94.4882" fill="black" font-size="16.0763" font-family="Times">&#0177;</text>
+<text xml:space="preserve" x="466.425" y="94.4882" fill="black" font-size="16.0763" font-family="Helvetica"> 312.1 </text>
+<text xml:space="preserve" x="362.162" y="112.408" fill="black" font-size="16.0763" font-family="Helvetica">Sigma    </text>
+<text xml:space="preserve" x="511.225" y="113.223" fill="black" font-size="16.0763" font-family="Helvetica"> 3.82</text>
+<text xml:space="preserve" x="502.265" y="113.223" fill="black" font-size="16.0763" font-family="Times">&#0177;</text>
+<text xml:space="preserve" x="457.464" y="113.223" fill="black" font-size="16.0763" font-family="Helvetica"> 40.41 </text>
 <g stroke="black" stroke-width="1" fill="none">
 <line x1="63.752" y1="346.022" x2="64.752" y2="346.022"/>
 </g>
@@ -261,4 +284,27 @@ CreationDate: Fri Jul 16 02:50:51 2021</desc>
  4.53543, 17.3246l 4.53543, 15.1355l 4.53543, 12.8277l 4.53543, 10.5611l 4.53543, 8.45516l 4.53543, 6.58793l 4.53543, 4.99893l 4.53543, 3.69609l 4.53543, 2.66403l 4.53543, 1.87255l 4.53543, 1.28398l 4.53543, 0.859091l 4.53543, 0.561011l 4.53543,
  0.35764l 4.53543, 0.222607l 4.53543, 0.135306l 4.53543, 0.0803227l 4.53543, 0.0465755l 4.53543, 0.0263829l 4.53543, 0.0309239h 77.1024" fill="none" stroke="#ff0000" stroke-width="2"/>
 <path d="M503.933,346.022h 4.53543" fill="none" stroke="#ff0000" stroke-width="2"/>
+<rect x="351.996" y="24.9905" width="204.094" height="92.2726" fill="white"/>
+<path d="M351.996,117.263h 204.094" fill="none" stroke="black"/>
+<path d="M556.091,117.263v -92.2726" fill="none" stroke="black"/>
+<path d="M556.091,24.9905h -204.094" fill="none" stroke="black"/>
+<path d="M351.996,24.9905v 92.2726" fill="none" stroke="black"/>
+<text xml:space="preserve" x="434.657" y="38.284" fill="black" font-size="16.0763" font-family="Helvetica">adj_h</text>
+<path d="M351.996,43.445h 204.094" fill="none" stroke="black"/>
+<text xml:space="preserve" x="376.009" y="57.8333" fill="black" font-size="16.0763" font-family="Helvetica"> / ndf </text>
+<text xml:space="preserve" x="370.307" y="52.946" fill="black" font-size="10.8842" font-family="Helvetica">2</text>
+<text xml:space="preserve" x="362.162" y="57.8333" fill="black" font-size="16.0763" font-family="Times">&#0967;</text>
+<text xml:space="preserve" x="481.086" y="57.8333" fill="black" font-size="16.0763" font-family="Helvetica"> 9.327 / 8</text>
+<text xml:space="preserve" x="362.162" y="77.3826" fill="black" font-size="16.0763" font-family="Helvetica">Constant </text>
+<text xml:space="preserve" x="511.225" y="76.568" fill="black" font-size="16.0763" font-family="Helvetica"> 2.28</text>
+<text xml:space="preserve" x="502.265" y="76.568" fill="black" font-size="16.0763" font-family="Times">&#0177;</text>
+<text xml:space="preserve" x="455.021" y="76.568" fill="black" font-size="16.0763" font-family="Helvetica"> 16.12 </text>
+<text xml:space="preserve" x="362.162" y="94.4882" fill="black" font-size="16.0763" font-family="Helvetica">Mean     </text>
+<text xml:space="preserve" x="520.185" y="94.4882" fill="black" font-size="16.0763" font-family="Helvetica"> 4.7</text>
+<text xml:space="preserve" x="511.225" y="94.4882" fill="black" font-size="16.0763" font-family="Times">&#0177;</text>
+<text xml:space="preserve" x="466.425" y="94.4882" fill="black" font-size="16.0763" font-family="Helvetica"> 312.1 </text>
+<text xml:space="preserve" x="362.162" y="112.408" fill="black" font-size="16.0763" font-family="Helvetica">Sigma    </text>
+<text xml:space="preserve" x="511.225" y="113.223" fill="black" font-size="16.0763" font-family="Helvetica"> 3.82</text>
+<text xml:space="preserve" x="502.265" y="113.223" fill="black" font-size="16.0763" font-family="Times">&#0177;</text>
+<text xml:space="preserve" x="457.464" y="113.223" fill="black" font-size="16.0763" font-family="Helvetica"> 40.41 </text>
 <text xml:space="preserve" x="206.582" y="17.9202" fill="black" font-size="18.7938" font-family="Helvetica">sector 1 (adjusted)</text></svg>
