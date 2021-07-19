@@ -1160,8 +1160,8 @@ void incl_fiber_batch() {
 
   int total_num_blocks = 0;
   double max_diff = 0;
-  double original_mean = 0;
-  double adjusted_mean = 0;
+  double total_original_mean = 0;
+  double total_adjusted_mean = 0;
 
 
   gStyle->SetOptStat(1000000001); // stats, just header
@@ -1197,8 +1197,8 @@ void incl_fiber_batch() {
     adj_sector_hist->GetSumw2();
   
     int num_blocks = 0;
-    double total_original_mean_mpv = 0;
-    double total_adj_mean_mpv = 0;
+    double original_mean_mpv = 0;
+    double adj_mean_mpv = 0;
 
     for (int ib : interface_boards) {
       TH1D* data;
@@ -1255,7 +1255,7 @@ void incl_fiber_batch() {
         }
         if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
           double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
-          double adjusted_content = content * correction_factor * correction_factor;
+          double adjusted_content = content * correction_factor;
           //std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
           //  << " (" << content << "->" << adjusted_content << ")" << std::endl;
           // i guess this is valid data?
@@ -1270,8 +1270,8 @@ void incl_fiber_batch() {
           adj_mean_mpv += adjusted_content;
 
           total_num_blocks++;
-          total_original_mean_mpv += content;
-          total_adj_mean_mpv += adjusted_content;
+          total_original_mean += content;
+          total_adjusted_mean += adjusted_content;
 
           sector_hist->Fill(content);
           adj_sector_hist->Fill(adjusted_content);
@@ -1422,8 +1422,8 @@ void incl_fiber_batch() {
 
   }
 
-  total_original_mean_mpv = total_original_mean_mpv / total_num_blocks;
-  total_adj_mean_mpv = total_adj_mean_mpv / total_num_blocks;
+  total_original_mean = total_original_mean / total_num_blocks;
+  total_adjusted_mean = total_adjusted_mean / total_num_blocks;
 
   std::vector<double> sectors_as_double;
   std::vector<double> sector_err;
@@ -1494,5 +1494,5 @@ void incl_fiber_batch() {
     std::cout << "sector " << sectors[i] << " mean " << original_means[i] << " -> " << adj_means[i] << ", sigma " << original_sigmas[i] << " -> " << adj_sigmas[i] << std::endl;
   }
   std::cout << "max diff: " << max_diff << std::endl;
-  std::cout << "mean over all sectors " << total_original_mean_mpv << " -> " << total_adj_mean_mpv << std::endl;
+  std::cout << "mean over all sectors " << total_original_mean << " -> " << total_adjusted_mean << std::endl;
 }
