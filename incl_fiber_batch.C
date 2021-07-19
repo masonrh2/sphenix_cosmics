@@ -1324,8 +1324,8 @@ void incl_fiber_batch() {
     //the following lines will force the stats for h[1] and h[2]
     //to be drawn at a different position to avoid overlaps
     combined_sector_hist_canvas->Update(); //to for the generation of the 'stat" boxes
-    TPaveStats* st1 = (TPaveStats*) sector_hist->GetListOfFunctions()->FindObject("stats");
-    TPaveStats* st2 = (TPaveStats*) adj_sector_hist->GetListOfFunctions()->FindObject("stats");
+    TPaveStats* st1 = (TPaveStats*) sector_hist->FindObject("stats");
+    TPaveStats* st2 = (TPaveStats*) adj_sector_hist->FindObject("stats");
     st1->SetX1NDC(.5); st1->SetX2NDC(.7);
     st2->SetX1NDC(.2); st2->SetX2NDC(.4);
     combined_sector_hist_canvas->Modified();
