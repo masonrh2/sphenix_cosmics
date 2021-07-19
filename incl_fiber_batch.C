@@ -7,12 +7,14 @@
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TGraphErrors.h>
+#include <TPaveStats.h>
 #include <TPad.h>
 #include <TMarker.h>
 #include <TExec.h>
 #include <TLatex.h>
 #include <THStack.h>
 #include <TLegend.h>
+#include <TFitResult.h>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -132,6 +134,7 @@ void incl_fiber_batch() {
     sector_colors[sector] = ci;
   }
 
+  // READ SECTOR MAPS
   std::fstream sector_map_file;
   sector_map_file.open("sector_maps.csv", std::ios::in);
   std::map<int, std::vector<std::string>> sector_map;
@@ -183,6 +186,7 @@ void incl_fiber_batch() {
   
   std::map<int, int> dbn_to_fiber_batch;
 
+  // READ DATABASE
   std::fstream blocks_1_12;
   blocks_1_12.open("blocks_1-12.csv",std::ios::in);
   // std::vector<std::string> row;
@@ -253,7 +257,6 @@ void incl_fiber_batch() {
     }
     line_num++;
   }
-
   std::fstream blocks_13_64;
   blocks_13_64.open("blocks_13-64.csv",std::ios::in);
   // std::vector<std::string> row;
@@ -333,7 +336,8 @@ void incl_fiber_batch() {
   std::cout <<std::endl;
   */
 
-std::map<int, double> fiber_batch_to_scale_factor;
+  // READ FIBER BATCH CORRECTION FACTORS
+  std::map<int, double> fiber_batch_to_scale_factor;
   std::fstream fiber_batch_map;
   fiber_batch_map.open("fiberbatchmeans.csv",std::ios::in);
   // std::vector<std::string> row;
@@ -378,6 +382,7 @@ std::map<int, double> fiber_batch_to_scale_factor;
     line_num++;
   }
 
+  // READ NEW VOP DATA
   std::fstream new_vop_file;
   new_vop_file.open("new_vop.csv",std::ios::in);
   std::map<int, std::vector<double>> new_sipm_map;
@@ -567,7 +572,7 @@ std::map<int, double> fiber_batch_to_scale_factor;
     for (double mpv : p.second) {
       hist->Fill(mpv);
     }
-    hist->Fit("gaus", "Q");
+    TFitResultPtr gaus_fit = hist->Fit("gaus", "Q");
     Color_t color = new_vop_colors[vop];
     hist_colors.push_back(color);
     hist->SetLineColor(color);
@@ -578,13 +583,12 @@ std::map<int, double> fiber_batch_to_scale_factor;
     std::stringstream fileName;
     fileName << "./new_vop/vop_graphs/vop" << vop << ".svg";
     canvas->SaveAs(fileName.str().c_str());
-    TF1* gaus = (TF1*) hist->GetListOfFunctions()->FindObject("gaus");
+    TF1* gaus = (TF1*) hist->GetFunction("gaus");
     double mean = gaus->GetParameter(1);
     double mean_err = gaus->GetParError(1);
     double sigma = gaus->GetParameter(2);
     double sigma_err = gaus->GetParError(2);
     new_vop_mpv << vop << mean << mean_err << sigma << sigma_err << csvfile::endrow;
-
     new_hist_vop.push_back(vop);
     new_hist_mpv_err.push_back(mean_err); //hist_mpv_err.push_back(hist->GetStdDev());
     new_hist_mpv.push_back(mean);
@@ -1279,7 +1283,7 @@ std::map<int, double> fiber_batch_to_scale_factor;
     // create sector hists
     TCanvas* sector_hist_canvas = new TCanvas();
     gStyle->SetOptFit(1);
-    sector_hist->Fit("gaus", "Q");
+    TFitResultPtr gaus_fit = sector_hist->Fit("gaus", "Q");
     TF1* gaus = (TF1*) sector_hist->GetListOfFunctions()->FindObject("gaus");
     double mean = gaus->GetParameter(1);
     double mean_err = gaus->GetParError(1);
@@ -1293,7 +1297,7 @@ std::map<int, double> fiber_batch_to_scale_factor;
 
     TCanvas* adj_sector_hist_canvas = new TCanvas();
     gStyle->SetOptFit(1);
-    adj_sector_hist->Fit("gaus", "Q");
+    TFitResultPtr adj_gaus_fit = adj_sector_hist->Fit("gaus", "Q");
     TF1* adj_gaus = (TF1*) adj_sector_hist->GetListOfFunctions()->FindObject("gaus");
     double adj_mean = adj_gaus->GetParameter(1);
     double adj_mean_err = adj_gaus->GetParError(1);
@@ -1304,5 +1308,30 @@ std::map<int, double> fiber_batch_to_scale_factor;
     std::stringstream adj_sector_hist_filename;
     adj_sector_hist_filename << "./adjusted_vop/sector/sector" << sector << ".svg";
     adj_sector_hist_canvas->SaveAs(adj_sector_hist_filename.str().c_str());
+
+    TCanvas* combined_sector_hist_canvas = new TCanvas();
+    std::stringstream combined_hist_title;
+    combined_hist_title << "Sector " << sector << " Before and After FB Adj.";
+    THStack* combined_hist = new THStack("hs", combined_hist_title.str().c_str());
+    sector_hist->SetLineColorAlpha(kRed, 0.5);
+    sector_hist->GetFunction("gaus")->SetLineColor(kRed);
+    adj_sector_hist->SetLineColorAlpha(kBlue, 0.5);
+    adj_sector_hist->GetFunction("gaus")->SetLineColor(kBlue);
+    combined_hist->Add(sector_hist);
+    combined_hist->Add(adj_sector_hist);
+    hs->Draw("nostack");
+
+    //the following lines will force the stats for h[1] and h[2]
+    //to be drawn at a different position to avoid overlaps
+    combined_sector_hist_canvas->Update(); //to for the generation of the 'stat" boxes
+    TPaveStats* st1 = (TPaveStats*) sector_hist->GetListOfFunctions()->FindObject("stats");
+    TPaveStats* st2 = (TPaveStats*) adj_sector_hist->GetListOfFunctions()->FindObject("stats");
+    st1->SetX1NDC(.5); st1->SetX2NDC(.7);
+    st2->SetX1NDC(.2); st2->SetX2NDC(.4);
+    combined_sector_hist_canvas->Modified();
+
+    std::stringstream combined_sector_hist_filename;
+    combined_sector_hist_filename << "./new_vop/sector/sector" << sector << "_combined.svg";
+    sector_hist_canvas->SaveAs(combined_sector_hist_filename.str().c_str());
   }
 }
