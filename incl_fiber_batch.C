@@ -522,13 +522,10 @@ void incl_fiber_batch() {
   std::vector<double> adj_sigma_errs;
 
   int total_num_blocks = 0;
-  double max_diff = 0;
   double total_original_mean = 0;
-  double total_adjusted_mean = 0;
 
   std::map<int, std::vector<std::tuple<bool, int, int, double, double>>> tuple_data;
   std::map<int, double> original_sector_means;
-  std::map<int, double> adjusted_sector_means;
 
   gStyle->SetOptStat(1000000001); // just header
   gStyle->SetOptFit(1); // default
@@ -638,7 +635,6 @@ void incl_fiber_batch() {
 
   // GOT ALL MPV DATA
   total_original_mean = total_original_mean / total_num_blocks;
-  total_adjusted_mean = total_adjusted_mean / total_num_blocks;
 
   // calculate MY fiber batch corrections...
   std::map<int, double> fiber_batch_avg_mpv;
@@ -651,10 +647,7 @@ void incl_fiber_batch() {
       //std::cout << "unable to find dbn " << dbn << " in dbn_mpv" << std::endl;
     } else {
       double mpv = dbn_mpv[std::to_string(dbn)];
-      if (fiber_batch_avg_mpv.find(batch) == fiber_batch_avg_mpv.end()) {
-        fiber_batch_avg_mpv[batch] = 0;
-        fiber_batch_counts[batch] = 0;
-      }
+      if (batch == 23) { std::cout << "***BY THE WAY, dbn " << dbn << " in fb 23 has mpv " << mpv << std::endl; }
       fiber_batch_avg_mpv[batch] += mpv;
       fiber_batch_counts[batch]++;
     }
@@ -676,6 +669,9 @@ void incl_fiber_batch() {
   }
 
   // make modifications to tims colorful histograms
+  std::map<int, double> adjusted_sector_means;
+  double max_diff = 0;
+  double total_adjusted_mean = 0;
   for (int sector : sectors) {
     std::stringstream sectorFileName;
     sectorFileName << "./sector_data/sector" << sector << ".root";
@@ -730,6 +726,7 @@ void incl_fiber_batch() {
         
         if (has_mpv_data && fiber_batch >= 0) {
           // has fiber batch correction data
+          if (fiber_batch_avg_mpv[fiber_batch] == 0.0) { std::cout << "***PANIC, fiber batch " << fiber_batch << " has zero avg mpv" << std::endl; }
           double correction_factor = total_original_mean / fiber_batch_avg_mpv[fiber_batch];
           //double adjusted_content = content * correction_factor;
           double adj_mpv = mpv * correction_factor;
@@ -897,8 +894,8 @@ void incl_fiber_batch() {
     std::stringstream combined_sector_hist_filename;
     combined_sector_hist_filename << "./new_vop/sector/sector" << sector << "_combined.svg";
     combined_sector_hist_canvas->SaveAs(combined_sector_hist_filename.str().c_str());
-
   }
+  total_adjusted_mean = total_adjusted_mean / total_num_blocks;
 
   // do the old things
   csvfile csv("dbn_to_mpv.csv");
