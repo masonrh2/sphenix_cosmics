@@ -231,7 +231,7 @@ void incl_fiber_batch() {
       std::string dbn = row[0];
       std::vector<std::string> split = split_string(row[9], "-");
       if (split.size() < 2) {
-        std::cout << "skipped fiber batch for DBN " << dbn << " since it does not contain a '-'" << std::endl;
+        std::cout << "skipped fiber batch [" << row[9] << "] for DBN " << dbn << " since it does not contain a '-'" << std::endl;
       } else {
         bool is_int_batch = true;
         int fiber_batch = 0;
