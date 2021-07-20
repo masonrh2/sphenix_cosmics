@@ -301,7 +301,7 @@ void incl_fiber_batch() {
       std::string dbn = row[0];
       std::vector<std::string> split = split_string(row[9], "-");
       if (split.size() < 2) {
-        std::cout << "skipped fiber batch for DBN " << dbn << " since it does not contain a '-'" << std::endl;
+        std::cout << "skipped fiber batch [" << row[9] << "] for DBN " << dbn << " since it does not contain a '-'" << std::endl;
       } else {
         bool is_int_batch = true;
         int fiber_batch = 0;
@@ -1328,7 +1328,7 @@ void incl_fiber_batch() {
     int batch = p.second;
     if (dbn_mpv.find(std::to_string(dbn)) == dbn_mpv.end()) {
       // unable to find that dbn in dbn_mpv
-      std::cout << "unable to find dbn " << dbn << " in dbn_mpv" << std::endl;
+      //std::cout << "unable to find dbn " << dbn << " in dbn_mpv" << std::endl;
     } else {
       double mpv = dbn_mpv[std::to_string(dbn)];
       if (fiber_batch_avg_mpv.find(batch) == fiber_batch_avg_mpv.end()) {
