@@ -230,7 +230,22 @@ void incl_fiber_batch() {
       // this row has block data
       std::string dbn = row[0];
       std::vector<std::string> split = split_string(row[9], "-");
-      if (split.size() < 2) {
+      if (row[9] == "0") {
+        // handles the special case of fiber batch 0 which does not contain a "-"
+        bool is_int_dbn = true;
+        int int_dbn = 0;
+        try {
+          int_dbn = std::stoi(dbn);
+        } catch (std::exception &e) {
+          is_int_dbn = false;
+        }
+        if (!is_int_dbn) {
+          std::cout << "error at DBN " << dbn << ": " << " dbn not castable to int!" << std::endl; 
+        } else {
+          dbn_to_fiber_batch[int_dbn] = 0;
+          //std::cout << "good at DBN [" << std::stoi(dbn) << "]: FB " << fiber_batch << std::endl;
+        }
+      } else if (split.size() < 2) {
         std::cout << "skipped fiber batch [" << row[9] << "] for DBN " << dbn << " since it does not contain a '-'" << std::endl;
       } else {
         bool is_int_batch = true;
