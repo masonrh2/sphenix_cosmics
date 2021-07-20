@@ -526,9 +526,12 @@ void incl_fiber_batch() {
   double total_original_mean = 0;
   double total_adjusted_mean = 0;
 
+  std::map<int, std::vector<std::tuple<bool, int, int, double, double>>> tuple_data;
+  std::map<int, double> original_sector_means;
+  std::map<int, double> adjusted_sector_means;
 
-  gStyle->SetOptStat(1000000001); // stats, just header
-  gStyle->SetOptFit(1); // fit, default
+  gStyle->SetOptStat(1000000001); // just header
+  gStyle->SetOptFit(1); // default
 
   for (int sector : sectors) {
     std::cout << "SECTOR " << sector << ":" << std::endl;
@@ -540,7 +543,160 @@ void incl_fiber_batch() {
     std::stringstream blockFileName;
     blockFileName << "h_run" << sector << "_block;1";
     sectorFile->GetObject(blockFileName.str().c_str(), sector_data);
+  
+    int num_blocks = 0;
+    double original_mean_mpv = 0;
+    double adj_mean_mpv = 0;
 
+    tuple_data[sector] = std::vector<std::tuple<bool, int, int, double, double>>(96);
+
+    for (int ib : interface_boards) {
+      TH1D* data;
+      std::stringstream ibFileName;
+      ibFileName << "h_run" << sector << "_block_ib_" << ib << ";1";
+      // std::cout << "getting object" << std::endl;
+      sectorFile->GetObject(ibFileName.str().c_str(), data);
+      int min_block_num = ib * 16;
+      int max_block_num = ib * 16 + 15;
+      //std::cout << "ib " << ib << " has " <<  data->GetNcells() << " cells" << std::endl;
+      for (int i = 1; i < data->GetNbinsX(); i++) {
+        // std::cout << "reading bin " << i << std::endl;
+        double content = data->GetBinContent(i);
+        int block_num = i - 1;
+        if (block_num < min_block_num || block_num > max_block_num) {
+          // out of range for this ib, omit
+          if (block_num < 0 || block_num > 95) {
+            std::cout << "block " << block_num << " is out of range" << std::endl;
+          }
+          continue;
+        }
+        std::cout << "sector " << sector << ", block " << block_num << " (bin " << i << "); ";
+        std::string dbn = sector_map[sector][block_num];
+        if (sector_map[sector][block_num][0] == 'F' || std::stoi(sector_map[sector][block_num]) >= 10000) {
+          // fudan block, omit for now
+          std::cout << "rejected fudan block" << std::endl;
+          continue;
+        }
+
+        bool is_int_dbn = true;
+        int int_dbn = 0;
+        try {
+          int_dbn = std::stoi(dbn);
+        } catch (std::exception &e) {
+          is_int_dbn = false;
+        }
+        if (!is_int_dbn) {
+          // non-integer dbn, omit for now (casting to into solves issues with importing data from database)
+          std::cout << "DBN " << std::stoi(dbn) << "; not castable to int!";
+          continue;
+        }
+
+        int fiber_batch = dbn_to_fiber_batch[int_dbn];
+        std::cout << "DBN " << std::stoi(dbn) << ", FB " << fiber_batch << "; ";
+        if (content <= 0 || content >= 1000) {
+          // that mpv is probably not good data, omit
+          std::cout << "rejected bin content " << content << std::endl;
+          continue;
+        }
+        // check fiber batch information
+        if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
+          double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
+          double adjusted_content = content * correction_factor;
+          //std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
+          //  << " (" << content << "->" << adjusted_content << ")" << std::endl;
+          // i guess this is valid data?
+          double vop = new_sipm_map[sector][block_num];
+
+          if (std::abs(adjusted_content - content) > max_diff) { max_diff = std::abs(adjusted_content - content); }
+          num_blocks++;
+          original_mean_mpv += content;
+          adj_mean_mpv += adjusted_content;
+
+          total_num_blocks++;
+          total_original_mean += content;
+          total_adjusted_mean += adjusted_content;
+
+          std::cout << "mpv " << content << " -> " << adjusted_content << std::endl;
+          //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
+
+          adjusted_all_mpv.push_back(adjusted_content);
+          adjusted_histogram_data[vop].push_back(adjusted_content);
+          adjusted_dbn_mpv[dbn] = adjusted_content;
+          adjusted_sector_vop_mpv[sector][vop].push_back(adjusted_content);
+          adjusted_vop_sector_mpv[vop][sector].push_back(adjusted_content);
+          tuple_data[sector][block_num] = std::make_tuple(true, int_dbn, fiber_batch, content, adjusted_content);
+        } else {
+          // unable to find fiber batch information for this block
+          std::cout << "batch map does not contain batch " << fiber_batch << std::endl;
+          tuple_data[sector][block_num] = std::make_tuple(true, int_dbn, -1, content, -1.0);
+        }
+
+        // do this regardless of whether we have fiber batch information or not
+        double vop = new_sipm_map[sector][block_num];
+        new_all_vop.push_back(vop);
+        all_mpv.push_back(content);
+        new_histogram_data[vop].push_back(content);
+        dbn_mpv[sector_map[sector][block_num]] = content;
+        new_sector_vop_mpv[sector][vop].push_back(content);
+        new_vop_sector_mpv[vop][sector].push_back(content);
+      }
+    }
+    original_mean_mpv = original_mean_mpv / num_blocks;
+    original_sector_means[sector] = original_mean_mpv;
+    adj_mean_mpv = adj_mean_mpv / num_blocks;
+    adjusted_sector_means[sector] = adj_mean_mpv;
+  }
+
+  // GOT ALL MPV DATA
+  total_original_mean = total_original_mean / total_num_blocks;
+  total_adjusted_mean = total_adjusted_mean / total_num_blocks;
+
+  // calculate MY fiber batch corrections...
+  std::map<int, double> fiber_batch_avg_mpv;
+  std::map<int, int> fiber_batch_counts;
+  for (auto const &p : dbn_to_fiber_batch) {
+    int dbn = p.first;
+    int batch = p.second;
+    if (dbn_mpv.find(std::to_string(dbn)) == dbn_mpv.end()) {
+      // unable to find that dbn in dbn_mpv
+      //std::cout << "unable to find dbn " << dbn << " in dbn_mpv" << std::endl;
+    } else {
+      double mpv = dbn_mpv[std::to_string(dbn)];
+      if (fiber_batch_avg_mpv.find(batch) == fiber_batch_avg_mpv.end()) {
+        fiber_batch_avg_mpv[batch] = 0;
+        fiber_batch_counts[batch] = 0;
+      }
+      fiber_batch_avg_mpv[batch] += mpv;
+      fiber_batch_counts[batch]++;
+    }
+  }
+  for (auto const &p : fiber_batch_avg_mpv) {
+    int batch = p.first;
+    fiber_batch_avg_mpv[batch] = fiber_batch_avg_mpv[batch] / fiber_batch_counts[batch];
+    std::cout << "fiber batch " << batch << ": avg mpv " << fiber_batch_avg_mpv[batch] << " => factor " << total_original_mean / fiber_batch_avg_mpv[batch] << std::endl;
+  }
+  for (auto const &p : fiber_batch_avg_mpv) {
+    int batch = p.first;
+    double ratio = total_original_mean / fiber_batch_avg_mpv[batch];
+    if (fiber_batch_to_scale_factor.find(batch) == fiber_batch_to_scale_factor.end()) {
+      // mina's calibration factors don't have this
+    } else {
+      double mina_ratio = fiber_batch_to_scale_factor[batch];
+      std::cout << "mine: " << ratio << ", mina's: " << mina_ratio << ", diff: " << ratio - mina_ratio << std::endl;
+    }
+  }
+
+  // make modifications to tims colorful histograms
+  for (int sector : sectors) {
+    std::cout << "SECTOR " << sector << ":" << std::endl;
+    std::stringstream sectorFileName;
+    sectorFileName << "./sector_data/sector" << sector << ".root";
+    TFile* sectorFile = new TFile(sectorFileName.str().c_str());
+
+    TH1D* sector_data;
+    std::stringstream blockFileName;
+    blockFileName << "h_run" << sector << "_block;1";
+    sectorFile->GetObject(blockFileName.str().c_str(), sector_data);
 
     std::stringstream sector_title;
     sector_title << "Sector " << sector << " (Original);Block Number;MPV";
@@ -564,10 +720,6 @@ void incl_fiber_batch() {
     adj_sector_hist_title << "sector " << sector << " (adjusted);MPV;Num Blocks";
     TH1D* adj_sector_hist = new TH1D("adj_h", adj_sector_hist_title.str().c_str(), num_bins, x_min, x_max);
     adj_sector_hist->GetSumw2();
-  
-    int num_blocks = 0;
-    double original_mean_mpv = 0;
-    double adj_mean_mpv = 0;
 
     for (int ib : interface_boards) {
       TH1D* data;
@@ -580,101 +732,29 @@ void incl_fiber_batch() {
       int min_block_num = ib * 16;
       int max_block_num = ib * 16 + 15;
       //std::cout << "ib " << ib << " has " <<  data->GetNcells() << " cells" << std::endl;
-      for (int i = 1; i < data->GetNbinsX(); i++) {
-        // std::cout << "reading bin " << i << std::endl;
-        double content = data->GetBinContent(i);
-        int block_num = i - 1;
-        if (block_num < min_block_num || block_num > max_block_num) {
-          // out of range for this ib, omit
-          data->SetBinContent(i, -9000.);
-          adj_data->SetBinContent(i, -9000.);
-          diff_data->SetBinContent(i, -9000.);
-          if (block_num < 0 || block_num > 95) {
-            std::cout << "block " << block_num << " is out of range" << std::endl;
-          }
-          continue;
-        }
-        std::cout << "sector " << sector << ", block " << block_num << " (bin " << i << "); ";
-        std::string dbn = sector_map[sector][block_num];
-        if (sector_map[sector][block_num][0] == 'F' || std::stoi(sector_map[sector][block_num]) >= 10000) {
-          // fudan block, omit for now
-          std::cout << "rejected fudan block" << std::endl;
-          data->SetBinContent(i, -9000.);
-          adj_data->SetBinContent(i, -9000.);
-          diff_data->SetBinContent(i, -9000.);
-          continue;
-        }
-
-        bool is_int_dbn = true;
-        int int_dbn = 0;
-        try {
-          int_dbn = std::stoi(dbn);
-        } catch (std::exception &e) {
-          is_int_dbn = false;
-        }
-        if (!is_int_dbn) {
-          // non-integer dbn, omit for now (casting to into solves issues with importing data from database)
-          std::cout << "DBN " << std::stoi(dbn) << "; not castable to int!";
-          continue;
-        }
-
-        int fiber_batch = dbn_to_fiber_batch[int_dbn];
-        std::cout << "DBN " << std::stoi(dbn) << ", FB " << fiber_batch << "; ";
-        if (content <= 0 || content >= 1000) {
-          // that mpv is probably not good data, omit
-          std::cout << "rejected bin content " << content << std::endl;
-          data->SetBinContent(i, -9000.);
-          adj_data->SetBinContent(i, -9000.);
-          diff_data->SetBinContent(i, -9000.);
-          continue;
-        }
-        // check fiber batch information
-        if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
-          double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
-          double adjusted_content = content * correction_factor;
-          //std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
-          //  << " (" << content << "->" << adjusted_content << ")" << std::endl;
-          // i guess this is valid data?
-          double vop = new_sipm_map[sector][block_num];
-          data->SetBinContent(i, content);
-          adj_data->SetBinContent(i, adjusted_content);
-          diff_data->SetBinContent(i, adjusted_content - content);
-
-          if (std::abs(adjusted_content - content) > max_diff) { max_diff = std::abs(adjusted_content - content); }
-          num_blocks++;
-          original_mean_mpv += content;
-          adj_mean_mpv += adjusted_content;
-
-          total_num_blocks++;
-          total_original_mean += content;
-          total_adjusted_mean += adjusted_content;
-
-          sector_hist->Fill(content);
-          adj_sector_hist->Fill(adjusted_content);
-          std::cout << "mpv " << content << " -> " << adjusted_content << std::endl;
-          //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
-
-          adjusted_all_mpv.push_back(adjusted_content);
-          adjusted_histogram_data[vop].push_back(adjusted_content);
-          adjusted_dbn_mpv[dbn] = adjusted_content;
-          adjusted_sector_vop_mpv[sector][vop].push_back(adjusted_content);
-          adjusted_vop_sector_mpv[vop][sector].push_back(adjusted_content);
+      for (int i = 0; i < 96; i++) {
+        auto block_info = tuple_data[sector][i];
+        bool has_mpv_data = std::get<0>(block_info);
+        int dbn = std::get<1>(block_info);
+        int fiber_batch = std::get<2>(block_info);
+        double mpv = std::get<3>(block_info);
+        double adj_mpv = std::get<4>(block_info);
+        
+        if (has_mpv_data && fiber_batch >= 0) {
+          // has fiber batch and adj_mpv data
+          //double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
+          //double adjusted_content = content * correction_factor;
+          data->SetBinContent(i, mpv);
+          adj_data->SetBinContent(i, adj_mpv);
+          diff_data->SetBinContent(i, adj_mpv - mpv);
+          sector_hist->Fill(mpv);
+          adj_sector_hist->Fill(adj_mpv);
         } else {
-          // unable to find fiber batch information for this block
+          // omit this data
           data->SetBinContent(i, -9000.);
           adj_data->SetBinContent(i, -9000.);
           diff_data->SetBinContent(i, -9000.);
-          std::cout << "batch map does not contain batch " << fiber_batch << std::endl;
         }
-
-        // do this regardless of whether we have fiber batch information or not
-        double vop = new_sipm_map[sector][block_num];
-        new_all_vop.push_back(vop);
-        all_mpv.push_back(content);
-        new_histogram_data[vop].push_back(content);
-        dbn_mpv[sector_map[sector][block_num]] = content;
-        new_sector_vop_mpv[sector][vop].push_back(content);
-        new_vop_sector_mpv[vop][sector].push_back(content);
       }
       data->GetXaxis()->SetLimits(0.0, 95.0);
       adj_data->GetXaxis()->SetLimits(0.0, 95.0);
@@ -690,9 +770,6 @@ void incl_fiber_batch() {
       combined_hs->Add(adj_data);
     }
 
-    original_mean_mpv = original_mean_mpv / num_blocks;
-    adj_mean_mpv = adj_mean_mpv / num_blocks;
-
     std::stringstream sector_filename;
     TCanvas* sector_canvas = new TCanvas();
     sector_filename << "./sector_diagrams/original/sector" << sector << ".svg";
@@ -700,14 +777,15 @@ void incl_fiber_batch() {
     hs->SetMaximum(600.);
     hs->Draw("nostack");
     sector_canvas->SetGrid();
-    TLine* original_mean_line = new TLine(0.0, original_mean_mpv, 95.0, original_mean_mpv);
+    double original_mean = original_sector_means[sector];
+    TLine* original_mean_line = new TLine(0.0, original_mean, 95.0, original_mean);
     //original_mean_line->SetLineColor(kRed);
     original_mean_line->SetLineStyle(2);
     original_mean_line->SetLineWidth(2);
     original_mean_line->Draw();
     TPaveText* original_pave_text = new TPaveText(0.7, 0.8, 0.9, 0.9, "NDC");
     std::stringstream original_mean_text;
-    original_mean_text << "Mean MPV: " << Form("%.1f", original_mean_mpv);
+    original_mean_text << "Mean MPV: " << Form("%.1f", original_mean);
     original_pave_text->AddText(original_mean_text.str().c_str());
     original_pave_text->Draw();
     sector_canvas->SaveAs(sector_filename.str().c_str());
@@ -719,14 +797,15 @@ void incl_fiber_batch() {
     adj_hs->SetMaximum(600.);
     adj_hs->Draw("nostack");
     adj_sector_canvas->SetGrid();
-    TLine* adj_mean_line = new TLine(0.0, adj_mean_mpv, 95.0, adj_mean_mpv);
+    double adjusted_mean = adjusted_sector_means[sector];
+    TLine* adj_mean_line = new TLine(0.0, adjusted_mean, 95.0, adjusted_mean);
     //adj_mean_line->SetLineColor(kRed);
     adj_mean_line->SetLineStyle(2);
     adj_mean_line->SetLineWidth(2);
     adj_mean_line->Draw();
     TPaveText* adj_pave_text = new TPaveText(0.7, 0.8, 0.9, 0.9, "NDC");
     std::stringstream adj_mean_text;
-    adj_mean_text << "Mean MPV: " << Form("%.1f", adj_mean_mpv);
+    adj_mean_text << "Mean MPV: " << Form("%.1f", adjusted_mean);
     adj_pave_text->AddText(adj_mean_text.str().c_str());
     adj_pave_text->Draw();
     adj_sector_canvas->SaveAs(adj_sector_filename.str().c_str());
@@ -814,7 +893,6 @@ void incl_fiber_batch() {
     combined_sector_hist_canvas->SaveAs(combined_sector_hist_filename.str().c_str());
 
   }
-  // GOT ALL MPV DATA
 
   // do the old things
   csvfile csv("dbn_to_mpv.csv");
@@ -1330,35 +1408,6 @@ void incl_fiber_batch() {
   adjusted_tim_graph->Draw("P SAME");
   adjusted_tim_canvas->SetGrid();
   adjusted_tim_canvas->SaveAs("./adjusted_vop/vop_graphs/vop_mpv_discrete_tim.svg");
-
-  // RECENT CALCULATIONS BEGIN HERE
-  total_original_mean = total_original_mean / total_num_blocks;
-  total_adjusted_mean = total_adjusted_mean / total_num_blocks;
-
-  // calculate MY fiber batch corrections...
-  std::map<int, double> fiber_batch_avg_mpv;
-  std::map<int, int> fiber_batch_counts;
-  for (auto const &p : dbn_to_fiber_batch) {
-    int dbn = p.first;
-    int batch = p.second;
-    if (dbn_mpv.find(std::to_string(dbn)) == dbn_mpv.end()) {
-      // unable to find that dbn in dbn_mpv
-      //std::cout << "unable to find dbn " << dbn << " in dbn_mpv" << std::endl;
-    } else {
-      double mpv = dbn_mpv[std::to_string(dbn)];
-      if (fiber_batch_avg_mpv.find(batch) == fiber_batch_avg_mpv.end()) {
-        fiber_batch_avg_mpv[batch] = 0;
-        fiber_batch_counts[batch] = 0;
-      }
-      fiber_batch_avg_mpv[batch] += mpv;
-      fiber_batch_counts[batch]++;
-    }
-  }
-  for (auto const &p : fiber_batch_avg_mpv) {
-    int batch = p.first;
-    fiber_batch_avg_mpv[batch] = fiber_batch_avg_mpv[batch] / fiber_batch_counts[batch];
-    std::cout << "fiber batch " << batch << ": avg mpv " << fiber_batch_avg_mpv[batch] << " => factor " << total_original_mean / fiber_batch_avg_mpv[batch] << std::endl;
-  }
 
   std::vector<double> sectors_as_double;
   std::vector<double> sector_err;
