@@ -5,7 +5,7 @@
 </title>
 <desc>
 Creator: ROOT Version 6.24/00
-CreationDate: Wed Jul 21 21:39:41 2021</desc>
+CreationDate: Tue Jul 20 19:41:04 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -139,13 +139,13 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <g fill="#ff6800" fill-opacity="0.50" stroke-opacity="0.50">
 <polygon points=" 120.972, 223.589 124.231, 230.106 117.714, 230.106"/>
 </g>
-<g fill="black">
+<g fill="#ff6800">
 <circle cx="120.972" cy="222.283" r="3.25821"/>
 </g>
 <g fill="#cea262" fill-opacity="0.50" stroke-opacity="0.50">
 <polygon points=" 224.909, 195.581 228.168, 202.097 221.651, 202.097"/>
 </g>
-<g fill="black">
+<g fill="#cea262">
 <circle cx="224.909" cy="188.731" r="3.25821"/>
 </g>
 <g fill="#007d34" fill-opacity="0.50" stroke-opacity="0.50">
@@ -154,7 +154,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 361.917, 172.591 365.176, 179.107 358.659, 179.107"/>
 <polygon points=" 376.091, 179.601 379.349, 186.118 372.832, 186.118"/>
 </g>
-<g fill="black">
+<g fill="#007d34">
 <circle cx="286.327" cy="221.687" r="3.25821"/>
 <circle cx="352.469" cy="218.127" r="3.25821"/>
 <circle cx="361.917" cy="169.515" r="3.25821"/>
@@ -167,7 +167,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 424.801, 202.741 431.317, 202.741 428.059, 209.257"/>
 <polygon points=" 429.525, 201.443 436.042, 201.443 432.783, 207.959"/>
 </g>
-<g fill="black">
+<g fill="#ff7a5c">
 <circle cx="409.161" cy="204.974" r="3.25821"/>
 <circle cx="418.61" cy="242.322" r="3.25821"/>
 <circle cx="423.335" cy="228.018" r="3.25821"/>
@@ -181,7 +181,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 480.028, 226.941 483.286, 233.458 476.769, 233.458"/>
 <polygon points=" 489.476, 225.235 492.735, 231.751 486.218, 231.751"/>
 </g>
-<g fill="black">
+<g fill="#53377a">
 <circle cx="437.508" cy="186.673" r="3.25821"/>
 <circle cx="456.406" cy="165.857" r="3.25821"/>
 <circle cx="461.13" cy="202.717" r="3.25821"/>
@@ -200,7 +200,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 498.925, 246.221 502.183, 252.737 495.667, 252.737"/>
 <polygon points=" 508.374, 277.962 511.632, 284.479 505.116, 284.479"/>
 </g>
-<g fill="black">
+<g fill="#ff8e00">
 <circle cx="442.232" cy="209.446" r="3.25821"/>
 <circle cx="446.957" cy="204.644" r="3.25821"/>
 <circle cx="451.681" cy="216.052" r="3.25821"/>
@@ -221,7 +221,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 399.713, 230.797 402.971, 237.313 396.454, 237.313"/>
 <polygon points=" 413.886, 210.576 417.144, 217.093 410.628, 217.093"/>
 </g>
-<g fill="black">
+<g fill="#00538a">
 <circle cx="371.366" cy="221.092" r="3.25821"/>
 <circle cx="380.815" cy="213.314" r="3.25821"/>
 <circle cx="385.539" cy="206.677" r="3.25821"/>
@@ -240,7 +240,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 357.193, 208.603 360.451, 215.119 353.935, 215.119"/>
 <polygon points=" 366.642, 223.818 369.9, 230.334 363.384, 230.334"/>
 </g>
-<g fill="black">
+<g fill="#f6768e">
 <circle cx="314.673" cy="210.666" r="3.25821"/>
 <circle cx="324.122" cy="236.962" r="3.25821"/>
 <circle cx="328.846" cy="214.641" r="3.25821"/>
@@ -265,7 +265,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 319.398, 221.488 322.656, 228.004 316.139, 228.004"/>
 <polygon points=" 333.571, 177.592 336.829, 184.109 330.313, 184.109"/>
 </g>
-<g fill="black">
+<g fill="#817066">
 <circle cx="257.98" cy="210.306" r="3.25821"/>
 <circle cx="262.705" cy="217.353" r="3.25821"/>
 <circle cx="267.429" cy="235.586" r="3.25821"/>
@@ -291,7 +291,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 248.531, 213.539 251.79, 220.055 245.273, 220.055"/>
 <polygon points=" 253.256, 260.479 256.514, 266.995 249.998, 266.995"/>
 </g>
-<g fill="black">
+<g fill="#c10020">
 <circle cx="210.736" cy="204.68" r="3.25821"/>
 <circle cx="215.461" cy="229.076" r="3.25821"/>
 <circle cx="220.185" cy="196.598" r="3.25821"/>
@@ -317,7 +317,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 201.287, 200.59 204.546, 207.106 198.029, 207.106"/>
 <polygon points=" 206.012, 210.14 209.27, 216.657 202.754, 216.657"/>
 </g>
-<g fill="black">
+<g fill="#a6bdd7">
 <circle cx="144.594" cy="212.497" r="3.25821"/>
 <circle cx="154.043" cy="196.654" r="3.25821"/>
 <circle cx="158.768" cy="211.98" r="3.25821"/>
@@ -345,7 +345,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 136.612, 221.674 143.128, 221.674 139.87, 228.19"/>
 <polygon points=" 146.061, 186.167 152.577, 186.167 149.319, 192.683"/>
 </g>
-<g fill="black">
+<g fill="#ffb300">
 <circle cx="69.0039" cy="198.869" r="3.25821"/>
 <circle cx="73.7283" cy="251.324" r="3.25821"/>
 <circle cx="78.4528" cy="205.246" r="3.25821"/>
@@ -365,7 +365,7 @@ CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <polygon points=" 98.8166, 194.312 105.333, 194.312 102.075, 200.828"/>
 <polygon points=" 103.541, 212.211 110.057, 212.211 106.799, 218.728"/>
 </g>
-<g fill="black">
+<g fill="#803e75">
 <circle cx="83.1772" cy="214.154" r="3.25821"/>
 <circle cx="92.626" cy="199.83" r="3.25821"/>
 <circle cx="97.3504" cy="187.976" r="3.25821"/>

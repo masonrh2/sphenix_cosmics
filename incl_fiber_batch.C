@@ -1708,7 +1708,7 @@ void incl_fiber_batch() {
           batch_hist_adj->SetTitle(batch_hist_adj_title.str().c_str());
           batch_hist_adj->SetMarkerStyle(20); // solid circle
           //batch_hist_adj->SetMarkerColor(sector_fb_colors[sector][fiber_batch]);
-          batch_hist_adj->SetMarkerColor(1);
+          batch_hist_adj->SetMarkerColor(sector_fb_colors[sector][fiber_batch]);
           // add to the map
           batch_hists[fiber_batch] = std::make_pair(std::make_pair(batch_hist_orig_up, batch_hist_orig_down), batch_hist_adj);
           //std::cout << "CREATED HISTS FOR FB " << fiber_batch << std::endl;
