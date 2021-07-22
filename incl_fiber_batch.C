@@ -6,6 +6,7 @@
 #include <TF1.h>
 #include <TLine.h>
 #include <TCanvas.h>
+#include <TMultiGraph.h>
 #include <TGraph.h>
 #include <TGraphErrors.h>
 #include <TPaveStats.h>
@@ -230,6 +231,11 @@ void incl_fiber_batch() {
       // this row has block data
       std::string dbn = row[0];
       std::vector<std::string> split = split_string(row[9], "-");
+      if (dbn == "134") {
+        std::cout << "***FOUND THE THING, FBN [" << row[9] << "]" << std::endl;
+        bool is_zero = row[9] == "0";
+        std::cout << "   AND the answer is " << is_zero << std::endl;
+      }
       if (row[9] == "0") {
         // handles the special case of fiber batch 0 which does not contain a "-"
         bool is_int_dbn = true;
@@ -243,7 +249,7 @@ void incl_fiber_batch() {
           std::cout << "error at DBN " << dbn << ": " << " dbn not castable to int!" << std::endl; 
         } else {
           dbn_to_fiber_batch[int_dbn] = 0;
-          //std::cout << "good at DBN [" << std::stoi(dbn) << "]: FB " << fiber_batch << std::endl;
+          //std::cout << "good at DBN [" << std::stoi(dbn) << "]: FB 0" << std::endl;
         }
       } else if (split.size() < 2) {
         std::cout << "skipped fiber batch [" << row[9] << "] for DBN " << dbn << " since it does not contain a '-'" << std::endl;
@@ -354,6 +360,7 @@ void incl_fiber_batch() {
   */
 
   // READ FIBER BATCH CORRECTION FACTORS
+  /*
   std::map<int, double> fiber_batch_to_scale_factor;
   std::fstream fiber_batch_map;
   fiber_batch_map.open("fiberbatchmeans.csv", std::ios::in);
@@ -398,6 +405,7 @@ void incl_fiber_batch() {
     }
     line_num++;
   }
+  */
 
   // READ NEW VOP DATA
   std::fstream new_vop_file;
@@ -492,7 +500,7 @@ void incl_fiber_batch() {
 
   // READ MPV DATA AND MAKE ALL THE PLOTS
   std::vector<double> all_mpv;
-  std::map<std::string, double> dbn_mpv;
+  std::map<int, double> dbn_mpv;
   std::vector<double> new_all_vop;
   std::map<int, std::map<double, std::vector<double>>> new_sector_vop_mpv;
   std::map<double, std::map<int, std::vector<double>>> new_vop_sector_mpv;
@@ -502,7 +510,7 @@ void incl_fiber_batch() {
   std::vector<double> new_hist_mpv;
   
   std::vector<double> adjusted_all_mpv;
-  std::map<std::string, double> adjusted_dbn_mpv;
+  std::map<int, double> adjusted_dbn_mpv;
   //std::vector<double> new_all_vop;
   std::map<int, std::map<double, std::vector<double>>> adjusted_sector_vop_mpv;
   std::map<double, std::map<int, std::vector<double>>> adjusted_vop_sector_mpv;
@@ -586,21 +594,20 @@ void incl_fiber_batch() {
           std::cout << "DBN " << std::stoi(dbn) << "; not castable to int!";
           continue;
         }
-
-        int fiber_batch = dbn_to_fiber_batch[int_dbn];
-        std::cout << "DBN " << std::stoi(dbn) << ", FB " << fiber_batch << "; ";
+        std::cout << "DBN " << std::stoi(dbn) << ": ";
         if (content <= 0 || content >= 1000) {
           // that mpv is probably not good data, omit
           std::cout << "rejected bin content " << content << std::endl;
           continue;
         }
         // check fiber batch information
-        if (fiber_batch_to_scale_factor.find(fiber_batch) != fiber_batch_to_scale_factor.end()) {
+        if (dbn_to_fiber_batch.find(int_dbn) != dbn_to_fiber_batch.end()) {
           //double correction_factor = fiber_batch_to_scale_factor[fiber_batch];
           //double adjusted_content = content * correction_factor;
           //std::cout << "DBN " << std::stoi(dbn) << ": fiber batch " << fiber_batch << "; correction factor " << correction_factor
           //  << " (" << content << "->" << adjusted_content << ")" << std::endl;
           // i guess this is valid data?
+          int fiber_batch = dbn_to_fiber_batch[int_dbn];
           double vop = new_sipm_map[sector][block_num];
 
           num_blocks++;
@@ -615,7 +622,7 @@ void incl_fiber_batch() {
           tuple_data[sector][block_num] = std::make_tuple(true, int_dbn, fiber_batch, content, -1.0);
         } else {
           // unable to find fiber batch information for this block
-          std::cout << "batch map does not contain batch " << fiber_batch << std::endl;
+          std::cout << "***DBN " << " does not have fiber batch information!" << std::endl;
           tuple_data[sector][block_num] = std::make_tuple(true, int_dbn, -1, content, -1.0);
         }
 
@@ -624,7 +631,7 @@ void incl_fiber_batch() {
         new_all_vop.push_back(vop);
         all_mpv.push_back(content);
         new_histogram_data[vop].push_back(content);
-        dbn_mpv[sector_map[sector][block_num]] = content;
+        dbn_mpv[std::stoi(dbn)] = content;
         new_sector_vop_mpv[sector][vop].push_back(content);
         new_vop_sector_mpv[vop][sector].push_back(content);
       }
@@ -642,14 +649,14 @@ void incl_fiber_batch() {
   for (auto const &p : dbn_to_fiber_batch) {
     int dbn = p.first;
     int batch = p.second;
-    if (dbn_mpv.find(std::to_string(dbn)) == dbn_mpv.end()) {
+    if (dbn_mpv.find(dbn) == dbn_mpv.end()) {
       // unable to find that dbn in dbn_mpv
       //std::cout << "unable to find dbn " << dbn << " in dbn_mpv" << std::endl;
     } else {
-      double mpv = dbn_mpv[std::to_string(dbn)];
-      if (batch == 23) { std::cout << "***BY THE WAY, dbn " << dbn << " in fb 23 has mpv " << mpv << std::endl; }
+      double mpv = dbn_mpv[dbn];
       fiber_batch_avg_mpv[batch] += mpv;
       fiber_batch_counts[batch]++;
+      //std::cout << "dbn " << dbn << " in fb " << batch << " has mpv " << mpv << std::endl;
     }
   }
   for (auto const &p : fiber_batch_avg_mpv) {
@@ -657,20 +664,11 @@ void incl_fiber_batch() {
     fiber_batch_avg_mpv[batch] = fiber_batch_avg_mpv[batch] / fiber_batch_counts[batch];
     //std::cout << "fiber batch " << batch << ": avg mpv " << fiber_batch_avg_mpv[batch] << " => factor " << total_original_mean / fiber_batch_avg_mpv[batch] << std::endl;
   }
-  for (auto const &p : fiber_batch_avg_mpv) {
-    int batch = p.first;
-    double ratio = total_original_mean / fiber_batch_avg_mpv[batch];
-    if (fiber_batch_to_scale_factor.find(batch) == fiber_batch_to_scale_factor.end()) {
-      // mina's calibration factors don't have this
-    } else {
-      double mina_ratio = fiber_batch_to_scale_factor[batch];
-      //std::cout << "mine: " << ratio << ", mina's: " << mina_ratio << ", diff: " << ratio - mina_ratio << std::endl;
-    }
-  }
 
   // make modifications to tims colorful histograms
   std::map<int, double> adjusted_sector_means;
   double max_diff = 0;
+  double max_ratio_diff = 0;
   double total_adjusted_mean = 0;
   for (int sector : sectors) {
     std::stringstream sectorFileName;
@@ -717,7 +715,7 @@ void incl_fiber_batch() {
       TH1D* diff_data = (TH1D*) data->Clone("diff_data");
       int min_block_num = ib * 16;
       int max_block_num = ib * 16 + 15;
-      for (int i = 0; i < 96; i++) {
+      for (int i = min_block_num; i <= max_block_num; i++) {
         auto block_info = tuple_data[sector][i];
         bool has_mpv_data = std::get<0>(block_info);
         int dbn = std::get<1>(block_info);
@@ -726,11 +724,13 @@ void incl_fiber_batch() {
         
         if (has_mpv_data && fiber_batch >= 0) {
           // has fiber batch correction data
-          if (fiber_batch_avg_mpv[fiber_batch] == 0.0) { std::cout << "***PANIC, fiber batch " << fiber_batch << " has zero avg mpv" << std::endl; }
+          if (fiber_batch_avg_mpv[fiber_batch] == 0.0) { std::cout << "***PANIC, fiber batch " << fiber_batch << " has zero avg mpv (DBN " << dbn << ")" << std::endl; }
           double correction_factor = total_original_mean / fiber_batch_avg_mpv[fiber_batch];
           //double adjusted_content = content * correction_factor;
           double adj_mpv = mpv * correction_factor;
-          std::get<4>(block_info) = adj_mpv;
+          //std::get<4>(block_info) = adj_mpv; // DOES NOT WORK
+          std::get<4>(tuple_data[sector][i]) = adj_mpv;
+          //std::cout << "*****TRIED TO SET ADJ MPV FOR DBN " << dbn << " TO " << adj_mpv << ": " << std::get<4>(block_info) << std::endl;
           adj_mean_mpv += adj_mpv;
           total_adjusted_mean += adj_mpv;
 
@@ -744,11 +744,14 @@ void incl_fiber_batch() {
 
           adjusted_all_mpv.push_back(adj_mpv);
           adjusted_histogram_data[vop].push_back(adj_mpv);
-          adjusted_dbn_mpv[std::to_string(dbn)] = adj_mpv;
+          adjusted_dbn_mpv[dbn] = adj_mpv;
           adjusted_sector_vop_mpv[sector][vop].push_back(adj_mpv);
           adjusted_vop_sector_mpv[vop][sector].push_back(adj_mpv);
 
           if (std::abs(adj_mpv - mpv) > max_diff) { max_diff = std::abs(adj_mpv - mpv); }
+          if (std::abs(correction_factor - 1) > max_ratio_diff) { max_ratio_diff = std::abs(correction_factor - 1); }
+        } else if (has_mpv_data) {
+          std::cout << "***WARNING, dbn " << dbn << " has MPV data but no fiber batch!" << std::endl;
         } else {
           // omit this data
           data->SetBinContent(i, -9000.);
@@ -901,7 +904,7 @@ void incl_fiber_batch() {
   csvfile csv("dbn_to_mpv.csv");
   csv << "dbn" << "mpv" << csvfile::endrow;
   for (auto const &p : dbn_mpv) {
-    csv << std::stoi(p.first) << p.second << csvfile::endrow;
+    csv << p.first << p.second << csvfile::endrow;
   }
   // old plots for original mpv data
   int num_dbns_with_mpv = 0;
@@ -1476,10 +1479,298 @@ void incl_fiber_batch() {
   adj_sigma_canvas->SetGrid();
   adj_sigma_canvas->SaveAs("./sector_diagrams/adj_sigmas.svg");
 
+  // PROOF THAT MY CODE IS CORRECT @ANNE
+
+  std::map<int, std::map<int, int>> sector_fb_counts;
+  for (int sector : sectors) {
+    auto tuples = tuple_data[sector];
+    for (int block_num = 0; block_num < 96; block_num++) {
+      auto block_info = tuples[block_num];
+      bool has_mpv_data = std::get<0>(block_info);
+      int dbn = std::get<1>(block_info);
+      int fiber_batch = std::get<2>(block_info);
+      double mpv = std::get<3>(block_info);
+      double adj_mpv = std::get<4>(block_info);
+      if (has_mpv_data && fiber_batch >= 0) {
+        sector_fb_counts[sector][fiber_batch]++;
+      }
+    }
+  }
+  
+  // make fb histograms for each sector
+  std::map<int, std::map<int, Color_t>> sector_fb_colors;
+  std::map<int, std::vector<int>> sector_batches;
+  for (int sector : sectors) {
+    auto tuples = tuple_data[sector];
+    // first determine the number of batches in this sector
+    std::vector<int> batches;
+    std::map<int, Color_t> fb_colors;
+    for (int block_num = 0; block_num < 96; block_num++) {
+      auto block_info = tuples[block_num];
+      bool has_mpv_data = std::get<0>(block_info);
+      //int dbn = std::get<1>(block_info);
+      int fiber_batch = std::get<2>(block_info);
+      double mpv = std::get<3>(block_info);
+      //double adj_mpv = std::get<4>(block_info);
+      if (has_mpv_data && fiber_batch >= 0) {
+        if (std::find(batches.begin(), batches.end(), fiber_batch) == batches.end()) {
+          // add this fb
+          batches.push_back(fiber_batch);
+          // create new color for this fb
+          Color_t ci = TColor::GetFreeColorIndex();
+          int nth_kelly = fb_colors.size();
+          TColor* color = new TColor(ci, kelly_colors[nth_kelly][0], kelly_colors[nth_kelly][1], kelly_colors[nth_kelly][2]);
+          fb_colors[fiber_batch] = ci;
+          //std::cout << "sector " << sector << " fb " << fiber_batch << " has kelly color " << nth_kelly << std::endl;
+        }
+      }
+    }
+    std::cout << "SECTOR " << sector << " HAS " << batches.size() << " BATCHES" << std::endl;
+    std::sort(batches.begin(), batches.end());
+    sector_batches[sector] = batches;
+    sector_fb_colors[sector] = fb_colors;
+    // generate bin labels
+    std::vector<std::string> bin_labels;
+    for (int batch : batches) {
+      double correction_factor = total_original_mean / fiber_batch_avg_mpv[batch];
+      std::stringstream label;
+      label << "FB " << batch << ": " << Form("%.3f", correction_factor);
+      bin_labels.push_back(label.str());
+    }
+    std::stringstream hs_title;
+    hs_title << "Sector " << sector << ";Fiber Batch;Num Blocks";
+    THStack* hs = new THStack("hs", hs_title.str().c_str());
+    std::map<int, TH1D*> batch_hists;
+    for (int block_num = 0; block_num < 96; block_num++) {
+      auto block_info = tuples[block_num];
+      bool has_mpv_data = std::get<0>(block_info);
+      //int dbn = std::get<1>(block_info);
+      int fiber_batch = std::get<2>(block_info);
+      double mpv = std::get<3>(block_info);
+      //double adj_mpv = std::get<4>(block_info);
+      if (has_mpv_data && fiber_batch >= 0) {
+        if (batch_hists.find(fiber_batch) == batch_hists.end()) {
+          // create hist for this fb
+          std::stringstream batch_hist_title;
+          batch_hist_title << "fb " << fiber_batch << ";Fiber Batch;Num Blocks";
+          int num_batches = batches.size();
+          TH1D* batch_hist = new TH1D("h", batch_hist_title.str().c_str(), num_batches, 0, num_batches);
+          batch_hist->GetSumw2();
+          batch_hist->SetLineColor(fb_colors[fiber_batch]);
+          batch_hist->SetFillColor(fb_colors[fiber_batch]);
+          //batch_hist->GetXaxis()->LabelsOption("v");
+          for (int i = 0; i < bin_labels.size(); i++) {
+            batch_hist->GetXaxis()->SetBinLabel(i + 1, std::to_string(batches[i]).c_str());
+            //batch_hist->GetXaxis()->SetBinLabel(i + 1, bin_labels[i].c_str());
+            //batch_hist->GetXaxis()->SetBinLabel(i + 1, "");
+          }
+          batch_hists[fiber_batch] = batch_hist;
+        }
+        batch_hists[fiber_batch]->Fill(std::find(batches.begin(), batches.end(), fiber_batch) - batches.begin());
+      }
+    }
+    for (auto const &p : batch_hists) {
+      hs->Add(p.second, "B");
+    }
+    TCanvas* sector_canvas = new TCanvas();
+    sector_canvas->SetGrid();
+    sector_canvas->SetRightMargin(0.3);
+    hs->Draw();
+    TLegend* legend = new TLegend(0.725, 0.025, 0.975, 0.975);
+    for (int i = 0; i < batches.size(); i++) {
+      legend->AddEntry(batch_hists[batches[i]], bin_labels[i].c_str());
+    }
+    legend->Draw();
+    std::stringstream hs_filename;
+    hs_filename << "./proof/batches/sector" << sector << ".svg";
+    sector_canvas->SaveAs(hs_filename.str().c_str());
+  }
+
+  std::cout << "FIBER BATCH COUNTS:" << std::endl;
+  for (auto const &p : sector_fb_counts) {
+    int sector = p.first;
+    std::cout << "sector " << sector << std:: endl;
+    for (auto const &q : p.second) {
+      int batch = q.first;
+      int count = q.second;
+      std::cout << "  fb " << batch << ": " << count << std::endl;
+    }
+  }
+
+  // make calibration factor plots for each sector
+  for (int sector : sectors) {
+    std::cout << "SECTOR " << sector << ":" << std::endl;
+    auto tuples = tuple_data[sector];
+    std::stringstream hs_title;
+    hs_title << "Sector " << sector << ";Block Number;Correction Factor";
+    THStack* hs = new THStack("hs", hs_title.str().c_str());
+    std::map<int, std::pair<TH1D*, TH1D*>> batch_hists;
+    for (int block_num = 0; block_num < 96; block_num++) {
+      auto block_info = tuples[block_num];
+      bool has_mpv_data = std::get<0>(block_info);
+      //int dbn = std::get<1>(block_info);
+      int fiber_batch = std::get<2>(block_info);
+      double mpv = std::get<3>(block_info);
+      //double adj_mpv = std::get<4>(block_info);
+      if (has_mpv_data && fiber_batch >= 0) {
+        if (batch_hists.find(fiber_batch) == batch_hists.end()) {
+          // create hist for this fb
+          std::stringstream batch_hist_up_title;
+          batch_hist_up_title << "fb " << fiber_batch << " up;Block Number;Correction Factor";
+          TH1D* batch_hist_up = new TH1D("h_up", batch_hist_up_title.str().c_str(), 96, 0, 96);
+          batch_hist_up->GetSumw2();
+          batch_hist_up->SetMarkerColor(sector_fb_colors[sector][fiber_batch]);
+          batch_hist_up->SetMarkerStyle(22); // up triangle
+          // and the down hist
+          std::stringstream batch_hist_down_title;
+          batch_hist_down_title << "fb " << fiber_batch << " down;Block Number;Correction Factor";
+          TH1D* batch_hist_down = (TH1D*) batch_hist_up->Clone("h_down");
+          batch_hist_down->SetTitle(batch_hist_down_title.str().c_str());
+          batch_hist_down->SetMarkerStyle(23); // down triangle
+          // add to the map
+          batch_hists[fiber_batch] = std::make_pair(batch_hist_up, batch_hist_down);
+          //std::cout << "CREATED HISTS FOR FB " << fiber_batch << std::endl;
+        }
+        double correction_factor = total_original_mean / fiber_batch_avg_mpv[fiber_batch];
+        if (correction_factor >= 1) {
+          batch_hists[fiber_batch].first->SetBinContent(block_num + 1, correction_factor);
+          //batch_hists[fiber_batch].second->SetBinContent(block_num + 1, -9000);
+          //std::cout << "added an up arrow at block " << block_num << " fb " << fiber_batch << " factor " << correction_factor << std::endl;
+        } else {
+          //batch_hists[fiber_batch].first->SetBinContent(block_num + 1, -9000);
+          batch_hists[fiber_batch].second->SetBinContent(block_num + 1, correction_factor);
+          //std::cout << "added a down arrow at block " << block_num << " fb " << fiber_batch << " factor " << correction_factor << std::endl;
+        }
+      }
+    }
+    for (auto const &p : batch_hists) {
+      hs->Add(p.second.first, "P");
+      hs->Add(p.second.second, "P");
+    }
+    TCanvas* sector_canvas = new TCanvas();
+    sector_canvas->SetGrid();
+    //sector_canvas->SetRightMargin(0.3);
+    hs->SetMinimum(0.75);
+    hs->SetMaximum(1.25);
+    hs->Draw("NOSTACK");
+    /*
+    TLegend* legend = new TLegend(0.725, 0.025, 0.975, 0.975);
+    for (int i = 0; i < batches.size(); i++) {
+      legend->AddEntry(batch_hists[batches[i]], bin_labels[i].c_str());
+    }
+    legend->Draw();
+    */
+    TLine* one_line = new TLine(0.0, 1.0, 96.0, 1.0);
+    //one_line->SetLineColor(kRed);
+    one_line->SetLineStyle(2);
+    one_line->SetLineWidth(2);
+    one_line->Draw();
+    std::stringstream hs_filename;
+    hs_filename << "./proof/tim/sector" << sector << ".svg";
+    sector_canvas->SaveAs(hs_filename.str().c_str());
+  }
+
+  // make combined tim graphs, colored by fiber batch instead of interface board
+  for (int sector : sectors) {
+    std::cout << "SECTOR " << sector << ":" << std::endl;
+    auto tuples = tuple_data[sector];
+    std::stringstream hs_title;
+    hs_title << "Sector " << sector << ";Block Number;MPV";
+    THStack* hs = new THStack("hs", hs_title.str().c_str());
+    std::map<int, std::pair<std::pair<TH1D*, TH1D*>, TH1D*>> batch_hists;
+    for (int block_num = 0; block_num < 96; block_num++) {
+      auto block_info = tuples[block_num];
+      bool has_mpv_data = std::get<0>(block_info);
+      //int dbn = std::get<1>(block_info);
+      int fiber_batch = std::get<2>(block_info);
+      double mpv = std::get<3>(block_info);
+      double adj_mpv = std::get<4>(block_info);
+      if (has_mpv_data && fiber_batch >= 0) {
+        if (batch_hists.find(fiber_batch) == batch_hists.end()) {
+          // original hist for adj up
+          std::stringstream batch_hist_orig_up_title;
+          batch_hist_orig_up_title << "fb " << fiber_batch << " orig up;Block Number;MPV";
+          TH1D* batch_hist_orig_up = new TH1D("h_up", batch_hist_orig_up_title.str().c_str(), 96, 0, 96);
+          batch_hist_orig_up->GetSumw2();
+          batch_hist_orig_up->SetMarkerStyle(22); // solid up arrow
+          batch_hist_orig_up->SetMarkerColorAlpha(sector_fb_colors[sector][fiber_batch], 0.5);
+          // original hist for adj down
+          std::stringstream batch_hist_orig_down_title;
+          batch_hist_orig_down_title << "fb " << fiber_batch << " orig down;Block Number;MPV";
+          TH1D* batch_hist_orig_down = (TH1D*) batch_hist_orig_up->Clone("h_down");
+          batch_hist_orig_down->SetTitle(batch_hist_orig_down_title.str().c_str());
+          batch_hist_orig_down->SetMarkerStyle(23); // solid down arrow
+          batch_hist_orig_down->SetMarkerColorAlpha(sector_fb_colors[sector][fiber_batch], 0.5);
+          // adj hist
+          std::stringstream batch_hist_adj_title;
+          batch_hist_adj_title << "fb " << fiber_batch << " adj;Block Number;MPV";
+          TH1D* batch_hist_adj = (TH1D*) batch_hist_orig_up->Clone("h_adj");
+          batch_hist_adj->SetTitle(batch_hist_adj_title.str().c_str());
+          batch_hist_adj->SetMarkerStyle(20); // solid circle
+          //batch_hist_adj->SetMarkerColor(sector_fb_colors[sector][fiber_batch]);
+          batch_hist_adj->SetMarkerColor(1);
+          // add to the map
+          batch_hists[fiber_batch] = std::make_pair(std::make_pair(batch_hist_orig_up, batch_hist_orig_down), batch_hist_adj);
+          //std::cout << "CREATED HISTS FOR FB " << fiber_batch << std::endl;
+        }
+        std::cout << "ADJ MPV IS " << adj_mpv << std::endl;
+        batch_hists[fiber_batch].second->SetBinContent(block_num + 1, adj_mpv);
+        double correction_factor = total_original_mean / fiber_batch_avg_mpv[fiber_batch];
+        if (correction_factor >= 1) {
+          batch_hists[fiber_batch].first.first->SetBinContent(block_num + 1, mpv);
+        } else {
+          batch_hists[fiber_batch].first.second->SetBinContent(block_num + 1, mpv);
+        }
+      }
+    }
+    for (auto const &p : batch_hists) {
+      hs->Add(p.second.first.first, "P");
+      hs->Add(p.second.first.second, "P");
+      hs->Add(p.second.second, "P");
+    }
+    TCanvas* sector_canvas = new TCanvas();
+    sector_canvas->SetGrid();
+    //sector_canvas->SetRightMargin(0.3);
+    hs->SetMinimum(0.0);
+    hs->SetMaximum(600.0);
+    hs->Draw("NOSTACK");
+    /*
+    TLegend* legend = new TLegend(0.725, 0.025, 0.975, 0.975);
+    for (int i = 0; i < batches.size(); i++) {
+      legend->AddEntry(batch_hists[batches[i]], bin_labels[i].c_str());
+    }
+    legend->Draw();
+    */
+    std::stringstream hs_filename;
+    hs_filename << "./proof/combined/sector" << sector << ".svg";
+    sector_canvas->SaveAs(hs_filename.str().c_str());
+  }
+
+
 
   for (int i = 0; i < sectors.size(); i++) {
     std::cout << "sector " << sectors[i] << " mean " << original_means[i] << " -> " << adj_means[i] << ", sigma " << original_sigmas[i] << " -> " << adj_sigmas[i] << std::endl;
   }
   std::cout << "max diff: " << max_diff << std::endl;
+  std::cout << "max ratio diff: " << max_ratio_diff << std::endl;
   std::cout << "mean over all sectors " << total_original_mean << " -> " << total_adjusted_mean << std::endl;
+
+  for (int sector : sectors) {
+    int count = 0;
+    auto tuples = tuple_data[sector];
+    for (int block_num = 0; block_num < 96; block_num++) {
+      auto block_info = tuples[block_num];
+      bool has_mpv_data = std::get<0>(block_info);
+      //int dbn = std::get<1>(block_info);
+      int fiber_batch = std::get<2>(block_info);
+      //double mpv = std::get<3>(block_info);
+      //double adj_mpv = std::get<4>(block_info);
+      if (has_mpv_data && fiber_batch >= 0) { count++; }
+    }
+    if (count == 96) {
+      //std::cout << "sector " << sector << " looks good :)" << std::endl;
+    } else {
+      //std::cout << "sector " << sector << " has " << count << " != 96 blocks with proper data >:(" << std::endl;
+    }
+  }
 }

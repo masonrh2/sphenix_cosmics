@@ -5,7 +5,7 @@
 </title>
 <desc>
 Creator: ROOT Version 6.24/00
-CreationDate: Mon Jul 19 21:24:20 2021</desc>
+CreationDate: Wed Jul 21 21:39:41 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -95,13 +95,41 @@ CreationDate: Mon Jul 19 21:24:20 2021</desc>
 <text xml:space="preserve" x="21.6784" y="65.1643" fill="black" font-size="12.8453" font-family="Helvetica">MPV</text>
 </g>
 <text xml:space="preserve" x="105.577" y="17.9202" fill="black" font-size="16.7693" font-family="Helvetica">Mean Block MPV by SiPM PCB Series (Adjusted)</text>
+<path d="M89.5889,274.967v -2.25659" fill="none" stroke="black"/>
+<path d="M87.9598,272.711h 3.25821" fill="none" stroke="black"/>
+<path d="M89.5889,281.484v 2.25659" fill="none" stroke="black"/>
+<path d="M87.9598,283.74h 3.25821" fill="none" stroke="black"/>
+<path d="M154.381,233.685v -2.29673" fill="none" stroke="black"/>
+<path d="M152.752,231.389h 3.25821" fill="none" stroke="black"/>
+<path d="M154.381,240.202v 2.29673" fill="none" stroke="black"/>
+<path d="M152.752,242.498h 3.25821" fill="none" stroke="black"/>
+<path d="M219.173,205.651v -3.79166" fill="none" stroke="black"/>
+<path d="M217.544,201.859h 3.25821" fill="none" stroke="black"/>
+<path d="M219.173,212.167v 3.79166" fill="none" stroke="black"/>
+<path d="M217.544,215.959h 3.25821" fill="none" stroke="black"/>
+<path d="M283.965,201.171v -1.38632" fill="none" stroke="black"/>
+<path d="M282.335,199.784h 3.25821" fill="none" stroke="black"/>
+<path d="M283.965,207.687v 1.38632" fill="none" stroke="black"/>
+<path d="M282.335,209.073h 3.25821" fill="none" stroke="black"/>
+<path d="M348.756,260.097v -4.23568" fill="none" stroke="black"/>
+<path d="M347.127,255.862h 3.25821" fill="none" stroke="black"/>
+<path d="M348.756,266.614v 4.23568" fill="none" stroke="black"/>
+<path d="M347.127,270.849h 3.25821" fill="none" stroke="black"/>
+<path d="M413.548,237.239v -4.46867" fill="none" stroke="black"/>
+<path d="M411.919,232.77h 3.25821" fill="none" stroke="black"/>
+<path d="M413.548,243.756v 4.46867" fill="none" stroke="black"/>
+<path d="M411.919,248.224h 3.25821" fill="none" stroke="black"/>
+<path d="M478.34,238.023v -2.75452" fill="none" stroke="black"/>
+<path d="M476.711,235.268h 3.25821" fill="none" stroke="black"/>
+<path d="M478.34,244.539v 2.75452" fill="none" stroke="black"/>
+<path d="M476.711,247.294h 3.25821" fill="none" stroke="black"/>
 <g fill="black">
-<rect x="86.3307" y="273.887" width="6.51643" height="6.51643"/>
-<rect x="151.123" y="233.481" width="6.51643" height="6.51643"/>
-<rect x="215.914" y="207.986" width="6.51643" height="6.51643"/>
-<rect x="280.706" y="200.695" width="6.51643" height="6.51643"/>
-<rect x="345.498" y="260.345" width="6.51643" height="6.51643"/>
-<rect x="410.29" y="238.155" width="6.51643" height="6.51643"/>
-<rect x="475.082" y="236.162" width="6.51643" height="6.51643"/>
+<rect x="86.3307" y="274.967" width="6.51643" height="6.51643"/>
+<rect x="151.123" y="233.685" width="6.51643" height="6.51643"/>
+<rect x="215.914" y="205.651" width="6.51643" height="6.51643"/>
+<rect x="280.706" y="201.171" width="6.51643" height="6.51643"/>
+<rect x="345.498" y="260.097" width="6.51643" height="6.51643"/>
+<rect x="410.29" y="237.239" width="6.51643" height="6.51643"/>
+<rect x="475.082" y="238.023" width="6.51643" height="6.51643"/>
 </g>
 <text xml:space="preserve" x="105.577" y="17.9202" fill="black" font-size="16.7693" font-family="Helvetica">Mean Block MPV by SiPM PCB Series (Adjusted)</text></svg>
