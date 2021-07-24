@@ -5,7 +5,7 @@
 </title>
 <desc>
 Creator: ROOT Version 6.24/00
-CreationDate: Tue Jul 20 19:41:03 2021</desc>
+CreationDate: Fri Jul 23 23:22:45 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -122,86 +122,30 @@ CreationDate: Tue Jul 20 19:41:03 2021</desc>
 <text xml:space="preserve" x="20.0493" y="106.706" fill="black" font-size="12.8453" font-family="Helvetica">Mean (MPV)</text>
 </g>
 <text xml:space="preserve" x="158.523" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Sector MPV Means (Adjusted)</text>
-<g stroke="black" stroke-width="1" fill="none">
-<line x1="81.3898" y1="188.382" x2="82.3898" y2="188.382"/>
-<line x1="106.587" y1="197.059" x2="107.587" y2="197.059"/>
-<line x1="131.783" y1="218.787" x2="132.783" y2="218.787"/>
-<line x1="156.98" y1="215.548" x2="157.98" y2="215.548"/>
-<line x1="182.177" y1="217.765" x2="183.177" y2="217.765"/>
-<line x1="207.374" y1="198.203" x2="208.374" y2="198.203"/>
-<line x1="232.571" y1="209.783" x2="233.571" y2="209.783"/>
-<line x1="257.768" y1="202.885" x2="258.768" y2="202.885"/>
-<line x1="282.965" y1="200.623" x2="283.965" y2="200.623"/>
-<line x1="308.161" y1="183.767" x2="309.161" y2="183.767"/>
-<line x1="333.358" y1="203.976" x2="334.358" y2="203.976"/>
-<line x1="358.555" y1="206.346" x2="359.555" y2="206.346"/>
-<line x1="383.752" y1="219.473" x2="384.752" y2="219.473"/>
-<line x1="408.949" y1="201.061" x2="409.949" y2="201.061"/>
-<line x1="459.343" y1="188.644" x2="460.343" y2="188.644"/>
-<line x1="484.539" y1="205.837" x2="485.539" y2="205.837"/>
+<g fill="black">
+<polygon points=" 82.3898, 185.123 84.5619, 188.382 82.3898, 191.64 80.2176, 188.382"/>
+<polygon points=" 107.587, 193.801 109.759, 197.059 107.587, 200.317 105.414, 197.059"/>
+<polygon points=" 132.783, 215.528 134.956, 218.787 132.783, 222.045 130.611, 218.787"/>
+<polygon points=" 157.98, 212.289 160.152, 215.548 157.98, 218.806 155.808, 215.548"/>
+<polygon points=" 183.177, 214.507 185.349, 217.765 183.177, 221.023 181.005, 217.765"/>
+<polygon points=" 208.374, 194.945 210.546, 198.203 208.374, 201.461 206.202, 198.203"/>
+<polygon points=" 233.571, 206.525 235.743, 209.783 233.571, 213.041 231.399, 209.783"/>
+<polygon points=" 258.768, 199.626 260.94, 202.885 258.768, 206.143 256.596, 202.885"/>
+<polygon points=" 283.965, 197.365 286.137, 200.623 283.965, 203.882 281.792, 200.623"/>
+<polygon points=" 309.161, 180.509 311.334, 183.767 309.161, 187.025 306.989, 183.767"/>
+<polygon points=" 334.358, 200.718 336.53, 203.976 334.358, 207.234 332.186, 203.976"/>
+<polygon points=" 359.555, 203.088 361.727, 206.346 359.555, 209.604 357.383, 206.346"/>
+<polygon points=" 384.752, 216.215 386.924, 219.473 384.752, 222.731 382.58, 219.473"/>
+<polygon points=" 409.949, 197.803 412.121, 201.061 409.949, 204.32 407.777, 201.061"/>
+<polygon points=" 460.343, 185.386 462.515, 188.644 460.343, 191.903 458.17, 188.644"/>
+<polygon points=" 485.539, 202.578 487.712, 205.837 485.539, 209.095 483.367, 205.837"/>
 </g>
-<path d="M82.3898,188.382v -2.51498" fill="none" stroke="black"/>
-<path d="M80.7607,185.867h 3.25821" fill="none" stroke="black"/>
-<path d="M82.3898,188.382v 2.51498" fill="none" stroke="black"/>
-<path d="M80.7607,190.896h 3.25821" fill="none" stroke="black"/>
-<path d="M107.587,197.059v -2.8236" fill="none" stroke="black"/>
-<path d="M105.958,194.236h 3.25821" fill="none" stroke="black"/>
-<path d="M107.587,197.059v 2.8236" fill="none" stroke="black"/>
-<path d="M105.958,199.883h 3.25821" fill="none" stroke="black"/>
-<path d="M132.783,218.787v -2.18756" fill="none" stroke="black"/>
-<path d="M131.154,216.599h 3.25821" fill="none" stroke="black"/>
-<path d="M132.783,218.787v 2.18756" fill="none" stroke="black"/>
-<path d="M131.154,220.974h 3.25821" fill="none" stroke="black"/>
-<path d="M157.98,215.548v -2.18938" fill="none" stroke="black"/>
-<path d="M156.351,213.358h 3.25821" fill="none" stroke="black"/>
-<path d="M157.98,215.548v 2.18938" fill="none" stroke="black"/>
-<path d="M156.351,217.737h 3.25821" fill="none" stroke="black"/>
-<path d="M183.177,217.765v -2.73359" fill="none" stroke="black"/>
-<path d="M181.548,215.031h 3.25821" fill="none" stroke="black"/>
-<path d="M183.177,217.765v 2.73359" fill="none" stroke="black"/>
-<path d="M181.548,220.499h 3.25821" fill="none" stroke="black"/>
-<path d="M208.374,198.203v -2.94039" fill="none" stroke="black"/>
-<path d="M206.745,195.263h 3.25821" fill="none" stroke="black"/>
-<path d="M208.374,198.203v 2.94039" fill="none" stroke="black"/>
-<path d="M206.745,201.143h 3.25821" fill="none" stroke="black"/>
-<path d="M233.571,209.783v -2.07236" fill="none" stroke="black"/>
-<path d="M231.942,207.711h 3.25821" fill="none" stroke="black"/>
-<path d="M233.571,209.783v 2.07236" fill="none" stroke="black"/>
-<path d="M231.942,211.856h 3.25821" fill="none" stroke="black"/>
-<path d="M258.768,202.885v -2.44256" fill="none" stroke="black"/>
-<path d="M257.139,200.442h 3.25821" fill="none" stroke="black"/>
-<path d="M258.768,202.885v 2.44256" fill="none" stroke="black"/>
-<path d="M257.139,205.327h 3.25821" fill="none" stroke="black"/>
-<path d="M283.965,200.623v -3.83326" fill="none" stroke="black"/>
+<path d="M283.965,197.365v -0.575045" fill="none" stroke="black"/>
 <path d="M282.335,196.79h 3.25821" fill="none" stroke="black"/>
-<path d="M283.965,200.623v 3.83326" fill="none" stroke="black"/>
+<path d="M283.965,203.882v 0.575045" fill="none" stroke="black"/>
 <path d="M282.335,204.457h 3.25821" fill="none" stroke="black"/>
-<path d="M309.161,183.767v -4.92216" fill="none" stroke="black"/>
+<path d="M309.161,180.509v -1.66395" fill="none" stroke="black"/>
 <path d="M307.532,178.845h 3.25821" fill="none" stroke="black"/>
-<path d="M309.161,183.767v 4.92216" fill="none" stroke="black"/>
+<path d="M309.161,187.025v 1.66395" fill="none" stroke="black"/>
 <path d="M307.532,188.689h 3.25821" fill="none" stroke="black"/>
-<path d="M334.358,203.976v -2.64446" fill="none" stroke="black"/>
-<path d="M332.729,201.332h 3.25821" fill="none" stroke="black"/>
-<path d="M334.358,203.976v 2.64446" fill="none" stroke="black"/>
-<path d="M332.729,206.621h 3.25821" fill="none" stroke="black"/>
-<path d="M359.555,206.346v -3.00944" fill="none" stroke="black"/>
-<path d="M357.926,203.337h 3.25821" fill="none" stroke="black"/>
-<path d="M359.555,206.346v 3.00944" fill="none" stroke="black"/>
-<path d="M357.926,209.356h 3.25821" fill="none" stroke="black"/>
-<path d="M384.752,219.473v -1.43095" fill="none" stroke="black"/>
-<path d="M383.123,218.042h 3.25821" fill="none" stroke="black"/>
-<path d="M384.752,219.473v 1.43095" fill="none" stroke="black"/>
-<path d="M383.123,220.904h 3.25821" fill="none" stroke="black"/>
-<path d="M409.949,201.061v -1.34275" fill="none" stroke="black"/>
-<path d="M408.32,199.719h 3.25821" fill="none" stroke="black"/>
-<path d="M409.949,201.061v 1.34275" fill="none" stroke="black"/>
-<path d="M408.32,202.404h 3.25821" fill="none" stroke="black"/>
-<path d="M460.343,188.644v -2.13556" fill="none" stroke="black"/>
-<path d="M458.713,186.509h 3.25821" fill="none" stroke="black"/>
-<path d="M460.343,188.644v 2.13556" fill="none" stroke="black"/>
-<path d="M458.713,190.78h 3.25821" fill="none" stroke="black"/>
-<path d="M485.539,205.837v -1.6068" fill="none" stroke="black"/>
-<path d="M483.91,204.23h 3.25821" fill="none" stroke="black"/>
-<path d="M485.539,205.837v 1.6068" fill="none" stroke="black"/>
-<path d="M483.91,207.443h 3.25821" fill="none" stroke="black"/>
 <text xml:space="preserve" x="158.523" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Sector MPV Means (Adjusted)</text></svg>
