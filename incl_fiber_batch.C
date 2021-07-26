@@ -761,6 +761,7 @@ void incl_fiber_batch() {
           //std::cout << "*****TRIED TO SET ADJ MPV FOR DBN " << dbn << " TO " << adj_mpv << ": " << std::get<4>(block_info) << std::endl;
           adj_mean_mpv += adj_mpv;
           total_adjusted_mean += adj_mpv;
+          num_blocks++;
 
           data->SetBinContent(i, mpv);
           adj_data->SetBinContent(i, adj_mpv);
