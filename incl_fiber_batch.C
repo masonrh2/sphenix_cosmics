@@ -1621,6 +1621,7 @@ void incl_fiber_batch() {
   combined_mean_legend->AddEntry(orig_avg_sector_mean_line, Form("Avg Sector Mean Before (%.1f)", orig_avg_sector_mean), "l");
   combined_mean_legend->AddEntry(adj_avg_sector_mean_line, Form("Avg Sector Mean After (%.1f)", adj_avg_sector_mean), "l");
   combined_mean_legend->Draw();
+  combined_mean_canvas->SetGrid();
   combined_mean_canvas->SaveAs("./sector_diagrams/combined_means.svg");
 
   // combined sigmas
@@ -1639,6 +1640,7 @@ void incl_fiber_batch() {
   combined_sigma_legend->AddEntry(original_sigma_graph, "Before", "p");
   combined_sigma_legend->AddEntry(adj_sigma_graph, "After", "p");
   combined_sigma_legend->Draw();
+  combined_sigma_canvas->SetGrid();
   combined_sigma_canvas->SaveAs("./sector_diagrams/combined_sigmas.svg");
 
   // combined sigma/means
@@ -1657,6 +1659,7 @@ void incl_fiber_batch() {
   combined_sigma_over_mean_legend->AddEntry(original_mean_graph, "Before", "p");
   combined_sigma_over_mean_legend->AddEntry(adj_mean_graph, "After", "p");
   combined_sigma_over_mean_legend->Draw();
+  combined_sigma_over_mean_canvas->SetGrid();
   combined_sigma_over_mean_canvas->SaveAs("./sector_diagrams/combined_sigma_over_means.svg");
 
   // PROOF THAT MY CODE IS CORRECT @ANNE
