@@ -134,14 +134,15 @@ std::pair<std::vector<double>, std::vector<double>> get_err_div(std::vector<doub
   std::vector<double> z;
   std::vector<double> dz;
   for (int i = 0; i < x.size(); i++) {
-    double x0 = x[0];
-    double dx0 = dx[0];
-    double y0 = y[0];
-    double dy0 = dy[0];
+    double x0 = x[i];
+    double dx0 = dx[i];
+    double y0 = y[i];
+    double dy0 = dy[i];
     double z0 = x0/y0;
     double dz0 = z0*pow(pow(dx0/x0, 2.0) + pow(dy0/y0, 2.0), 0.5);
     z.push_back(z0);
     dz.push_back(dz0);
+    //std::cout << "CALCULATING (" << i << "): " << x0 << " ± " << dx0 << " / " << y0 << " ± " << dy0 << " = " << z0 << " ± " << dz0 << std::endl;
   }
   return std::make_pair(z, dz);
 }
@@ -1463,6 +1464,20 @@ void incl_fiber_batch() {
     sector_adj_mean_mpv[sector] = sector_adj_avg;
   }
 
+  // print sector means and their deviations from their respective means
+  double orig_avg_sector_mean = 0;
+  double adj_avg_sector_mean = 0;
+  for (int sector : sectors) {
+    orig_avg_sector_mean += sector_orig_mean_mpv[sector];
+    adj_avg_sector_mean += sector_adj_mean_mpv[sector];
+    double orig_dev_mean = sector_orig_mean_mpv[sector] - overall_orig_mean_mpv;
+    double adj_dev_mean = sector_adj_mean_mpv[sector] - overall_adj_mean_mpv;
+    std::cout << "sector " << sector << ": " << sector_orig_mean_mpv[sector] << " (" << orig_dev_mean << ") -> " << sector_adj_mean_mpv[sector] << " (" << adj_dev_mean << ")" << std::endl;
+  }
+  orig_avg_sector_mean = orig_avg_sector_mean / sectors.size();
+  adj_avg_sector_mean = adj_avg_sector_mean / sectors.size();
+  std::cout << "avg of sector means: " << orig_avg_sector_mean << " (" << orig_avg_sector_mean - overall_orig_mean_mpv << ") -> " << adj_avg_sector_mean << " (" << adj_avg_sector_mean - overall_adj_mean_mpv << ")" << std::endl;
+
   std::vector<double> sectors_as_double;
   std::vector<double> sector_err;
   for (int i = 0; i < sectors.size(); i++) {
@@ -1485,8 +1500,8 @@ void incl_fiber_batch() {
   original_mean_graph->GetXaxis()->SetTitle("Sector");
   original_mean_graph->GetYaxis()->SetTitle("Mean (MPV)");
   original_mean_graph->GetXaxis()->SetLimits(0.0, max_sector + 1);
-  original_mean_graph->GetHistogram()->SetMinimum(0.0);
-  original_mean_graph->GetHistogram()->SetMaximum(600.0);
+  original_mean_graph->GetHistogram()->SetMinimum(200.0);
+  original_mean_graph->GetHistogram()->SetMaximum(400.0);
   //original_mean_graph->GetYaxis()->SetLimits(220., 380.);
   original_mean_graph->SetMarkerStyle(33); // diamond
   original_mean_graph->Draw("AP");
@@ -1500,8 +1515,8 @@ void incl_fiber_batch() {
   adj_mean_graph->GetXaxis()->SetTitle("Sector");
   adj_mean_graph->GetYaxis()->SetTitle("Mean (MPV)");
   adj_mean_graph->GetXaxis()->SetLimits(0.0, max_sector + 1);
-  adj_mean_graph->GetHistogram()->SetMinimum(0.0);
-  adj_mean_graph->GetHistogram()->SetMaximum(600.0);
+  adj_mean_graph->GetHistogram()->SetMinimum(200.0);
+  adj_mean_graph->GetHistogram()->SetMaximum(400.0);
   //adj_mean_graph->GetYaxis()->SetLimits(220., 380.);
   adj_mean_graph->SetMarkerStyle(33); // diamond
   adj_mean_graph->Draw("AP");
@@ -1515,8 +1530,8 @@ void incl_fiber_batch() {
   original_sigma_graph->GetXaxis()->SetTitle("Sector");
   original_sigma_graph->GetYaxis()->SetTitle("Sigma (MPV)");
   original_sigma_graph->GetXaxis()->SetLimits(0.0, max_sector + 1);
-  original_sigma_graph->GetHistogram()->SetMinimum(0.0);
-  original_sigma_graph->GetHistogram()->SetMaximum(100.0);
+  original_sigma_graph->GetHistogram()->SetMinimum(10.0);
+  original_sigma_graph->GetHistogram()->SetMaximum(90.0);
   //original_sigma_graph->GetYaxis()->SetLimits(220., 380.);
   original_sigma_graph->SetMarkerStyle(33); // diamond
   original_sigma_graph->Draw("AP");
@@ -1530,8 +1545,8 @@ void incl_fiber_batch() {
   adj_sigma_graph->GetXaxis()->SetTitle("Sector");
   adj_sigma_graph->GetYaxis()->SetTitle("Sigma (MPV)");
   adj_sigma_graph->GetXaxis()->SetLimits(0.0, max_sector + 1);
-  adj_sigma_graph->GetHistogram()->SetMinimum(0.0);
-  adj_sigma_graph->GetHistogram()->SetMaximum(100.0);
+  adj_sigma_graph->GetHistogram()->SetMinimum(10.0);
+  adj_sigma_graph->GetHistogram()->SetMaximum(90.0);
   //adj_sigma_graph->GetYaxis()->SetLimits(220., 380.);
   adj_sigma_graph->SetMarkerStyle(33); // diamond
   adj_sigma_graph->Draw("AP");
@@ -1546,7 +1561,7 @@ void incl_fiber_batch() {
   original_sigma_over_mean_graph->GetYaxis()->SetTitle("Sigma/Mean");
   original_sigma_over_mean_graph->GetXaxis()->SetLimits(0.0, max_sector + 1);
   original_sigma_over_mean_graph->GetHistogram()->SetMinimum(0.0);
-  original_sigma_over_mean_graph->GetHistogram()->SetMaximum(1.0);
+  original_sigma_over_mean_graph->GetHistogram()->SetMaximum(0.3);
   //original_sigma_over_mean_graph->GetYaxis()->SetLimits(220., 380.);
   original_sigma_over_mean_graph->SetMarkerStyle(33); // diamond
   original_sigma_over_mean_graph->Draw("AP");
@@ -1561,12 +1576,79 @@ void incl_fiber_batch() {
   adj_sigma_over_mean_graph->GetYaxis()->SetTitle("Sigma/Mean");
   adj_sigma_over_mean_graph->GetXaxis()->SetLimits(0.0, max_sector + 1);
   adj_sigma_over_mean_graph->GetHistogram()->SetMinimum(0.0);
-  adj_sigma_over_mean_graph->GetHistogram()->SetMaximum(1.0);
+  adj_sigma_over_mean_graph->GetHistogram()->SetMaximum(0.3);
   //adj_sigma_over_mean_graph->GetYaxis()->SetLimits(220., 380.);
   adj_sigma_over_mean_graph->SetMarkerStyle(33); // diamond
   adj_sigma_over_mean_graph->Draw("AP");
   adj_sigma_over_mean_canvas->SetGrid();
   adj_sigma_over_mean_canvas->SaveAs("./sector_diagrams/adj_sigma_over_means.svg");
+
+  // combined means
+  TCanvas* combined_mean_canvas = new TCanvas();
+  TMultiGraph* combined_mean_mg = new TMultiGraph("mg_mean", "Sector MPV Means (Combined)");
+  original_mean_graph->SetMarkerColor(kRed);
+  adj_mean_graph->SetMarkerColor(kBlue);
+  combined_mean_mg->Add(original_mean_graph);
+  combined_mean_mg->Add(adj_mean_graph);
+  combined_mean_mg->GetXaxis()->SetRangeUser(0.0, max_sector + 1);
+  combined_mean_mg->GetHistogram()->SetMinimum(200.0);
+  combined_mean_mg->GetHistogram()->SetMaximum(400.0);
+  combined_mean_mg->Draw("AP");
+  // draw sector mean lines
+  TLine* orig_avg_sector_mean_line = new TLine(0.0, orig_avg_sector_mean, max_sector + 1, orig_avg_sector_mean);
+  orig_avg_sector_mean_line->SetLineColor(kRed);
+  orig_avg_sector_mean_line->SetLineStyle(2);
+  orig_avg_sector_mean_line->SetLineWidth(1);
+  orig_avg_sector_mean_line->Draw();
+  TLine* adj_avg_sector_mean_line = new TLine(0.0, adj_avg_sector_mean, max_sector + 1, adj_avg_sector_mean);
+  adj_avg_sector_mean_line->SetLineColor(kBlue);
+  adj_avg_sector_mean_line->SetLineStyle(2);
+  adj_avg_sector_mean_line->SetLineWidth(1);
+  adj_avg_sector_mean_line->Draw();
+  // draw legend
+  TLegend* combined_mean_legend = new TLegend(0.15, 0.65, 0.45, 0.85);
+  combined_mean_legend->AddEntry(original_mean_graph, "Before", "p");
+  combined_mean_legend->AddEntry(adj_mean_graph, "After", "p");
+  combined_mean_legend->AddEntry(orig_avg_sector_mean_line, Form("Avg Sector Mean Before (%.1f)", orig_avg_sector_mean), "l");
+  combined_mean_legend->AddEntry(adj_avg_sector_mean_line, Form("Avg Sector Mean After (%.1f)", adj_avg_sector_mean), "l");
+  combined_mean_legend->Draw();
+  combined_mean_canvas->SaveAs("./sector_diagrams/combined_means.svg");
+
+  // combined sigmas
+  TCanvas* combined_sigma_canvas = new TCanvas();
+  TMultiGraph* combined_sigma_mg = new TMultiGraph("mg_mean", "Sector MPV Sigmas (Combined)");
+  original_sigma_graph->SetMarkerColor(kRed);
+  adj_sigma_graph->SetMarkerColor(kBlue);
+  combined_sigma_mg->Add(original_sigma_graph);
+  combined_sigma_mg->Add(adj_sigma_graph);
+  combined_sigma_mg->GetXaxis()->SetRangeUser(0.0, max_sector + 1);
+  combined_sigma_mg->GetHistogram()->SetMinimum(10.0);
+  combined_sigma_mg->GetHistogram()->SetMaximum(90.0);
+  combined_sigma_mg->Draw("AP");
+  // draw legend
+  TLegend* combined_sigma_legend = new TLegend(0.15, 0.70, 0.35, 0.85);
+  combined_sigma_legend->AddEntry(original_sigma_graph, "Before", "p");
+  combined_sigma_legend->AddEntry(adj_sigma_graph, "After", "p");
+  combined_sigma_legend->Draw();
+  combined_sigma_canvas->SaveAs("./sector_diagrams/combined_sigmas.svg");
+
+  // combined sigma/means
+  TCanvas* combined_sigma_over_mean_canvas = new TCanvas();
+  TMultiGraph* combined_sigma_over_mean_mg = new TMultiGraph("mg_mean", "Sector MPV Means (Combined)");
+  original_sigma_over_mean_graph->SetMarkerColor(kRed);
+  adj_sigma_over_mean_graph->SetMarkerColor(kBlue);
+  combined_sigma_over_mean_mg->Add(original_sigma_over_mean_graph);
+  combined_sigma_over_mean_mg->Add(adj_sigma_over_mean_graph);
+  combined_sigma_over_mean_mg->GetXaxis()->SetRangeUser(0.0, max_sector + 1);
+  combined_sigma_over_mean_mg->GetHistogram()->SetMinimum(0.0);
+  combined_sigma_over_mean_mg->GetHistogram()->SetMaximum(0.3);
+  combined_sigma_over_mean_mg->Draw("AP");
+  // draw legend
+  TLegend* combined_sigma_over_mean_legend = new TLegend(0.15, 0.70, 0.35, 0.85);
+  combined_sigma_over_mean_legend->AddEntry(original_mean_graph, "Before", "p");
+  combined_sigma_over_mean_legend->AddEntry(adj_mean_graph, "After", "p");
+  combined_sigma_over_mean_legend->Draw();
+  combined_sigma_over_mean_canvas->SaveAs("./sector_diagrams/combined_sigma_over_means.svg");
 
   // PROOF THAT MY CODE IS CORRECT @ANNE
 
@@ -1802,7 +1884,7 @@ void incl_fiber_batch() {
           batch_hists[fiber_batch] = std::make_pair(std::make_pair(batch_hist_orig_up, batch_hist_orig_down), batch_hist_adj);
           //std::cout << "CREATED HISTS FOR FB " << fiber_batch << std::endl;
         }
-        std::cout << "ADJ MPV IS " << adj_mpv << std::endl;
+        //std::cout << "ADJ MPV IS " << adj_mpv << std::endl;
         batch_hists[fiber_batch].second->SetBinContent(block_num + 1, adj_mpv);
         double correction_factor = total_original_mean / fiber_batch_avg_mpv[fiber_batch];
         if (correction_factor >= 1) {
@@ -1863,17 +1945,4 @@ void incl_fiber_batch() {
     }
   }
 
-  // print sector means and their deviations from their respective means
-  double orig_avg_sector_mean = 0;
-  double adj_avg_sector_mean = 0;
-  for (int sector : sectors) {
-    orig_avg_sector_mean += sector_orig_mean_mpv[sector];
-    adj_avg_sector_mean += sector_adj_mean_mpv[sector];
-    double orig_dev_mean = sector_orig_mean_mpv[sector] - overall_orig_mean_mpv;
-    double adj_dev_mean = sector_adj_mean_mpv[sector] - overall_adj_mean_mpv;
-    std::cout << "sector " << sector << ": " << sector_orig_mean_mpv[sector] << " (" << orig_dev_mean << ") -> " << sector_adj_mean_mpv[sector] << " (" << adj_dev_mean << ")" << std::endl;
-  }
-  orig_avg_sector_mean = orig_avg_sector_mean / sectors.size();
-  adj_avg_sector_mean = adj_avg_sector_mean / sectors.size();
-  std::cout << "avg of sector means: " << orig_avg_sector_mean << " (" << orig_avg_sector_mean - overall_orig_mean_mpv << ") -> " << adj_avg_sector_mean << " (" << adj_avg_sector_mean - overall_adj_mean_mpv << ")" << std::endl;
 }
