@@ -5,7 +5,7 @@
 </title>
 <desc>
 Creator: ROOT Version 6.24/00
-CreationDate: Sat Jul 24 11:09:18 2021</desc>
+CreationDate: Mon Jul 26 12:36:31 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -97,7 +97,7 @@ CreationDate: Sat Jul 24 11:09:18 2021</desc>
 <text xml:space="preserve" x="37.1549" y="145.805" fill="black" font-size="12.8453" font-family="Helvetica">0.2</text>
 <text xml:space="preserve" x="30.6385" y="94.4882" fill="black" font-size="12.8453" font-family="Helvetica">0.25</text>
 <text xml:space="preserve" x="37.1549" y="43.1713" fill="black" font-size="12.8453" font-family="Helvetica">0.3</text>
-<text xml:space="preserve" x="157.709" y="18.7347" fill="black" font-size="18.0316" font-family="Helvetica">Sector MPV Means (Combined)</text>
+<text xml:space="preserve" x="122.683" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Sector MPV Sigma/Means (Combined)</text>
 <path d="M81.8508,200.741v -9.99301" fill="none" stroke="black"/>
 <path d="M80.2217,190.748h 3.25821" fill="none" stroke="black"/>
 <path d="M81.8508,207.257v 9.99301" fill="none" stroke="black"/>
@@ -275,4 +275,4 @@ CreationDate: Sat Jul 24 11:09:18 2021</desc>
 <g fill="#0000ff">
 <polygon points=" 99.7126, 97.6649 101.885, 100.923 99.7126, 104.181 97.5405, 100.923"/>
 </g>
-<text xml:space="preserve" x="157.709" y="18.7347" fill="black" font-size="18.0316" font-family="Helvetica">Sector MPV Means (Combined)</text></svg>
+<text xml:space="preserve" x="122.683" y="18.7347" fill="black" font-size="18.7938" font-family="Helvetica">Sector MPV Sigma/Means (Combined)</text></svg>

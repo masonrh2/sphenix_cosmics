@@ -521,6 +521,7 @@ void incl_fiber_batch() {
   // READ MPV DATA AND MAKE ALL THE PLOTS
   std::vector<double> all_mpv;
   std::map<int, double> dbn_mpv;
+  std::map<int, double> dbn_mpv_with_fb;
   std::vector<double> new_all_vop;
   std::map<int, std::map<double, std::vector<double>>> new_sector_vop_mpv;
   std::map<double, std::map<int, std::vector<double>>> new_vop_sector_mpv;
@@ -640,6 +641,11 @@ void incl_fiber_batch() {
           //std::cout << "block " << block_num << " (DBN " << std::stoi(sector_map[sector][block_num]) << "): good data (" << vop << ", " << content  << ")" << std::endl;
 
           tuple_data[sector][block_num] = std::make_tuple(true, int_dbn, fiber_batch, content, -1.0);
+          dbn_mpv_with_fb[int_dbn] = content;
+
+          if (int_dbn == 1201) {
+            std::cout << "*********FOUND IT: sector " << sector << " ib " << ib << " bin " << i <<  " mpv " << content;
+          }
         } else {
           // unable to find fiber batch information for this block
           std::cout << "***DBN " << " does not have fiber batch information!" << std::endl;
@@ -666,17 +672,19 @@ void incl_fiber_batch() {
   // calculate MY fiber batch corrections...
   std::map<int, double> fiber_batch_avg_mpv;
   std::map<int, int> fiber_batch_counts;
+  std::vector<std::pair<int, double>> batch12_dbn_mpv;
   for (auto const &p : dbn_to_fiber_batch) {
     int dbn = p.first;
     int batch = p.second;
-    if (dbn_mpv.find(dbn) == dbn_mpv.end()) {
-      // unable to find that dbn in dbn_mpv
-      //std::cout << "unable to find dbn " << dbn << " in dbn_mpv" << std::endl;
+    if (dbn_mpv_with_fb.find(dbn) == dbn_mpv_with_fb.end()) {
+      // unable to find that dbn in dbn_mpv_with_fb
+      //std::cout << "unable to find dbn " << dbn << " in dbn_mpv_with_fb" << std::endl;
     } else {
-      double mpv = dbn_mpv[dbn];
+      double mpv = dbn_mpv_with_fb[dbn];
       fiber_batch_avg_mpv[batch] += mpv;
       fiber_batch_counts[batch]++;
       //std::cout << "dbn " << dbn << " in fb " << batch << " has mpv " << mpv << std::endl;
+      if (batch == 12) { batch12_dbn_mpv.push_back(std::make_pair(dbn, mpv));}
     }
   }
   for (auto const &p : fiber_batch_avg_mpv) {
@@ -1634,7 +1642,7 @@ void incl_fiber_batch() {
 
   // combined sigma/means
   TCanvas* combined_sigma_over_mean_canvas = new TCanvas();
-  TMultiGraph* combined_sigma_over_mean_mg = new TMultiGraph("mg_mean", "Sector MPV Means (Combined)");
+  TMultiGraph* combined_sigma_over_mean_mg = new TMultiGraph("mg_mean", "Sector MPV Sigma/Means (Combined)");
   original_sigma_over_mean_graph->SetMarkerColor(kRed);
   adj_sigma_over_mean_graph->SetMarkerColor(kBlue);
   combined_sigma_over_mean_mg->Add(original_sigma_over_mean_graph);
@@ -1945,4 +1953,68 @@ void incl_fiber_batch() {
     }
   }
 
+  std::map<int, double> fb_orig_means;
+  std::map<int, double> fb_adj_means;
+  std::map<int, int> fb_counts;
+
+  std::vector<std::pair<int, double>> batch12_dbn_mpv_after;
+
+  for (int sector : sectors) {
+    auto tuples = tuple_data[sector];
+    for (int block_num = 0; block_num < 96; block_num++) {
+      auto block_info = tuples[block_num];
+      bool has_mpv_data = std::get<0>(block_info);
+      int dbn = std::get<1>(block_info);
+      int fiber_batch = std::get<2>(block_info);
+      double mpv = std::get<3>(block_info);
+      double adj_mpv = std::get<4>(block_info);
+      if (has_mpv_data && fiber_batch >= 0) {
+        fb_orig_means[fiber_batch] += mpv;
+        fb_adj_means[fiber_batch] += adj_mpv;
+        fb_counts[fiber_batch]++;
+        if (fiber_batch == 12) { batch12_dbn_mpv_after.push_back(std::make_pair(dbn, mpv));}
+      }
+    }
+  }
+  for (auto const &p : fb_orig_means) {
+    int batch = p.first;
+    fb_orig_means[batch] = fb_orig_means[batch] / fb_counts[batch];
+    fb_adj_means[batch] = fb_adj_means[batch] / fb_counts[batch];
+    double mpv = p.second;
+    double adj_mpv = fb_adj_means[batch];
+    std::cout << "BATCH " << batch << ": " << mpv << " (" << fiber_batch_avg_mpv[batch] << ") -> " << adj_mpv << std::endl;
+    if (std::abs(mpv - fiber_batch_avg_mpv[batch]) > 0.00001) {
+      std::cout << "  WARNING, does not match" << std::endl;
+    }
+  }
+  
+  std::cout << batch12_dbn_mpv.size() << " vs " << batch12_dbn_mpv.size() << std::endl;
+
+  std::map<int, std::pair<double, double>> debugging;
+  for (int i = 0; i < batch12_dbn_mpv.size(); i++) {
+    int dbn = batch12_dbn_mpv[i].first;
+    double mpv_before = batch12_dbn_mpv[i].second;
+    bool found = false;
+    int dbn_after;
+    double mpv_after;
+    int idx = 0;
+    for (int j = 0; j < batch12_dbn_mpv_after.size(); j++) {
+      idx = j;
+      dbn_after = batch12_dbn_mpv_after[j].first;
+      mpv_after = batch12_dbn_mpv_after[j].second;
+      if (dbn == dbn_after) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      std::cout << "PANIC, could not find dbn before " << dbn << " in after vector" << std::endl;
+    } else {
+      // found it
+      //std::cout << "found i = " << i << " is j = " << idx << std::endl;
+      if (std::abs(mpv_before - mpv_after) > 0.00001) {
+        std::cout << "FUCK, at dbn " << dbn << ", mpv before " << mpv_before << " != mpv after " << mpv_after << std::endl;
+      }
+    }
+  }
 }
