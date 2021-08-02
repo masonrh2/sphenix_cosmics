@@ -63,7 +63,8 @@
       "good_bad_vop.C": "cpp",
       "compare_vop.C": "cpp",
       "compare_vop copy.C": "cpp",
-      "incl_fiber_batch.C": "cpp"
+      "incl_fiber_batch.C": "cpp",
+      "set": "cpp"
     },
     "C_Cpp.default.includePath": [
       "${default}",

@@ -308,7 +308,6 @@ void incl_fiber_batch() {
 
   // READ MPV DATA
   std::map<int, double> dbn_mpv;
-  // <has_mpv, dbn, fiber_batch, mpv, adj_mpv>
   std::map<int, std::vector<Block>> block_data;
   for (int sector : sectors) {
     std::cout << "SECTOR " << sector << ":" << std::endl;
@@ -319,8 +318,6 @@ void incl_fiber_batch() {
     std::stringstream blockFileName;
     blockFileName << "h_run" << sector << "_block;1";
     sectorFile->GetObject(blockFileName.str().c_str(), sector_data);
-    int num_blocks = 0;
-    double original_mean_mpv = 0;
     block_data[sector] = std::vector<Block>(96);
     for (int ib : interface_boards) {
       TH1D* data;
@@ -374,8 +371,6 @@ void incl_fiber_batch() {
         // check fiber batch information
         if (dbn_to_fiber_batch.find(int_dbn) != dbn_to_fiber_batch.end()) {
           int fiber_batch = dbn_to_fiber_batch[int_dbn];
-          num_blocks++;
-          original_mean_mpv += content;
           std::cout << "mpv " << content << std::endl;
           block_data[sector][block_num] = {true, int_dbn, fiber_batch, content, -1.0};
         } else {
@@ -416,13 +411,430 @@ void incl_fiber_batch() {
   }
 
   // ADD ADJUSTED MPV TO BLOCKS
+  for (auto &p : block_data) {
+    int sector = p.first;
+    std::vector<Block> *blocks = &p.second;
+    for (int i = 0; i < blocks->size(); i++) {
+      Block *block_ptr = &((*blocks)[i]);
+      if (block_ptr->has_mpv && block_ptr->fiber_batch >= 0) {
+        block_ptr->adj_mpv = fiber_batch_correction_factors[block_ptr->fiber_batch] * block_ptr->mpv;
+      }
+    }
+  }
+
+  double new_mean_before = 0.0;
+  double new_mean_after = 0.0;
+  int new_count = 0;
+  std::map<int, double> new_sector_means_before;
+  std::map<int, double> new_sector_means_after;
+  std::map<int, int> new_sector_counts;
+  std::map<int, double> fb_means_before;
+  std::map<int, double> fb_means_after;
+  std::map<int, int> fb_counts;
+  std::map<int, std::vector<double>> fb_before_mpvs;
   for (auto const &p : block_data) {
     int sector = p.first;
+    new_sector_means_before[sector] = 0.0;
+    new_sector_means_after[sector] = 0.0;
+    new_sector_counts[sector] = 0;
     std::vector<Block> blocks = p.second;
     for (Block block : blocks) {
       if (block.has_mpv && block.fiber_batch >= 0) {
-        block.adj_mpv = fiber_batch_correction_factors[block.fiber_batch] * block.mpv;
+        new_mean_before += block.mpv;
+        new_mean_after += block.adj_mpv;
+        new_sector_means_before[sector] += block.mpv;
+        new_sector_means_after[sector] += block.adj_mpv;
+        new_count++;
+        new_sector_counts[sector]++;
+        int fiber_batch = block.fiber_batch;
+        if (fb_means_before.find(fiber_batch) == fb_means_before.end()) {
+          fb_means_before[fiber_batch] = block.mpv;
+          fb_means_after[fiber_batch] = block.adj_mpv;
+          fb_counts[fiber_batch] = 1;
+        } else {
+          fb_means_before[fiber_batch] += block.mpv;
+          fb_means_after[fiber_batch] += block.adj_mpv;
+          fb_counts[fiber_batch]++;
+        }
+        fb_before_mpvs[fiber_batch].push_back(block.mpv);
       }
     }
+    new_sector_means_before[sector] /= new_sector_counts[sector];
+    new_sector_means_after[sector] /= new_sector_counts[sector];
+  }
+  new_mean_before /= new_count;
+  new_mean_after /= new_count;
+  //std::cout << "overall mean before: " << new_mean_before << "; overall mean after: " << new_mean_after << std::endl;
+  for (int sector : sectors) {
+    //std::cout << "sector " << sector << ": " << new_sector_means_before[sector] << " -> " << new_sector_means_after[sector] << " (" << new_sector_counts[sector] << " blocks)" << std::endl;
+  }
+  for (auto const &p : fb_counts) {
+    int fiber_batch = p.first;
+    int count = p.second;
+    fb_means_before[fiber_batch] /= count;
+    fb_means_after[fiber_batch] /= count;
+    //std::cout << "fiber batch " << fiber_batch << ": " << fb_means_before[fiber_batch] << " -> " << fb_means_after[fiber_batch] << std::endl;
+  }
+
+  std::map<int, std::map<int, std::pair<double, int>>> sector_fb_before_means_counts;
+  std::map<int, std::map<int, std::vector<double>>> sector_fb_before_mpvs;
+  for (auto const &p : block_data) {
+    int sector = p.first;
+    sector_fb_before_means_counts[sector] = std::map<int, std::pair<double, int>>();
+    std::vector<Block> blocks = p.second;
+    for (Block block : blocks) {
+      if (block.has_mpv && block.fiber_batch >= 0) {
+        int fiber_batch = block.fiber_batch;
+        if (sector_fb_before_means_counts[sector].find(fiber_batch) == sector_fb_before_means_counts[sector].end()) {
+          sector_fb_before_means_counts[sector][fiber_batch] = std::make_pair(block.mpv, 1);
+        } else {
+          sector_fb_before_means_counts[sector][fiber_batch].first += block.mpv;
+          sector_fb_before_means_counts[sector][fiber_batch].second++;
+        }
+        sector_fb_before_mpvs[sector][fiber_batch].push_back(block.mpv);
+      }
+    }
+    std::cout << "SECTOR " << sector << std::endl;
+    for (auto const &q : sector_fb_before_means_counts[sector]) {
+      int fiber_batch = q.first;
+      sector_fb_before_means_counts[sector][fiber_batch].first /= sector_fb_before_means_counts[sector][fiber_batch].second;
+      std::cout << "-> fiber batch " << fiber_batch << ": " << sector_fb_before_means_counts[sector][fiber_batch].first << " [" << sector_fb_before_means_counts[sector][fiber_batch].second << " blocks] (overall " << fb_means_before[fiber_batch] << " [" << fb_counts[fiber_batch] << " blocks] => correction factor = " << new_mean_before / fb_means_before[fiber_batch] << ")" << std::endl;
+    }
+  }
+
+  // BLOCK MPV HISTS FOR EACH SECTOR FOR EACH FIBER BATCH
+  const int num_bins = 30;
+  const double x_min = 0;
+  const double x_max = 600;
+  for (int sector : sectors) {
+    for (auto const &p : sector_fb_before_mpvs[sector]) {
+      int fiber_batch = p.first;
+      std::vector<double> this_sector_fb_mpvs = p.second;
+      std::vector<double> total_fb_mpvs = fb_before_mpvs[fiber_batch];
+      std::stringstream hs_title;
+      hs_title << "Sector " << sector << " FB " << fiber_batch << ";MPV;Num Blocks";
+      THStack* hs = new THStack("hs", hs_title.str().c_str());
+      std::stringstream this_sector_fb_hist_title;
+      this_sector_fb_hist_title << "sector " << sector << " fb " << fiber_batch << ";MPV;Num Blocks";
+      TH1D* sector_fb_hist = new TH1D("h", this_sector_fb_hist_title.str().c_str(), num_bins, x_min, x_max);
+      std::stringstream total_fb_hist_title;
+      total_fb_hist_title << "fb " << fiber_batch << ";MPV;Num Blocks";
+      TH1D* total_fb_hist = new TH1D("h", total_fb_hist_title.str().c_str(), num_bins, x_min, x_max);
+      for (double mpv : this_sector_fb_mpvs) {
+        sector_fb_hist->Fill(mpv);
+      }
+      for (double mpv : total_fb_mpvs) {
+        total_fb_hist->Fill(mpv);
+      }
+      sector_fb_hist->SetFillColorAlpha(kBlue, 0.7);
+      total_fb_hist->SetFillColorAlpha(kBlack, 0.7);
+      hs->Add(sector_fb_hist);
+      hs->Add(total_fb_hist);
+      std::stringstream hs_filename;
+      hs_filename << "./plots/sector_fb/sector" << sector << "_fb" << fiber_batch << ".svg";
+      TCanvas* hs_canvas = new TCanvas();
+      //hs->SetMinimum(0.);
+      //hs->SetMaximum(600.);
+      hs->Draw("nostackb");
+      hs_canvas->SetGrid();
+      hs_canvas->Update();
+      double sector_fb_mean = sector_fb_before_means_counts[sector][fiber_batch].first;
+      TLine* sector_fb_mean_line = new TLine(sector_fb_mean, 0.0, sector_fb_mean, hs_canvas->GetUymax());
+      sector_fb_mean_line->SetLineColor(kBlue);
+      sector_fb_mean_line->SetLineStyle(2);
+      sector_fb_mean_line->SetLineWidth(2);
+      sector_fb_mean_line->Draw();
+      double total_fb_mean = fb_means_before[fiber_batch];
+      TLine* total_fb_mean_line = new TLine(total_fb_mean, 0.0, total_fb_mean, hs_canvas->GetUymax());
+      std::cout << "ymax: " << hs_canvas->GetUymax() << std::endl;
+      total_fb_mean_line->SetLineColor(kBlack);
+      total_fb_mean_line->SetLineStyle(2);
+      total_fb_mean_line->SetLineWidth(2);
+      total_fb_mean_line->Draw();
+      TLegend* hs_legend = new TLegend(0.7, 0.65, 0.9, 0.9);
+      hs_legend->AddEntry(sector_fb_hist, "Sector", "f");
+      hs_legend->AddEntry(total_fb_hist, "Batch", "f");
+      hs_legend->AddEntry(sector_fb_mean_line, Form("Sector Avg (%.1f)", sector_fb_mean), "l");
+      hs_legend->AddEntry(total_fb_mean_line, Form("Batch Avg (%.1f)", total_fb_mean), "l");
+      hs_legend->Draw();
+      hs_canvas->SaveAs(hs_filename.str().c_str());
+    }
+  }
+
+  // BLOCK CALIBRATION FACTOR PLOTS FOR EACH SECTOR
+  std::map<int, std::map<int, Color_t>> sector_fb_colors;
+  std::map<int, std::vector<int>> sector_batches;
+  std::map<int, std::vector<std::string>> sector_bin_labels;
+  std::map<int, std::map<int, TH1D*>> sector_batch_hists;
+  for (int sector : sectors) {
+    // first determine the number of batches in this sector
+    std::vector<int> batches;
+    std::map<int, Color_t> fb_colors;
+    for (int block_num = 0; block_num < 96; block_num++) {
+      Block block = block_data[sector][block_num];
+      if (block.has_mpv && block.fiber_batch >= 0) {
+        if (std::find(batches.begin(), batches.end(), block.fiber_batch) == batches.end()) {
+          // add this fb
+          batches.push_back(block.fiber_batch);
+          // create new color for this fb
+          Color_t ci = TColor::GetFreeColorIndex();
+          int nth_kelly = fb_colors.size();
+          TColor* color = new TColor(ci, kelly_colors[nth_kelly][0], kelly_colors[nth_kelly][1], kelly_colors[nth_kelly][2]);
+          fb_colors[block.fiber_batch] = ci;
+          //std::cout << "sector " << sector << " fb " << block.fiber_batch << " has kelly color " << nth_kelly << std::endl;
+        }
+      }
+    }
+    //std::cout << "SECTOR " << sector << " HAS " << batches.size() << " BATCHES" << std::endl;
+    std::sort(batches.begin(), batches.end());
+    sector_batches[sector] = batches;
+    sector_fb_colors[sector] = fb_colors;
+    // generate bin labels
+    std::vector<std::string> bin_labels;
+    for (int batch : batches) {
+      double correction_factor = new_mean_before / fb_means_before[batch];
+      std::stringstream label;
+      label << "FB " << batch << ": " << Form("%.3f", correction_factor);
+      bin_labels.push_back(label.str());
+    }
+    sector_bin_labels[sector] = bin_labels;
+    for (int batch : batches) {
+      double correction_factor = new_mean_before / fb_means_before[batch];
+      std::stringstream label;
+      label << "FB " << batch << ": " << Form("%.3f", correction_factor);
+      bin_labels.push_back(label.str());
+    }
+    std::stringstream hs_title;
+    hs_title << "Sector " << sector << ";Fiber Batch;Num Blocks";
+    THStack* hs = new THStack("hs", hs_title.str().c_str());
+    std::map<int, TH1D*> batch_hists;
+    for (int block_num = 0; block_num < 96; block_num++) {
+      Block block = block_data[sector][block_num];
+      if (block.has_mpv && block.fiber_batch >= 0) {
+        if (batch_hists.find(block.fiber_batch) == batch_hists.end()) {
+          // create hist for this fb
+          std::stringstream batch_hist_title;
+          batch_hist_title << "fb " << block.fiber_batch << ";Fiber Batch;Num Blocks";
+          int num_batches = batches.size();
+          TH1D* batch_hist = new TH1D("h", batch_hist_title.str().c_str(), num_batches, 0, num_batches);
+          batch_hist->GetSumw2();
+          batch_hist->SetLineColor(fb_colors[block.fiber_batch]);
+          batch_hist->SetFillColor(fb_colors[block.fiber_batch]);
+          //batch_hist->GetXaxis()->LabelsOption("v");
+          for (int i = 0; i < bin_labels.size(); i++) {
+            batch_hist->GetXaxis()->SetBinLabel(i + 1, std::to_string(batches[i]).c_str());
+            //batch_hist->GetXaxis()->SetBinLabel(i + 1, bin_labels[i].c_str());
+            //batch_hist->GetXaxis()->SetBinLabel(i + 1, "");
+          }
+          batch_hists[block.fiber_batch] = batch_hist;
+        }
+        batch_hists[block.fiber_batch]->Fill(std::find(batches.begin(), batches.end(), block.fiber_batch) - batches.begin());
+      }
+    }
+    sector_batch_hists[sector] = batch_hists;
+    for (auto const &p : batch_hists) {
+      hs->Add(p.second, "B");
+    }
+    TCanvas* sector_canvas = new TCanvas();
+    sector_canvas->SetGrid();
+    //sector_canvas->SetRightMargin(0.3);
+    hs->Draw();
+    /*
+    TLegend* legend = new TLegend(0.725, 0.025, 0.975, 0.975);
+    for (int i = 0; i < batches.size(); i++) {
+      legend->AddEntry(batch_hists[batches[i]], bin_labels[i].c_str());
+    }
+    legend->Draw();
+    */
+    std::stringstream hs_filename;
+    hs_filename << "./plots/sector_fb_hists/sector" << sector << ".svg";
+    sector_canvas->SaveAs(hs_filename.str().c_str());
+  }
+
+  //
+  for (int sector : sectors) {
+    std::stringstream hs_title;
+    hs_title << "Sector " << sector << ";Block Number;Correction Factor";
+    THStack* hs = new THStack("hs", hs_title.str().c_str());
+
+    std::map<int, std::pair<TH1D*, TH1D*>> batch_hists;
+
+    for (int block_num = 0; block_num < 96; block_num++) {
+      Block block = block_data[sector][block_num];
+      if (block.has_mpv && block.fiber_batch >= 0) {
+        if (batch_hists.find(block.fiber_batch) == batch_hists.end()) {
+          // create hist for this fb
+          std::stringstream batch_hist_up_title;
+          batch_hist_up_title << "fb " << block.fiber_batch << " up;Block Number;Correction Factor";
+          TH1D* batch_hist_up = new TH1D("h_up", batch_hist_up_title.str().c_str(), 96, 0, 96);
+          batch_hist_up->GetSumw2();
+          batch_hist_up->SetMarkerColor(sector_fb_colors[sector][block.fiber_batch]);
+          batch_hist_up->SetMarkerStyle(22); // up triangle
+          // and the down hist
+          std::stringstream batch_hist_down_title;
+          batch_hist_down_title << "fb " << block.fiber_batch << " down;Block Number;Correction Factor";
+          TH1D* batch_hist_down = (TH1D*) batch_hist_up->Clone("h_down");
+          batch_hist_down->SetTitle(batch_hist_down_title.str().c_str());
+          batch_hist_down->SetMarkerStyle(23); // down triangle
+          // add to the map
+          batch_hists[block.fiber_batch] = std::make_pair(batch_hist_up, batch_hist_down);
+          //std::cout << "CREATED HISTS FOR FB " << fiber_batch << std::endl;
+        }
+        double correction_factor = new_mean_before / fb_means_before[block.fiber_batch];
+        if (correction_factor >= 1) {
+          batch_hists[block.fiber_batch].first->SetBinContent(block_num + 1, correction_factor);
+          //batch_hists[fiber_batch].second->SetBinContent(block_num + 1, -9000);
+          //std::cout << "added an up arrow at block " << block_num << " fb " << fiber_batch << " factor " << correction_factor << std::endl;
+        } else {
+          //batch_hists[fiber_batch].first->SetBinContent(block_num + 1, -9000);
+          batch_hists[block.fiber_batch].second->SetBinContent(block_num + 1, correction_factor);
+          //std::cout << "added a down arrow at block " << block_num << " fb " << fiber_batch << " factor " << correction_factor << std::endl;
+        }
+      }
+    }
+    for (auto const &p : batch_hists) {
+      hs->Add(p.second.first, "P");
+      hs->Add(p.second.second, "P");
+    }
+    TCanvas* sector_canvas = new TCanvas();
+    sector_canvas->SetGrid();
+    hs->SetMinimum(0.75);
+    hs->SetMaximum(1.25);
+    hs->Draw("NOSTACK");
+    TLine* one_line = new TLine(0.0, 1.0, 96.0, 1.0);
+    one_line->SetLineStyle(2);
+    one_line->SetLineWidth(2);
+    one_line->Draw();
+    std::stringstream hs_filename;
+    hs_filename << "./plots/sector_correction_factors/sector" << sector << ".svg";
+    sector_canvas->SaveAs(hs_filename.str().c_str());
+  }
+
+  // make combined tim graphs, colored by fiber batch instead of interface board
+  for (int sector : sectors) {
+    std::stringstream hs_before_title;
+    hs_before_title << "Sector " << sector << " (Before);Block Number;MPV";
+    THStack* hs_before = new THStack("hs", hs_before_title.str().c_str());
+
+    std::stringstream hs_after_title;
+    hs_after_title << "Sector " << sector << " (After);Block Number;MPV";
+    THStack* hs_after = new THStack("hs", hs_after_title.str().c_str());
+
+    std::map<int, std::pair<TH1D*, TH1D*>> batch_hists;
+    for (int block_num = 0; block_num < 96; block_num++) {
+      Block block = block_data[sector][block_num];
+      if (block.has_mpv && block.fiber_batch >= 0) {
+        if (batch_hists.find(block.fiber_batch) == batch_hists.end()) {
+          // original hist
+          std::stringstream batch_hist_orig_title;
+          batch_hist_orig_title << "fb " << block.fiber_batch << " orig up;Block Number;MPV";
+          TH1D* batch_hist_orig = new TH1D("h_up", batch_hist_orig_title.str().c_str(), 96, 0, 96);
+          batch_hist_orig->GetSumw2();
+          batch_hist_orig->SetMarkerStyle(20); // solid circle
+          batch_hist_orig->SetMarkerColorAlpha(sector_fb_colors[sector][block.fiber_batch], 0.5);
+          // adj hist
+          std::stringstream batch_hist_adj_title;
+          batch_hist_adj_title << "fb " << block.fiber_batch << " adj;Block Number;MPV";
+          TH1D* batch_hist_adj = (TH1D*) batch_hist_orig->Clone("h_adj");
+          batch_hist_adj->SetTitle(batch_hist_adj_title.str().c_str());
+          batch_hist_adj->SetMarkerStyle(20); // solid circle
+          //batch_hist_adj->SetMarkerColor(sector_fb_colors[sector][block.fiber_batch]);
+          batch_hist_adj->SetMarkerColor(sector_fb_colors[sector][block.fiber_batch]);
+          // add to the map
+          batch_hists[block.fiber_batch] = std::make_pair(batch_hist_orig, batch_hist_adj);
+          //std::cout << "CREATED HISTS FOR FB " << block.fiber_batch << std::endl;
+        }
+        //std::cout << "ADJ MPV IS " << adj_mpv << std::endl;
+        batch_hists[block.fiber_batch].first->SetBinContent(block_num + 1, block.mpv);
+        batch_hists[block.fiber_batch].second->SetBinContent(block_num + 1, block.adj_mpv);
+        //double correction_factor = new_mean_before / fb_means_before[block.fiber_batch];
+      }
+    }
+    for (auto const &p : batch_hists) {
+      hs_before->Add(p.second.first, "P");
+      hs_after->Add(p.second.second, "P");
+    }
+
+    double sector_before_mean = new_sector_means_before[sector];
+    double sector_after_mean = new_sector_means_after[sector];
+
+    TCanvas* before_canvas = new TCanvas();
+    hs_before->Draw();
+    before_canvas->SetGrid();
+    hs_before->SetMinimum(0.0);
+    hs_before->SetMaximum(600.0);
+
+    // draw sector mean lines
+    TLine* bef_orig_avg_sector_mean_line = new TLine(0.0, sector_before_mean, 96.0, sector_before_mean);
+    bef_orig_avg_sector_mean_line->SetLineColor(kRed);
+    bef_orig_avg_sector_mean_line->SetLineStyle(2);
+    bef_orig_avg_sector_mean_line->SetLineWidth(1);
+    bef_orig_avg_sector_mean_line->Draw();
+    TLine* bef_adj_avg_sector_mean_line = new TLine(0.0, new_mean_before, 96.0, new_mean_before);
+    bef_adj_avg_sector_mean_line->SetLineColor(kBlue);
+    bef_adj_avg_sector_mean_line->SetLineStyle(2);
+    bef_adj_avg_sector_mean_line->SetLineWidth(1);
+    bef_adj_avg_sector_mean_line->Draw();
+
+    TLegend* bef_hs_legend = new TLegend(0.7, 0.75, 0.9, 0.9);
+    bef_hs_legend->AddEntry(bef_orig_avg_sector_mean_line, Form("Sector Avg (%.1f)", sector_after_mean), "l");
+    bef_hs_legend->AddEntry(bef_adj_avg_sector_mean_line, Form("Overall Avg (%.1f)", new_mean_before), "l");
+    bef_hs_legend->Draw();
+
+    std::stringstream hs_before_filename;
+    hs_before_filename << "./plots/sector_before_after/sector" << sector << "before.svg";
+    before_canvas->SaveAs(hs_before_filename.str().c_str());
+
+    TCanvas* after_canvas = new TCanvas();
+    hs_after->Draw();
+    after_canvas->SetGrid();
+    hs_after->SetMinimum(0.0);
+    hs_after->SetMaximum(600.0);
+
+    // draw sector mean lines
+    TLine* aft_orig_avg_sector_mean_line = new TLine(0.0, sector_after_mean, 96.0, sector_after_mean);
+    aft_orig_avg_sector_mean_line->SetLineColor(kRed);
+    aft_orig_avg_sector_mean_line->SetLineStyle(2);
+    aft_orig_avg_sector_mean_line->SetLineWidth(1);
+    aft_orig_avg_sector_mean_line->Draw();
+    TLine* aft_adj_avg_sector_mean_line = new TLine(0.0, new_mean_before, 96.0, new_mean_before);
+    aft_adj_avg_sector_mean_line->SetLineColor(kBlue);
+    aft_adj_avg_sector_mean_line->SetLineStyle(2);
+    aft_adj_avg_sector_mean_line->SetLineWidth(1);
+    aft_adj_avg_sector_mean_line->Draw();
+
+    TLegend* aft_hs_legend = new TLegend(0.7, 0.75, 0.9, 0.9);
+    aft_hs_legend->AddEntry(aft_orig_avg_sector_mean_line, Form("Sector Avg (%.1f)", sector_after_mean), "l");
+    aft_hs_legend->AddEntry(aft_adj_avg_sector_mean_line, Form("Overall Avg (%.1f)", new_mean_before), "l");
+    aft_hs_legend->Draw();
+
+    std::stringstream hs_after_filename;
+    hs_after_filename << "./plots/sector_before_after/sector" << sector << "after.svg";
+    after_canvas->SaveAs(hs_after_filename.str().c_str());
+
+
+    //TCanvas* sector_canvas = new TCanvas();
+    //sector_canvas->SetGrid();
+    //sector_canvas->SetRightMargin(0.3);
+    //hs->SetMinimum(0.0);
+    //hs->SetMaximum(600.0);
+    //hs->Draw("NOSTACK");
+    //std::stringstream hs_filename;
+    //hs_filename << "./proof/combined/sector" << sector << ".svg";
+    //sector_canvas->SaveAs(hs_filename.str().c_str());
+
+  }
+
+  // MAKE FIBER BATCH CORRECTION FACTOR LEGENDS FOR EACH SECTOR
+  for (int sector : sectors) {
+    TCanvas* correction_factor_canvas = new TCanvas();
+    TLegend* legend = new TLegend(0.0, 0.0, 1.0, 1.0);
+    for (int i = 0; i < sector_batches[sector].size(); i++) {
+      legend->AddEntry(sector_batch_hists[sector][sector_batches[sector][i]], sector_bin_labels[sector][i].c_str());
+    }
+    legend->Draw();
+    std::stringstream hs_filename;
+    hs_filename << "./plots/sector_fb_legends/sector" << sector << ".svg";
+    correction_factor_canvas->SaveAs(hs_filename.str().c_str());
   }
 }

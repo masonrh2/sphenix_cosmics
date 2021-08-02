@@ -1,0 +1,94 @@
+<?xml version="1.0" standalone="no"?>
+<svg width="567.429" height="384.969" viewBox="0 0 567.429 384.969" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+<title>
+./plots/sector_fb_legends/sector8.svg
+</title>
+<desc>
+Creator: ROOT Version 6.24/00
+CreationDate: Mon Aug  2 15:13:52 2021</desc>
+<defs>
+</defs>
+<rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
+<rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
+<path d="M0.5,384.469h 566.929" fill="none" stroke="black"/>
+<path d="M567.429,384.469v -384.469" fill="none" stroke="black"/>
+<path d="M567.429,0h -566.929" fill="none" stroke="black"/>
+<path d="M0.5,0v 384.469" fill="none" stroke="black"/>
+<text xml:space="preserve" x="142.232" y="21.1784" fill="black" font-size="18.4351" font-family="Helvetica">FB 2: 1.038</text>
+<path d="M21.7598,25.1384h 99.2126v -20.7022h -99.2126z" fill="#ff6800"/>
+<path d="M21.7598,14.7873h 99.2126" fill="none" stroke="#ff6800"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="14.7873" x2="71.3661" y2="14.7873"/>
+</g>
+<text xml:space="preserve" x="142.232" y="50.5023" fill="black" font-size="18.4351" font-family="Helvetica">FB 3: 1.069</text>
+<path d="M21.7598,54.7129h 99.2126v -20.7022h -99.2126z" fill="#cea262"/>
+<path d="M21.7598,44.3618h 99.2126" fill="none" stroke="#cea262"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="44.3618" x2="71.3661" y2="44.3618"/>
+</g>
+<text xml:space="preserve" x="142.232" y="79.8262" fill="black" font-size="18.4351" font-family="Helvetica">FB 4: 1.037</text>
+<path d="M21.7598,84.2875h 99.2126v -20.7022h -99.2126z" fill="#f6768e"/>
+<path d="M21.7598,73.9364h 99.2126" fill="none" stroke="#f6768e"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="73.9364" x2="71.3661" y2="73.9364"/>
+</g>
+<text xml:space="preserve" x="142.232" y="109.965" fill="black" font-size="18.4351" font-family="Helvetica">FB 5: 0.986</text>
+<path d="M21.7598,113.862h 99.2126v -20.7022h -99.2126z" fill="#ff7a5c"/>
+<path d="M21.7598,103.511h 99.2126" fill="none" stroke="#ff7a5c"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="103.511" x2="71.3661" y2="103.511"/>
+</g>
+<text xml:space="preserve" x="142.232" y="139.289" fill="black" font-size="18.4351" font-family="Helvetica">FB 6: 1.041</text>
+<path d="M21.7598,143.437h 99.2126v -20.7022h -99.2126z" fill="#53377a"/>
+<path d="M21.7598,133.085h 99.2126" fill="none" stroke="#53377a"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="133.085" x2="71.3661" y2="133.085"/>
+</g>
+<text xml:space="preserve" x="142.232" y="168.613" fill="black" font-size="18.4351" font-family="Helvetica">FB 7: 1.074</text>
+<path d="M21.7598,173.011h 99.2126v -20.7022h -99.2126z" fill="#ff8e00"/>
+<path d="M21.7598,162.66h 99.2126" fill="none" stroke="#ff8e00"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="162.66" x2="71.3661" y2="162.66"/>
+</g>
+<text xml:space="preserve" x="142.232" y="198.751" fill="black" font-size="18.4351" font-family="Helvetica">FB 8: 1.067</text>
+<path d="M21.7598,202.586h 99.2126v -20.7022h -99.2126z" fill="#00538a"/>
+<path d="M21.7598,192.235h 99.2126" fill="none" stroke="#00538a"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="192.235" x2="71.3661" y2="192.235"/>
+</g>
+<text xml:space="preserve" x="142.232" y="228.075" fill="black" font-size="18.4351" font-family="Helvetica">FB 9: 1.061</text>
+<path d="M21.7598,232.16h 99.2126v -20.7022h -99.2126z" fill="#007d34"/>
+<path d="M21.7598,221.809h 99.2126" fill="none" stroke="#007d34"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="221.809" x2="71.3661" y2="221.809"/>
+</g>
+<text xml:space="preserve" x="142.232" y="257.399" fill="black" font-size="18.4351" font-family="Helvetica">FB 10: 1.084</text>
+<path d="M21.7598,261.735h 99.2126v -20.7022h -99.2126z" fill="#817066"/>
+<path d="M21.7598,251.384h 99.2126" fill="none" stroke="#817066"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="251.384" x2="71.3661" y2="251.384"/>
+</g>
+<text xml:space="preserve" x="142.232" y="287.537" fill="black" font-size="18.4351" font-family="Helvetica">FB 11: 1.102</text>
+<path d="M21.7598,291.309h 99.2126v -20.7022h -99.2126z" fill="#c10020"/>
+<path d="M21.7598,280.958h 99.2126" fill="none" stroke="#c10020"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="280.958" x2="71.3661" y2="280.958"/>
+</g>
+<text xml:space="preserve" x="142.232" y="316.861" fill="black" font-size="18.4351" font-family="Helvetica">FB 12: 1.044</text>
+<path d="M21.7598,320.884h 99.2126v -20.7022h -99.2126z" fill="#a6bdd7"/>
+<path d="M21.7598,310.533h 99.2126" fill="none" stroke="#a6bdd7"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="310.533" x2="71.3661" y2="310.533"/>
+</g>
+<text xml:space="preserve" x="142.232" y="346.185" fill="black" font-size="18.4351" font-family="Helvetica">FB 13: 0.968</text>
+<path d="M21.7598,350.458h 99.2126v -20.7022h -99.2126z" fill="#ffb300"/>
+<path d="M21.7598,340.107h 99.2126" fill="none" stroke="#ffb300"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="340.107" x2="71.3661" y2="340.107"/>
+</g>
+<text xml:space="preserve" x="142.232" y="376.324" fill="black" font-size="18.4351" font-family="Helvetica">FB 14: 0.896</text>
+<path d="M21.7598,380.033h 99.2126v -20.7022h -99.2126z" fill="#803e75"/>
+<path d="M21.7598,369.682h 99.2126" fill="none" stroke="#803e75"/>
+<g stroke="black" stroke-width="1" fill="none">
+<line x1="70.3661" y1="369.682" x2="71.3661" y2="369.682"/>
+</g></svg>
