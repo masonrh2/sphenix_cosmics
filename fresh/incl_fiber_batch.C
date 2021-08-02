@@ -777,7 +777,7 @@ void incl_fiber_batch() {
     bef_adj_avg_sector_mean_line->Draw();
 
     TLegend* bef_hs_legend = new TLegend(0.7, 0.75, 0.9, 0.9);
-    bef_hs_legend->AddEntry(bef_orig_avg_sector_mean_line, Form("Sector Avg (%.1f)", sector_after_mean), "l");
+    bef_hs_legend->AddEntry(bef_orig_avg_sector_mean_line, Form("Sector Avg (%.1f)", sector_before_mean), "l");
     bef_hs_legend->AddEntry(bef_adj_avg_sector_mean_line, Form("Overall Avg (%.1f)", new_mean_before), "l");
     bef_hs_legend->Draw();
 
