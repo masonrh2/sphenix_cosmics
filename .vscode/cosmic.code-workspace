@@ -64,7 +64,8 @@
       "compare_vop.C": "cpp",
       "compare_vop copy.C": "cpp",
       "incl_fiber_batch.C": "cpp",
-      "set": "cpp"
+      "set": "cpp",
+      "OLD_incl_fiber_batch.C": "cpp"
     },
     "C_Cpp.default.includePath": [
       "${default}",

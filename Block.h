@@ -1,3 +1,7 @@
+// an attempt to parse the entire database into C++ "Block" objects
+// tedious and incomplete
+// Author: Mason Housenga
+
 #pragma once
 #include <vector>
 #include <string>
