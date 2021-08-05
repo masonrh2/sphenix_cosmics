@@ -791,6 +791,7 @@ void incl_fiber_batch() {
 
     std::stringstream hs_before_filename;
     hs_before_filename << "./plots/sector_before_after/sector" << sector << "before.svg";
+    hs_before_filename << "./plots/sector_before_after/sector" << sector << "before.png";
     before_canvas->SaveAs(hs_before_filename.str().c_str());
 
     TCanvas* after_canvas = new TCanvas();
@@ -818,6 +819,7 @@ void incl_fiber_batch() {
 
     std::stringstream hs_after_filename;
     hs_after_filename << "./plots/sector_before_after/sector" << sector << "after.svg";
+    hs_after_filename << "./plots/sector_before_after/sector" << sector << "after.png";
     after_canvas->SaveAs(hs_after_filename.str().c_str());
 
 
