@@ -789,10 +789,12 @@ void incl_fiber_batch() {
     bef_hs_legend->AddEntry(bef_adj_avg_sector_mean_line, Form("Overall Avg (%.1f)", new_mean_before), "l");
     bef_hs_legend->Draw();
 
-    std::stringstream hs_before_filename;
-    hs_before_filename << "./plots/sector_before_after/sector" << sector << "before.svg";
-    hs_before_filename << "./plots/sector_before_after/sector" << sector << "before.png";
-    before_canvas->SaveAs(hs_before_filename.str().c_str());
+    std::stringstream hs_before_filename_svg;
+    hs_before_filename_svg << "./plots/sector_before_after/sector" << sector << "before.svg";
+    std::stringstream hs_before_filename_png;
+    hs_before_filename_png << "./plots/sector_before_after/sector" << sector << "before.png";
+    before_canvas->SaveAs(hs_before_filename_svg.str().c_str());
+    before_canvas->SaveAs(hs_before_filename_png.str().c_str());
 
     TCanvas* after_canvas = new TCanvas();
     hs_after->Draw();
@@ -817,10 +819,12 @@ void incl_fiber_batch() {
     aft_hs_legend->AddEntry(aft_adj_avg_sector_mean_line, Form("Overall Avg (%.1f)", new_mean_before), "l");
     aft_hs_legend->Draw();
 
-    std::stringstream hs_after_filename;
-    hs_after_filename << "./plots/sector_before_after/sector" << sector << "after.svg";
-    hs_after_filename << "./plots/sector_before_after/sector" << sector << "after.png";
-    after_canvas->SaveAs(hs_after_filename.str().c_str());
+    std::stringstream hs_after_filename_svg;
+    hs_after_filename_svg << "./plots/sector_before_after/sector" << sector << "after.svg";
+    std::stringstream hs_after_filename_png;
+    hs_after_filename_png << "./plots/sector_before_after/sector" << sector << "after.png";
+    after_canvas->SaveAs(hs_after_filename_svg.str().c_str());
+    after_canvas->SaveAs(hs_after_filename_png.str().c_str());
 
 
     //TCanvas* sector_canvas = new TCanvas();
