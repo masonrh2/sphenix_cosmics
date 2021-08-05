@@ -736,7 +736,9 @@ void incl_fiber_batch() {
           TH1D* batch_hist_orig = new TH1D("h_up", batch_hist_orig_title.str().c_str(), 96, 0, 96);
           batch_hist_orig->GetSumw2();
           batch_hist_orig->SetMarkerStyle(20); // solid circle
-          batch_hist_orig->SetMarkerColorAlpha(sector_fb_colors[sector][block.fiber_batch], 0.5);
+          //batch_hist_orig->SetMarkerColorAlpha(sector_fb_colors[sector][block.fiber_batch], 0.5);
+          batch_hist_orig->SetMarkerColor(kBlack);
+          
           // adj hist
           std::stringstream batch_hist_adj_title;
           batch_hist_adj_title << "fb " << block.fiber_batch << " adj;Block Number;MPV";
@@ -744,7 +746,8 @@ void incl_fiber_batch() {
           batch_hist_adj->SetTitle(batch_hist_adj_title.str().c_str());
           batch_hist_adj->SetMarkerStyle(20); // solid circle
           //batch_hist_adj->SetMarkerColor(sector_fb_colors[sector][block.fiber_batch]);
-          batch_hist_adj->SetMarkerColor(sector_fb_colors[sector][block.fiber_batch]);
+          //batch_hist_adj->SetMarkerColor(sector_fb_colors[sector][block.fiber_batch]);
+          batch_hist_adj->SetMarkerColor(kBlack);
           // add to the map
           batch_hists[block.fiber_batch] = std::make_pair(batch_hist_orig, batch_hist_adj);
           //std::cout << "CREATED HISTS FOR FB " << block.fiber_batch << std::endl;
