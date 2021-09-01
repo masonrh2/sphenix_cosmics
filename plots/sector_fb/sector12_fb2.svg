@@ -4,8 +4,8 @@
 ./plots/sector_fb/sector12_fb2.svg
 </title>
 <desc>
-Creator: ROOT Version 6.22/02
-CreationDate: Thu Aug  5 12:15:58 2021</desc>
+Creator: ROOT Version 6.24/00
+CreationDate: Wed Sep  1 09:24:21 2021</desc>
 <defs>
 </defs>
 <rect x="0.5" y="0" width="566.929" height="384.469" fill="white"/>
@@ -159,7 +159,7 @@ CreationDate: Thu Aug  5 12:15:58 2021</desc>
 <rect x="291.524" y="143.225" width="7.10551" height="202.797" fill="black" fill-opacity="0.70" stroke-opacity="0.70"/>
 <rect x="306.642" y="255.89" width="7.10551" height="90.132" fill="black" fill-opacity="0.70" stroke-opacity="0.70"/>
 <rect x="321.76" y="300.956" width="7.10551" height="45.066" fill="black" fill-opacity="0.70" stroke-opacity="0.70"/>
-<rect x="336.878" y="323.489" width="7.10551" height="22.533" fill="black" fill-opacity="0.70" stroke-opacity="0.70"/>
+<rect x="336.878" y="346.022" width="7.10551" height="0" fill="black" fill-opacity="0.70" stroke-opacity="0.70"/>
 <rect x="351.996" y="346.022" width="7.10551" height="0" fill="black" fill-opacity="0.70" stroke-opacity="0.70"/>
 <rect x="367.114" y="346.022" width="7.10551" height="0" fill="black" fill-opacity="0.70" stroke-opacity="0.70"/>
 <rect x="382.232" y="346.022" width="7.10551" height="0" fill="black" fill-opacity="0.70" stroke-opacity="0.70"/>
@@ -235,7 +235,7 @@ CreationDate: Thu Aug  5 12:15:58 2021</desc>
 <path d="M63.9961,41.8269h -6.80315" fill="none" stroke="black"/>
 <text xml:space="preserve" x="226.946" y="18.7347" fill="black" font-size="16.9898" font-family="Helvetica">Sector 12 FB 2</text>
 <path d="M300.137,346.022v -307.575" fill="none" stroke="#0000ff" stroke-width="2" stroke-dasharray=" 3, 3"/>
-<path d="M259.694,346.022v -307.575" fill="none" stroke="black" stroke-width="2" stroke-dasharray=" 3, 3"/>
+<path d="M258.421,346.022v -307.575" fill="none" stroke="black" stroke-width="2" stroke-dasharray=" 3, 3"/>
 <rect x="397.35" y="38.4469" width="113.386" height="96.1173" fill="white"/>
 <path d="M397.35,134.564h 113.386" fill="none" stroke="black"/>
 <path d="M510.736,134.564v -96.1173" fill="none" stroke="black"/>
@@ -255,5 +255,5 @@ CreationDate: Thu Aug  5 12:15:58 2021</desc>
 <path d="M401.602,82.9012v -16.8205" fill="none" stroke="#000099"/>
 <text xml:space="preserve" x="425.697" y="101.005" fill="black" font-size="9.92243" font-family="Helvetica">Sector Avg (321.4)</text>
 <path d="M401.602,98.5202h 19.8425" fill="none" stroke="#0000ff" stroke-width="2" stroke-dasharray=" 3, 3"/>
-<text xml:space="preserve" x="425.697" y="125.441" fill="black" font-size="9.92243" font-family="Helvetica">Batch Avg (267.9)</text>
+<text xml:space="preserve" x="425.697" y="125.441" fill="black" font-size="9.92243" font-family="Helvetica">Batch Avg (266.2)</text>
 <path d="M401.602,122.55h 19.8425" fill="none" stroke="black" stroke-width="2" stroke-dasharray=" 3, 3"/></svg>

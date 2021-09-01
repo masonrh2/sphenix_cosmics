@@ -40,7 +40,7 @@ const int num_bins = 30;
 const double x_min = 0;
 const double x_max = 600;
 
-const std::vector<int> sectors {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17};
+const std::vector<int> sectors {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
 int max_sector = sectors[sectors.size() - 1];
 
 const std::vector<int> interface_boards {0, 1, 2, 3, 4, 5};
