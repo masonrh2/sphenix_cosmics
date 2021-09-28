@@ -48,6 +48,7 @@ void all_fits () {
   
   TF1 *f_singlepixels[384];
   Double_t sp_gaps[384]; 
+  Double_t chisqr_ndfs[384]; 
 
   for (int i = 0; i < 384; i++) {
     std::stringstream aa;
@@ -115,9 +116,10 @@ void all_fits () {
     TFitResultPtr sp_fit = h_alladc[i]->Fit(f_singlepixels[i],"Q S","",1.5,140);
     Double_t sp_gap = sp_fit->Parameter(3);
     sp_gaps[i] = sp_gap;
+    chisqr_ndfs[i] = sp_fit->Chi2() / sp_fit->Ndf();
     //std::cout << Form("Channel %i, Parameter 3: %f", i, sp_gap) << std::endl;
     
-    TCanvas* c1 = new TCanvas("c1","",700,500);
+    TCanvas* c1 = new TCanvas(Form("c%i", i), "", 700, 500);
     gPad->SetLogy();
     h_alladc[i]->Draw();
 
@@ -128,11 +130,27 @@ void all_fits () {
     c1->SaveAs(Form("./fit_channel_hists/channel_%i.png", i));
   }
   
+
+  Double_t min_chisqr_ndf = chisqr_ndfs[0];
+  int min_chisqr_idx = 0;
+  Double_t max_chisqr_ndf = chisqr_ndfs[0];
+  int max_chisqr_idx = 0;
   // now save all single pixel gaps to csv file
   FILE *fp = fopen("all_gaps.csv", "w+");
-  fprintf(fp, "channel_num, sp_gap"); // header
+  fprintf(fp, "channel_num, sp_gap, chisqr/ndf"); // header
   for (int i = 0; i < 384; i++) {
-    fprintf(fp,"\n%i, %f", i, sp_gaps[i]);
+    Double_t chisqr_ndf = chisqr_ndfs[i];
+    fprintf(fp, "\n%i, %f, %f", i, sp_gaps[i], chisqr_ndf);
+    if (chisqr_ndf > max_chisqr_ndf) {
+      max_chisqr_idx = i;
+      max_chisqr_ndf = chisqr_ndf;
+    }
+    if (chisqr_ndf < min_chisqr_ndf) {
+      min_chisqr_idx = i;
+      min_chisqr_ndf = chisqr_ndf;
+    }
   }
   fclose(fp);
+
+  printf("max chisqr_ndf: %f (channel %i); min chisqr_ndf: %f (channel %i)\n", max_chisqr_ndf, max_chisqr_idx, min_chisqr_ndf, min_chisqr_idx);
 }
