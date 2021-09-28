@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <TFitResult.h>
 #include <TLegend.h>
+#include <TGraph.h>
 #include <assert.h>
 
 Double_t fitf (Double_t *x, Double_t *par) {
@@ -117,6 +118,7 @@ void all_fits () {
     Double_t sp_gap = sp_fit->Parameter(3);
     sp_gaps[i] = sp_gap;
     chisqr_ndfs[i] = sp_fit->Chi2() / sp_fit->Ndf();
+    printf("channel %i has ndf=%u\n", i, sp_fit->Ndf());
     //std::cout << Form("Channel %i, Parameter 3: %f", i, sp_gap) << std::endl;
     
     TCanvas* c1 = new TCanvas(Form("c%i", i), "", 700, 500);
@@ -125,6 +127,7 @@ void all_fits () {
 
     TLegend* legend = new TLegend(0.6, 0.75, 0.9, 0.9);
     legend->AddEntry(f_landaugaus, Form("SP Gap: %.3f", sp_gap), "l");
+    legend->AddEntry("", Form("ChiSqr/NDF: %.3f", chisqr_ndfs[i]));
     legend->Draw();
 
     c1->SaveAs(Form("./fit_channel_hists/channel_%i.png", i));
@@ -151,6 +154,22 @@ void all_fits () {
     }
   }
   fclose(fp);
+
+  // plot chisqr / ndf by channel
+  Double_t bins[384];
+  for (int i = 0; i < 384; i++) {
+    bins[i] = i;
+  }
+  TCanvas *c_chi = new TCanvas("c_chi", "", 700, 500);
+  TGraph *chi_graph = new TGraph(384, bins, chisqr_ndfs);
+  chi_graph->SetTitle("Single Pixel Fit Chi Sqr by Channel");
+  chi_graph->GetXaxis()->SetTitle("Channel");
+  chi_graph->GetYaxis()->SetTitle("ChiSqr/NDF");
+  chi_graph->SetMarkerStyle(33);
+  chi_graph->SetMarkerSize(1.0);
+  chi_graph->Draw("AP");
+  // canvas->Update();
+  c_chi->SaveAs("./chisqr_by_channel.png");
 
   printf("max chisqr_ndf: %f (channel %i); min chisqr_ndf: %f (channel %i)\n", max_chisqr_ndf, max_chisqr_idx, min_chisqr_ndf, min_chisqr_idx);
 }
