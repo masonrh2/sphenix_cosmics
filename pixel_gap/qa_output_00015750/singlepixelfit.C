@@ -1,3 +1,14 @@
+#include <TROOT.h>
+#include <TStyle.h>
+#include <TMath.h>
+#include <TCanvas.h>
+#include <TF1.h>
+#include <TH1.h>
+#include <sstream>
+#include <TFile.h>
+#include <assert.h>
+
+// I like to have include directives @Tim
 
 Double_t fitf(Double_t *x, Double_t *par)
 {
@@ -43,7 +54,7 @@ void singlepixelfit(int chnlnum)
 
   for (int i = 0; i < 384;i++)
     {
-      stringstream aa;
+      std::stringstream aa;
       aa <<"h_alladc_"<<i;
       h_alladc[i] = (TH1D*)infile->Get(aa.str().c_str());
     }
@@ -54,7 +65,7 @@ void singlepixelfit(int chnlnum)
   {
     int i = chnlnum;
   
-    stringstream aa;
+    std::stringstream aa;
     aa <<"bob_"<<i;
     f_singlepixels[i] = new TF1(aa.str().c_str(),fitf,0,160,13);
     
