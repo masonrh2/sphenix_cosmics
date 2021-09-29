@@ -118,7 +118,6 @@ void all_fits () {
     Double_t sp_gap = sp_fit->Parameter(3);
     sp_gaps[i] = sp_gap;
     chisqr_ndfs[i] = sp_fit->Chi2() / sp_fit->Ndf();
-    printf("channel %i has ndf=%u\n", i, sp_fit->Ndf());
     //std::cout << Form("Channel %i, Parameter 3: %f", i, sp_gap) << std::endl;
     
     TCanvas* c1 = new TCanvas(Form("c%i", i), "", 700, 500);
@@ -167,9 +166,23 @@ void all_fits () {
   chi_graph->GetYaxis()->SetTitle("ChiSqr/NDF");
   chi_graph->SetMarkerStyle(33);
   chi_graph->SetMarkerSize(1.0);
+  chi_graph->GetXaxis()->SetLimits(0.0, 383.0);
   chi_graph->Draw("AP");
   // canvas->Update();
   c_chi->SaveAs("./chisqr_by_channel.png");
 
   printf("max chisqr_ndf: %f (channel %i); min chisqr_ndf: %f (channel %i)\n", max_chisqr_ndf, max_chisqr_idx, min_chisqr_ndf, min_chisqr_idx);
+
+  // compute averages for IBs 0-2 and 3-5
+  Double_t avg_gap = 0;
+  for (int i = 0; i < 192; i++) {
+    avg_gap += sp_gaps[i];
+  }
+  Double_t ib0_2_avg_gap = avg_gap / 192;
+  avg_gap = 0;
+  for (int i = 192; i < 384; i++) {
+    avg_gap += sp_gaps[i];
+  }
+  Double_t ib3_5_avg_gap = avg_gap / 192;
+  printf("IBs 0-2: avg sp gap = %f; IBs 3-5 avg sp gap = %f\n", ib0_2_avg_gap, ib3_5_avg_gap);
 }
