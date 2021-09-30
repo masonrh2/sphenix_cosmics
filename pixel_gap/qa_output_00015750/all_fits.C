@@ -9,7 +9,7 @@
 #include <TFitResult.h>
 #include <TLegend.h>
 #include <TGraph.h>
-#include <assert.h>
+//#include <assert.h>
 
 Double_t fitf (Double_t *x, Double_t *par) {
   Double_t arg = 0;
@@ -48,8 +48,25 @@ void all_fits () {
   }
   
   TF1 *f_singlepixels[384];
-  Double_t sp_gaps[384]; 
-  Double_t chisqr_ndfs[384]; 
+  Double_t sp_gaps[384];
+  Double_t sp_gaps_err[384];
+  Double_t chisqr_ndfs[384];
+  Double_t first_gauss_mean[384];
+  Double_t first_gauss_mean_err[384];
+  Double_t first_gauss_amplitude[384];
+  Double_t first_gauss_amplitude_err[384];
+  Double_t first_gauss_sigma[384];
+  Double_t first_gauss_sigma_err[384];
+  Double_t other_gauss_amplitudes[384][4];
+  Double_t other_gauss_amplitudes_err[384][4];
+  Double_t other_gauss_sigmas[384][4];
+  Double_t other_gauss_sigmas_err[384][4];
+  Double_t landau_amplitudes[384];
+  Double_t landau_amplitudes_err[384];
+  Double_t landau_mpvs[384];
+  Double_t landau_mpvs_err[384];
+  Double_t landau_sigmas[384];
+  Double_t landau_sigmas_err[384];
 
   for (int i = 0; i < 384; i++) {
     std::stringstream aa;
@@ -117,7 +134,27 @@ void all_fits () {
     TFitResultPtr sp_fit = h_alladc[i]->Fit(f_singlepixels[i],"Q S","",1.5,140);
     Double_t sp_gap = sp_fit->Parameter(3);
     sp_gaps[i] = sp_gap;
+    sp_gaps_err[i] = sp_fit->ParError(3);
     chisqr_ndfs[i] = sp_fit->Chi2() / sp_fit->Ndf();
+    first_gauss_mean[i] = sp_fit->Parameter(4);
+    first_gauss_mean_err[i] = sp_fit->ParError(4);
+    first_gauss_amplitude[i] = sp_fit->Parameter(5);
+    first_gauss_amplitude_err[i] = sp_fit->ParError(5);
+    first_gauss_sigma[i] = sp_fit->Parameter(6);
+    first_gauss_sigma_err[i] = sp_fit->ParError(6);
+    for (int j = 0; j < 4; j++) {
+      other_gauss_amplitudes[i][j] = sp_fit->Parameter(2*j + 7);
+      other_gauss_amplitudes_err[i][j] = sp_fit->ParError(2*j + 7);
+      other_gauss_sigmas[i][j] = sp_fit->Parameter(2*j + 8);
+      other_gauss_sigmas_err[i][j] = sp_fit->ParError(2*j + 8);
+    }
+    landau_amplitudes[i] = sp_fit->Parameter(0);
+    landau_amplitudes_err[i] = sp_fit->ParError(0);
+    landau_mpvs[i] = sp_fit->Parameter(1);
+    landau_mpvs_err[i] = sp_fit->ParError(1);
+    landau_sigmas[i] = sp_fit->Parameter(2);
+    landau_sigmas_err[i] = sp_fit->ParError(2);
+
     //std::cout << Form("Channel %i, Parameter 3: %f", i, sp_gap) << std::endl;
     
     TCanvas* c1 = new TCanvas(Form("c%i", i), "", 700, 500);
@@ -139,10 +176,12 @@ void all_fits () {
   int max_chisqr_idx = 0;
   // now save all single pixel gaps to csv file
   FILE *fp = fopen("all_gaps.csv", "w+");
-  fprintf(fp, "channel_num, sp_gap, chisqr/ndf"); // header
+  fprintf(fp, "channel_num, sp_gap, chisqr/ndf, gauss1 mean, gauss1 ampl, gauss1 sigma, gauss2 ampl, gauss2 sigma, gauss3 ampl, gauss3 sigma, gauss4 ampl, gauss4 sigma, gauss5 ampl, gauss5 sigma, landau ampl, landau mpv, landau sigma"); // header
   for (int i = 0; i < 384; i++) {
     Double_t chisqr_ndf = chisqr_ndfs[i];
-    fprintf(fp, "\n%i, %f, %f", i, sp_gaps[i], chisqr_ndf);
+    fprintf(fp, "\n%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", i, sp_gaps[i], chisqr_ndf, first_gauss_mean[i], first_gauss_amplitude[i], first_gauss_sigma[i],
+      other_gauss_amplitudes[i][0], other_gauss_sigmas[i][0], other_gauss_amplitudes[i][2], other_gauss_sigmas[i][2], other_gauss_amplitudes[i][2], other_gauss_sigmas[i][2], other_gauss_amplitudes[i][3], other_gauss_sigmas[i][3],
+      landau_amplitudes[i], landau_mpvs[i], landau_sigmas[i]);
     if (chisqr_ndf > max_chisqr_ndf) {
       max_chisqr_idx = i;
       max_chisqr_ndf = chisqr_ndf;
@@ -171,7 +210,10 @@ void all_fits () {
   // canvas->Update();
   c_chi->SaveAs("./chisqr_by_channel.png");
 
-  printf("max chisqr_ndf: %f (channel %i); min chisqr_ndf: %f (channel %i)\n", max_chisqr_ndf, max_chisqr_idx, min_chisqr_ndf, min_chisqr_idx);
+
+  
+
+  //printf("max chisqr_ndf: %f (channel %i); min chisqr_ndf: %f (channel %i)\n", max_chisqr_ndf, max_chisqr_idx, min_chisqr_ndf, min_chisqr_idx);
 
   // compute averages for IBs 0-2 and 3-5
   Double_t avg_gap = 0;
@@ -184,5 +226,5 @@ void all_fits () {
     avg_gap += sp_gaps[i];
   }
   Double_t ib3_5_avg_gap = avg_gap / 192;
-  printf("IBs 0-2: avg sp gap = %f; IBs 3-5 avg sp gap = %f\n", ib0_2_avg_gap, ib3_5_avg_gap);
+  //printf("IBs 0-2: avg sp gap = %f; IBs 3-5 avg sp gap = %f\n", ib0_2_avg_gap, ib3_5_avg_gap);
 }
