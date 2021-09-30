@@ -9,7 +9,28 @@
 #include <TFitResult.h>
 #include <TLegend.h>
 #include <TGraph.h>
-//#include <assert.h>
+#include <TLine.h>
+#include <cmath>
+#include <assert.h>
+
+// divides to errorful arrays of numbers x + dx / y + dy and puts result in z, dz
+void divide_err(size_t n, double *x, double *dx, double *y, double *dy, double *z, double *dz) {
+  for (int i = 0; i < n; i++) {
+    double x0 = x[i];
+    double dx0 = dx[i];
+    double y0 = y[i];
+    double dy0 = dy[i];
+    double z0 = x0/y0;
+    double dz0 = z0*pow(pow(dx0/x0, 2.0) + pow(dy0/y0, 2.0), 0.5);
+    z[i] = z0;
+    dz[i] = dz0;
+  }
+}
+
+void sp_fit_get_peaks(TF1* sp_fit, double p1_0, double p2_0, double *p1, double *p2) {
+  *p1 = sp_fit->GetMaximumX(p1_0 - 5, p1_0 + 5);
+  *p2 = sp_fit->GetMaximumX(p2_0 - 5, p2_0 + 5);
+}
 
 /**
  * The function used for fitting
@@ -70,6 +91,9 @@ void all_fits () {
   Double_t landau_mpvs_err[384];
   Double_t landau_sigmas[384];
   Double_t landau_sigmas_err[384];
+
+  Double_t actual_peak1_height[384];
+  Double_t actual_peak2_height[384];
 
   for (int i = 0; i < 384; i++) {
     // this scheme could likely be proved upon by finding more suitable parameters for each histogram
@@ -159,11 +183,88 @@ void all_fits () {
     landau_sigmas[i] = sp_fit->Parameter(2);
     landau_sigmas_err[i] = sp_fit->ParError(2);
 
-    //std::cout << Form("Channel %i, Parameter 3: %f", i, sp_gap) << std::endl;
+    TF1 *landau = new TF1("landau", "landau", 0.0, 200.0);
+    landau->SetParameter(0, landau_amplitudes[i]);
+    landau->SetParameter(1, landau_mpvs[i]);
+    landau->SetParameter(2, landau_sigmas[i]);
+    landau->SetLineStyle(1); landau->SetLineColor(kGreen); landau->SetLineWidth(1);
+    
+    //TLine* landau_ampl = new TLine(0.0, landau_amplitudes[i], 200.0, landau_amplitudes[i]);
+    //landau_ampl->SetLineColor(kGreen);
+    //landau_ampl->SetLineStyle(2);
+    //landau_ampl->SetLineWidth(1);
+    
+
+    TF1 *gaus1 = new TF1("gaus1", "gaus", 0.0, 200.0);
+    gaus1->SetParameter(0, first_gauss_amplitude[i]);
+    gaus1->SetParameter(1, first_gauss_mean[i]);
+    gaus1->SetParameter(2, first_gauss_sigma[i]);
+    gaus1->SetLineStyle(1); gaus1->SetLineColor(kBlue); gaus1->SetLineWidth(1);
+
+    //TLine* gauss1_ampl = new TLine(0.0, first_gauss_amplitude[i], 200.0, first_gauss_amplitude[i]);
+    //gauss1_ampl->SetLineColor(kBlue);
+    //gauss1_ampl->SetLineStyle(2);
+    //gauss1_ampl->SetLineWidth(1);
+
+    double p1, p2;
+    sp_fit_get_peaks(f_singlepixels[i], landau->GetMaximumX(), first_gauss_mean[i], &p1, &p2);
+    assert(0.0 < p1 && p1 < 50.0);
+    assert(0.0 < p2 && p2 < 50.0);
+    actual_peak1_height[i] = f_singlepixels[i]->Eval(p1);
+    actual_peak2_height[i] = f_singlepixels[i]->Eval(p2);
+
+    TF1 *gaus2 = new TF1("gaus2", "gaus", 0.0, 200.0);
+    gaus2->SetParameter(0, other_gauss_amplitudes[i][0]);
+    gaus2->SetParameter(1, first_gauss_mean[i] + sp_gap);
+    gaus2->SetParameter(2, other_gauss_sigmas[i][0]);
+    gaus2->SetLineStyle(1); gaus2->SetLineColor(kBlue); gaus2->SetLineWidth(1);
+
+    TF1 *gaus3 = new TF1("gaus3", "gaus", 0.0, 200.0);
+    gaus3->SetParameter(0, other_gauss_amplitudes[i][1]);
+    gaus3->SetParameter(1, first_gauss_mean[i] + 2*sp_gap);
+    gaus3->SetParameter(2, other_gauss_sigmas[i][1]);
+    gaus3->SetLineStyle(1); gaus3->SetLineColor(kBlue); gaus3->SetLineWidth(1);
+
+    TF1 *gaus4 = new TF1("gaus4", "gaus", 0.0, 200.0);
+    gaus4->SetParameter(0, other_gauss_amplitudes[i][2]);
+    gaus4->SetParameter(1, first_gauss_mean[i] + 3*sp_gap);
+    gaus4->SetParameter(2, other_gauss_sigmas[i][2]);
+    gaus4->SetLineStyle(1); gaus4->SetLineColor(kBlue); gaus4->SetLineWidth(1);
+    
+    TF1 *gaus5 = new TF1("gaus5", "gaus", 0.0, 200.0);
+    gaus5->SetParameter(0, other_gauss_amplitudes[i][3]);
+    gaus5->SetParameter(1, first_gauss_mean[i] + 4*sp_gap);
+    gaus5->SetParameter(2, other_gauss_sigmas[i][3]);
+    gaus5->SetLineStyle(1); gaus5->SetLineColor(kBlue); gaus5->SetLineWidth(1);
+
+
     
     TCanvas* c1 = new TCanvas(Form("c%i", i), "", 700, 500);
     gPad->SetLogy();
     h_alladc[i]->Draw();
+
+    landau->Draw("SAME");
+    //landau_ampl->Draw("SAME");
+    gaus1->Draw("SAME");
+    //gauss1_ampl->Draw("SAME");
+    gaus2->Draw("SAME");
+    gaus3->Draw("SAME");
+    gaus4->Draw("SAME");
+    gaus5->Draw("SAME");
+
+    /*
+    Double_t yndc = 1e5;
+    TLine* p1_line = new TLine(p1, 0.0, p1, yndc);
+    p1_line->SetLineColor(kRed);
+    p1_line->SetLineStyle(2);
+    p1_line->SetLineWidth(2);
+    p1_line->Draw("SAME");
+    TLine* p2_line = new TLine(p2, 0.0, p2, yndc);
+    p2_line->SetLineColor(kRed);
+    p2_line->SetLineStyle(2);
+    p2_line->SetLineWidth(2);
+    p2_line->Draw("SAME");
+    */
 
     TLegend* legend = new TLegend(0.6, 0.75, 0.9, 0.9);
     legend->AddEntry(f_landaugaus, Form("SP Gap: %.3f", sp_gap), "l");
@@ -180,12 +281,12 @@ void all_fits () {
   int max_chisqr_idx = 0;
   // now save all single pixel gaps to csv file
   FILE *fp = fopen("all_gaps.csv", "w+");
-  fprintf(fp, "channel_num, sp_gap, chisqr/ndf, gauss1 mean, gauss1 ampl, gauss1 sigma, gauss2 ampl, gauss2 sigma, gauss3 ampl, gauss3 sigma, gauss4 ampl, gauss4 sigma, gauss5 ampl, gauss5 sigma, landau ampl, landau mpv, landau sigma"); // header
+  fprintf(fp, "channel_num, sp_gap, chisqr/ndf, gauss1 mean, gauss1 ampl, gauss1 sigma, gauss2 ampl, gauss2 sigma, gauss3 ampl, gauss3 sigma, gauss4 ampl, gauss4 sigma, gauss5 ampl, gauss5 sigma, landau ampl, landau mpv, landau sigma, actual peak1 height, actual peak2 height"); // header
   for (int i = 0; i < 384; i++) {
     Double_t chisqr_ndf = chisqr_ndfs[i];
-    fprintf(fp, "\n%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", i, sp_gaps[i], chisqr_ndf, first_gauss_mean[i], first_gauss_amplitude[i], first_gauss_sigma[i],
+    fprintf(fp, "\n%i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", i, sp_gaps[i], chisqr_ndf, first_gauss_mean[i], first_gauss_amplitude[i], first_gauss_sigma[i],
       other_gauss_amplitudes[i][0], other_gauss_sigmas[i][0], other_gauss_amplitudes[i][2], other_gauss_sigmas[i][2], other_gauss_amplitudes[i][2], other_gauss_sigmas[i][2], other_gauss_amplitudes[i][3], other_gauss_sigmas[i][3],
-      landau_amplitudes[i], landau_mpvs[i], landau_sigmas[i]);
+      landau_amplitudes[i], landau_mpvs[i], landau_sigmas[i], actual_peak1_height[i], actual_peak2_height[i]);
     if (chisqr_ndf > max_chisqr_ndf) {
       max_chisqr_idx = i;
       max_chisqr_ndf = chisqr_ndf;
@@ -214,8 +315,17 @@ void all_fits () {
   // canvas->Update();
   c_chi->SaveAs("./chisqr_by_channel.png");
 
+  // compute the ratio of the 1st and 2nd peaks
 
-  
+
+  // plot ratio of 1st and 2nd peak as a fn of IB
+
+
+
+  // plot ratio of 1st and 2nd peak as a fn of chisqr
+
+
+
 
   //printf("max chisqr_ndf: %f (channel %i); min chisqr_ndf: %f (channel %i)\n", max_chisqr_ndf, max_chisqr_idx, min_chisqr_ndf, min_chisqr_idx);
 
