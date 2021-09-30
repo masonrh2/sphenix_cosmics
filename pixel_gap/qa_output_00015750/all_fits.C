@@ -11,6 +11,9 @@
 #include <TGraph.h>
 //#include <assert.h>
 
+/**
+ * The function used for fitting
+ */
 Double_t fitf (Double_t *x, Double_t *par) {
   Double_t arg = 0;
   Double_t err_func = 1+TMath::Erf(x[0]-par[2]);
@@ -69,10 +72,11 @@ void all_fits () {
   Double_t landau_sigmas_err[384];
 
   for (int i = 0; i < 384; i++) {
-    std::stringstream aa;
-    aa <<"bob_"<<i;
-    f_singlepixels[i] = new TF1(aa.str().c_str(),fitf,0,160,13);
-
+    // this scheme could likely be proved upon by finding more suitable parameters for each histogram
+    // rather than using the same constants for each histogram and sector...
+    
+    f_singlepixels[i] = new TF1(Form("f_%i", i), fitf,0,160,13);
+    
     TF1* f_tmp = new TF1("f_tmp","gaus",20,40);
     h_alladc[i]->Fit(f_tmp,"Q0","",20,40);
 
@@ -80,7 +84,7 @@ void all_fits () {
     h_alladc[i]->Fit(f_landautmp,"Q0","",1.5,18);
 
     TF1* f_landaugaus = new TF1("f_landaugaus","landau(0) + gaus(3)",0,30);
-    f_landaugaus->SetParameters(f_landautmp->GetParameter(0),f_landautmp->GetParameter(1),f_landautmp->GetParameter(2),f_tmp->GetParameter(0),f_tmp->GetParameter(1),f_tmp->GetParameter(2));
+    f_landaugaus->SetParameters(f_landautmp->GetParameter(0), f_landautmp->GetParameter(1) ,f_landautmp->GetParameter(2) ,f_tmp->GetParameter(0) ,f_tmp->GetParameter(1) ,f_tmp->GetParameter(2));
     h_alladc[i]->Fit(f_landaugaus,"Q0","",0.5,45);
 
     // f_singlepixels[i]->SetParameters(f_tmp->GetParameter(0),30,5,f_tmp->GetParameter(0)/3,28,f_tmp->GetParameter(0)/10, f_tmp->GetParameter(0)/20,f_tmp->GetParameter(0)/100);
