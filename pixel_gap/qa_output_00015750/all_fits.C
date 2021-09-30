@@ -316,14 +316,51 @@ void all_fits () {
   c_chi->SaveAs("./chisqr_by_channel.png");
 
   // compute the ratio of the 1st and 2nd peaks
+  Double_t ratios[384];
+  for (int i = 0; i < 384; i++) {
+    ratios[i] = actual_peak1_height[i] / actual_peak2_height[i];
+  }
 
+  // compute average ratio by IB
+  Double_t avg_ib_ratio[6];
+  for (int ib = 0; ib < 6; ib++) {
+    Double_t avg_ratio = 0.0;
+    for (int i = ib*64; i < (ib + 1)*64; i++) {
+      avg_ratio += ratios[i];
+    }
+    avg_ratio /= 64;
+    avg_ib_ratio[ib] = avg_ratio;
+  }
+  Double_t ib_bins[6] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0};
 
   // plot ratio of 1st and 2nd peak as a fn of IB
-
-
+  TCanvas *c_ib_ratio = new TCanvas("c_ib_ratio", "", 700, 500);
+  TGraph *ib_ratio_graph = new TGraph(6, ib_bins, avg_ib_ratio);
+  ib_ratio_graph->SetTitle("Peak Height Ratio by IB");
+  ib_ratio_graph->GetXaxis()->SetTitle("IB");
+  ib_ratio_graph->GetYaxis()->SetTitle("1st peak / 2nd peak");
+  ib_ratio_graph->SetMarkerStyle(33);
+  ib_ratio_graph->SetMarkerSize(2.0);
+  ib_ratio_graph->GetXaxis()->SetLimits(0.0, 5.0);
+  ib_ratio_graph->GetXaxis()->SetNdivisions(-5);
+  ib_ratio_graph->Draw("AP");
+  // canvas->Update();
+  c_ib_ratio->SetGrid();
+  c_ib_ratio->SaveAs("./peak_ratio_by_ib.png");
 
   // plot ratio of 1st and 2nd peak as a fn of chisqr
-
+  TCanvas *c_ratio_chi = new TCanvas("c_ratio_chi", "", 700, 500);
+  TGraph *ratio_chi_graph = new TGraph(384, bins, ratios);
+  ratio_chi_graph->SetTitle("Peak Height Ratio by Chi Sqr");
+  ratio_chi_graph->GetXaxis()->SetTitle("ChiSqr/NDF");
+  ratio_chi_graph->GetYaxis()->SetTitle("1st peak / 2nd peak");
+  ratio_chi_graph->SetMarkerStyle(33);
+  ratio_chi_graph->SetMarkerSize(1.0);
+  ratio_chi_graph->GetXaxis()->SetLimits(0.0, 383.0);
+  ratio_chi_graph->Draw("AP");
+  // canvas->Update();
+  c_ratio_chi->SetGrid();
+  c_ratio_chi->SaveAs("./peak_ratio_by_chisqr.png");
 
 
 
