@@ -350,13 +350,13 @@ void all_fits () {
 
   // plot ratio of 1st and 2nd peak as a fn of chisqr
   TCanvas *c_ratio_chi = new TCanvas("c_ratio_chi", "", 700, 500);
-  TGraph *ratio_chi_graph = new TGraph(384, bins, ratios);
+  TGraph *ratio_chi_graph = new TGraph(384, chisqr_ndfs, ratios);
   ratio_chi_graph->SetTitle("Peak Height Ratio by Chi Sqr");
   ratio_chi_graph->GetXaxis()->SetTitle("ChiSqr/NDF");
   ratio_chi_graph->GetYaxis()->SetTitle("1st peak / 2nd peak");
   ratio_chi_graph->SetMarkerStyle(33);
   ratio_chi_graph->SetMarkerSize(1.0);
-  ratio_chi_graph->GetXaxis()->SetLimits(0.0, 383.0);
+  //ratio_chi_graph->GetXaxis()->SetLimits(0.0, 383.0);
   ratio_chi_graph->Draw("AP");
   // canvas->Update();
   c_ratio_chi->SetGrid();
