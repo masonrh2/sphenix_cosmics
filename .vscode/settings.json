@@ -3,6 +3,7 @@
     "test.C": "cpp",
     "do_the_things.C": "cpp",
     "do_sipm.C": "cpp",
-    "good_bad_vop.C": "cpp"
+    "good_bad_vop.C": "cpp",
+    "incl_fiber_batch.C": "cpp"
   }
 }
