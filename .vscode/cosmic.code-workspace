@@ -67,7 +67,8 @@
       "set": "cpp",
       "OLD_incl_fiber_batch.C": "cpp",
       "singlepixelfit.C": "cpp",
-      "all_fits.C": "cpp"
+      "all_fits.C": "cpp",
+      "fit_all_runs.C": "cpp"
     },
     "C_Cpp.default.includePath": [
       "${default}",

@@ -273,7 +273,6 @@ void all_fits () {
 
     c1->SaveAs(Form("./fit_channel_hists/channel_%i.png", i));
 
-    printf("landau - actual: %f\n", landau_mpvs[i] - p1);
   }
   
 
