@@ -250,7 +250,7 @@ int fit_no_pedestal () {
     
     double max_bin = h_alladc[i]->GetMaximumBin();
 
-    h_alladc[i]->GetXaxis()->SetRangeUser(max_bin - 100.0, max_bin + 200.0);    
+    h_alladc[i]->GetXaxis()->SetRangeUser(max_bin - 50.0, max_bin + 200.0);    
 
     TCanvas* c1 = new TCanvas(Form("c%i", i), "", 700, 500);
     gPad->SetLogy();
