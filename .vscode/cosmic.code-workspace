@@ -70,7 +70,9 @@
       "all_fits.C": "cpp",
       "fit_all_runs.C": "cpp",
       "fit_all_runs copy.C": "cpp",
-      "fit_no_pedestal.C": "cpp"
+      "fit_no_pedestal.C": "cpp",
+      "fit_no_pedestal copy.C": "cpp",
+      "hists_15750.C": "cpp"
     },
     "C_Cpp.default.includePath": [
       "${default}",
