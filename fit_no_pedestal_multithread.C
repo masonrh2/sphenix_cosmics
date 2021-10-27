@@ -82,16 +82,17 @@ void *parallel_fit(void *ptr) {
     int i = my_task.channel_num;
     pthread_t my_id = pthread_self();
 
-    printf("thread %lu is working on channel %i\n", my_id, i);
+    printf("thread %lu started work on channel %i\n", my_id, i);
 
     if (my_hist->GetEntries() < 1e2) {
       printf("***rejected channel %i for too few entries\n", i);
       continue;
     }
 
-    printf();
+    printf("thread %lu is trying to fit\n", my_id);
 
     TF1 *my_fit = new TF1(Form("f_%i", i), fitf, 1200.0, 2400.0, 14);
+
 
     my_fit->SetParameter(0, 28.0); // par[0] = gap spacing
     my_fit->SetParLimits(0, 18.0, 36.0);
@@ -112,6 +113,9 @@ void *parallel_fit(void *ptr) {
     my_fit->SetLineWidth(2);
 
     TFitResultPtr sp_fit = my_hist->Fit(my_fit, "Q S", "", 1200.0, 2000.0);
+
+    printf("thread %lu successfully fit\n", my_id);
+    
     if (sp_fit->IsEmpty()) {
       printf("rejected channel %i for null or empty sp_fit\n", i);
       continue;
