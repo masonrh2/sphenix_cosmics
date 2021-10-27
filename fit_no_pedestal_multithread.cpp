@@ -12,6 +12,9 @@
 #include <TGraph.h>
 #include <TLine.h>
 #include <TGraphErrors.h>
+#include <Fit/Fitter.h>
+#include <Fit/BinData.h>
+#include <Fit/UnBinData.h>
 
 #include <cmath>
 #include <stdexcept>
@@ -41,15 +44,27 @@ Double_t other_ampl[384][5][2];
 Double_t other_sigma[384][5][2];
 
 
-void sp_fit_get_peaks(TF1* sp_fit, double p1_0, double p2_0, double *p1, double *p2) {
-  *p1 = sp_fit->GetMaximumX(p1_0 - 5, p1_0 + 5);
-  *p2 = sp_fit->GetMaximumX(p2_0 - 5, p2_0 + 5);
-}
+class six_gauss : public ROOT::Math::IParamFunction { 
+  public:
+    void SetParameters(const Double_t* p) { std::copy(p,p+NPar(),fp);}
+    const Double_t* Parameters() const { return fp; }
+    ROOT::Math::IGenFunction* Clone() const { 
+      six_gauss* g = new six_gauss(); 
+      g->SetParameters(fp);
+      return g;
+    };
+    unsigned int NPar() const { return 14; }
+  private:
+    Double_t DoEvalPar(Double_t x, const Double_t* par) const { 
+      return fitf(&x, fp);
+    }
+    Double_t fp[14];  
+};
 
 /**
  * The function used for fitting
  */
-Double_t fitf (Double_t *x, Double_t *par) {
+Double_t fitf (Double_t *x, const Double_t *par) {
   Double_t gaussians = 0;
   gaussians += par[1] * TMath::Exp(-TMath::Power(x[0]-par[2],2)/(2*par[3]*par[3]));
   for (int i = 0; i < 5; i++) {
@@ -91,6 +106,8 @@ void *parallel_fit(void *ptr) {
 
     printf("thread %lu is trying to fit\n", my_id);
 
+
+    /*
     TF1 *my_fit = new TF1(Form("f_%i", i), fitf, 1200.0, 2400.0, 14);
 
 
@@ -120,6 +137,16 @@ void *parallel_fit(void *ptr) {
       printf("rejected channel %i for null or empty sp_fit\n", i);
       continue;
     }
+    */
+
+    ROOT::Fit::Fitter fitter;
+    six_gauss g;
+    fitter.Config().SetMinimizer("Minuit2");
+    fitter.SetFunction(g);
+    ROOT::Fit::BinData d; 
+    ROOT::Fit::FillData(d, my_hist);
+
+
 
     gap_spacing[i][0] = sp_fit->Parameter(0); //par[0] = gap spacing
     gap_spacing[i][1] = sp_fit->ParError(0); //par[0] = gap spacing
@@ -159,13 +186,6 @@ void *parallel_fit(void *ptr) {
     //gauss1_ampl->SetLineColor(kBlue);
     //gauss1_ampl->SetLineStyle(2);
     //gauss1_ampl->SetLineWidth(1);
-
-    double p1, p2;
-    sp_fit_get_peaks(f_singlepixels[i], landau->GetMaximumX(), first_gauss_mean[i], &p1, &p2);
-    assert(0.0 < p1 && p1 < 50.0);
-    assert(0.0 < p2 && p2 < 50.0);
-    actual_peak1_height[i] = f_singlepixels[i]->Eval(p1);
-    actual_peak2_height[i] = f_singlepixels[i]->Eval(p2);
 
     TF1 *gaus2 = new TF1("gaus2", "gaus", 0.0, 200.0);
     gaus2->SetParameter(0, other_gauss_amplitudes[i][0]);

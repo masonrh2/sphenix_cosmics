@@ -19,6 +19,7 @@
 #include <pthread.h>
 
 #define RUN_NUM 16945
+#define SAVE_PLOTS true
 
 // TODO: multithreading
 
@@ -47,11 +48,8 @@ Double_t fitf (Double_t *x, Double_t *par) {
   return gaussians;
 }
 
-int fit_no_pedestal(int run_num) {
-  
+void fit_no_pedestal(int run_num) {
   ROOT::EnableImplicitMT();
-
-  int n_channels = 0;
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(1);   //make the plot list all the fit information
@@ -181,69 +179,68 @@ int fit_no_pedestal(int run_num) {
     gaus5->SetLineStyle(1); gaus5->SetLineColor(kBlue); gaus5->SetLineWidth(1);
 
     */
-    
-    double max_bin = h_alladc[i]->GetMaximumBin();
+    if (SAVE_PLOTS) {
+      double max_bin = h_alladc[i]->GetMaximumBin();
+      h_alladc[i]->GetXaxis()->SetRangeUser(max_bin - 50.0, max_bin + 200.0);    
+      //h_alladc[i]->GetXaxis()->SetRangeUser(1200.0, 2000.0);    
 
-    h_alladc[i]->GetXaxis()->SetRangeUser(max_bin - 50.0, max_bin + 200.0);    
-    //h_alladc[i]->GetXaxis()->SetRangeUser(1200.0, 2000.0);    
+      TCanvas* c1 = new TCanvas(Form("c%i", i), "", 700, 500);
 
-    TCanvas* c1 = new TCanvas(Form("c%i_%lu", i), "", 700, 500);
+      Double_t means[6];
+      means[0] = first_mean[i][0];
+      for (int j = 1; j < 6; j++) {
+        means[j] = means[0] + j * gap_spacing[i][0];
+      }
 
-    Double_t means[6];
-    means[0] = first_mean[i][0];
-    for (int j = 1; j < 6; j++) {
-      means[j] = means[0] + j * gap_spacing[i][0];
+      h_alladc[i]->Draw();
+
+      gPad->SetLogy();
+      gPad->Update();
+
+      //printf("uymin %f, uymax %f\n", c1->GetUymin(), c1->GetUymax());
+
+      for (int j = 0; j < 6; j++) {
+        TLine* line = new TLine(means[j], pow(10.0, c1->GetUymin()), means[j], pow(10.0, c1->GetUymax()));
+        line->SetLineColor(kBlack);
+        line->SetLineStyle(2);
+        line->SetLineWidth(1);
+        line->Draw("SAME");
+      }
+
+
+
+      //landau->Draw("SAME");
+      //landau_ampl->Draw("SAME");
+      //gaus1->Draw("SAME");
+      //gauss1_ampl->Draw("SAME");
+      //gaus2->Draw("SAME");
+      //gaus3->Draw("SAME");
+      //gaus4->Draw("SAME");
+      //gaus5->Draw("SAME");
+
+      /*
+      Double_t yndc = 1e5;
+      TLine* p1_line = new TLine(p1, 0.0, p1, yndc);
+      p1_line->SetLineColor(kRed);
+      p1_line->SetLineStyle(2);
+      p1_line->SetLineWidth(2);
+      p1_line->Draw("SAME");
+      TLine* p2_line = new TLine(p2, 0.0, p2, yndc);
+      p2_line->SetLineColor(kRed);
+      p2_line->SetLineStyle(2);
+      p2_line->SetLineWidth(2);
+      p2_line->Draw("SAME");
+      */
+
+      /*
+      TLegend* legend = new TLegend(0.6, 0.75, 0.9, 0.9);
+      legend->AddEntry(f_landaugaus, Form("SP Gap: %.3f", sp_gap), "l");
+      legend->AddEntry("", Form("ChiSqr/NDF: %.3f", chisqr_ndfs[i]));
+      legend->Draw();
+      */
+
+      c1->SaveAs(Form("%s/channel_%i.png", file_prefix, i));
     }
-
-    h_alladc[i]->Draw();
-
-    gPad->SetLogy();
-    gPad->Update();
-
-    //printf("uymin %f, uymax %f\n", c1->GetUymin(), c1->GetUymax());
-
-    for (int j = 0; j < 6; j++) {
-      TLine* line = new TLine(means[j], pow(10.0, c1->GetUymin()), means[j], pow(10.0, c1->GetUymax()));
-      line->SetLineColor(kBlack);
-      line->SetLineStyle(2);
-      line->SetLineWidth(1);
-      line->Draw("SAME");
-    }
-
-
-
-    //landau->Draw("SAME");
-    //landau_ampl->Draw("SAME");
-    //gaus1->Draw("SAME");
-    //gauss1_ampl->Draw("SAME");
-    //gaus2->Draw("SAME");
-    //gaus3->Draw("SAME");
-    //gaus4->Draw("SAME");
-    //gaus5->Draw("SAME");
-
-    /*
-    Double_t yndc = 1e5;
-    TLine* p1_line = new TLine(p1, 0.0, p1, yndc);
-    p1_line->SetLineColor(kRed);
-    p1_line->SetLineStyle(2);
-    p1_line->SetLineWidth(2);
-    p1_line->Draw("SAME");
-    TLine* p2_line = new TLine(p2, 0.0, p2, yndc);
-    p2_line->SetLineColor(kRed);
-    p2_line->SetLineStyle(2);
-    p2_line->SetLineWidth(2);
-    p2_line->Draw("SAME");
-    */
-
-    /*
-    TLegend* legend = new TLegend(0.6, 0.75, 0.9, 0.9);
-    legend->AddEntry(f_landaugaus, Form("SP Gap: %.3f", sp_gap), "l");
-    legend->AddEntry("", Form("ChiSqr/NDF: %.3f", chisqr_ndfs[i]));
-    legend->Draw();
-    */
-
-    c1->SaveAs(Form("%s/channel_%i.png", file_prefix, i));
-    n_channels++;
   }
   
   FILE *outfile = fopen(Form("%s/no_pedestal_params.csv", file_prefix), "w+");
@@ -309,5 +306,4 @@ int fit_no_pedestal(int run_num) {
   Double_t ib3_5_avg_gap = avg_gap / 192;
   printf("IBs 0-2: avg sp gap = %f; IBs 3-5 avg sp gap = %f\n", ib0_2_avg_gap, ib3_5_avg_gap);
   free(file_prefix);
-  return n_channels;
 }
