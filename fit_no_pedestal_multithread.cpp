@@ -13,8 +13,9 @@
 #include <TLine.h>
 #include <TGraphErrors.h>
 #include <Fit/Fitter.h>
+#include <HFitInterface.h>
 #include <Fit/BinData.h>
-#include <Fit/UnBinData.h>
+//#include <Fit/UnBinData.h>
 
 #include <cmath>
 #include <stdexcept>
@@ -22,7 +23,7 @@
 #include <sys/stat.h>
 #include <pthread.h>
 
-#define RUN_NUM 16945
+#define SAVE_PLOTS true
 
 // TODO: multithreading
 
@@ -43,24 +44,6 @@ Double_t first_sigma[384][2];
 Double_t other_ampl[384][5][2];
 Double_t other_sigma[384][5][2];
 
-
-class six_gauss : public ROOT::Math::IParamFunction { 
-  public:
-    void SetParameters(const Double_t* p) { std::copy(p,p+NPar(),fp);}
-    const Double_t* Parameters() const { return fp; }
-    ROOT::Math::IGenFunction* Clone() const { 
-      six_gauss* g = new six_gauss(); 
-      g->SetParameters(fp);
-      return g;
-    };
-    unsigned int NPar() const { return 14; }
-  private:
-    Double_t DoEvalPar(Double_t x, const Double_t* par) const { 
-      return fitf(&x, fp);
-    }
-    Double_t fp[14];  
-};
-
 /**
  * The function used for fitting
  */
@@ -80,6 +63,23 @@ Double_t fitf (Double_t *x, const Double_t *par) {
 
   return gaussians;
 }
+
+class six_gauss : public ROOT::Math::IParamFunction { 
+  public:
+    void SetParameters(const Double_t* p) { std::copy(p,p+NPar(),fp);}
+    const Double_t* Parameters() const { return fp; }
+    ROOT::Math::IGenFunction* Clone() const { 
+      six_gauss* g = new six_gauss(); 
+      g->SetParameters(fp);
+      return g;
+    };
+    unsigned int NPar() const { return 14; }
+  private:
+    Double_t DoEvalPar(Double_t x, const Double_t* par) const { 
+      return fitf(&x, fp);
+    }
+    Double_t fp[14];  
+};
 
 void *parallel_fit(void *ptr) {
   while (1) {
@@ -145,23 +145,28 @@ void *parallel_fit(void *ptr) {
     fitter.SetFunction(g);
     ROOT::Fit::BinData d; 
     ROOT::Fit::FillData(d, my_hist);
-
-
-
-    gap_spacing[i][0] = sp_fit->Parameter(0); //par[0] = gap spacing
-    gap_spacing[i][1] = sp_fit->ParError(0); //par[0] = gap spacing
-    first_ampl[i][0] = sp_fit->Parameter(1); //par[1] = first peak amplitude
-    first_ampl[i][1] = sp_fit->ParError(1); //par[1] = first peak amplitude
-    first_mean[i][0] = sp_fit->Parameter(2); //par[2] = first peak mean
-    first_mean[i][1] = sp_fit->ParError(2); //par[2] = first peak mean
-    first_sigma[i][0] = sp_fit->Parameter(3); //par[3] = first peak sigma
-    first_sigma[i][1] = sp_fit->ParError(3); //par[3] = first peak sigma
-    for (int j = 0; j < 5; j++) {
-      other_ampl[i][j][0] = sp_fit->Parameter(2*j+4);
-      other_ampl[i][j][1] = sp_fit->ParError(2*j+4);
-      other_sigma[i][j][0] = sp_fit->Parameter(2*j+5);
-      other_sigma[i][j][1] = sp_fit->ParError(2*j+5);
+    //fitter.Config().Set
+    bool sp_fit = fitter.Fit(d);
+    if (!sp_fit) {
+      printf("no fit result!\n");
     }
+
+    gap_spacing[i][0] = fitter.Result().Parameter(0); //par[0] = gap spacing
+    gap_spacing[i][1] = fitter.Result().ParError(0); //par[0] = gap spacing
+    first_ampl[i][0] = fitter.Result().Parameter(1); //par[1] = first peak amplitude
+    first_ampl[i][1] = fitter.Result().ParError(1); //par[1] = first peak amplitude
+    first_mean[i][0] = fitter.Result().Parameter(2); //par[2] = first peak mean
+    first_mean[i][1] = fitter.Result().ParError(2); //par[2] = first peak mean
+    first_sigma[i][0] = fitter.Result().Parameter(3); //par[3] = first peak sigma
+    first_sigma[i][1] = fitter.Result().ParError(3); //par[3] = first peak sigma
+    for (int j = 0; j < 5; j++) {
+      other_ampl[i][j][0] = fitter.Result().Parameter(2*j+4);
+      other_ampl[i][j][1] = fitter.Result().ParError(2*j+4);
+      other_sigma[i][j][0] = fitter.Result().Parameter(2*j+5);
+      other_sigma[i][j][1] = fitter.Result().ParError(2*j+5);
+    }
+
+
 
     /*
     TF1 *landau = new TF1("landau", "landau", 0.0, 200.0);
@@ -213,67 +218,71 @@ void *parallel_fit(void *ptr) {
 
     */
     
-    double max_bin = my_hist->GetMaximumBin();
+    if (SAVE_PLOTS) {
+      double max_bin = my_hist->GetMaximumBin();
 
-    my_hist->GetXaxis()->SetRangeUser(max_bin - 50.0, max_bin + 200.0);    
-    //my_hist->GetXaxis()->SetRangeUser(1200.0, 2000.0);    
+      my_hist->GetXaxis()->SetRangeUser(max_bin - 50.0, max_bin + 200.0);    
+      //my_hist->GetXaxis()->SetRangeUser(1200.0, 2000.0);    
 
-    TCanvas* c1 = new TCanvas(Form("c%i_%lu", i, my_id), "", 700, 500);
+      TCanvas* c1 = new TCanvas(Form("c%i_%lu", i, my_id), "", 700, 500);
 
-    Double_t means[6];
-    means[0] = first_mean[i][0];
-    for (int j = 1; j < 6; j++) {
-      means[j] = means[0] + j * gap_spacing[i][0];
+      Double_t means[6];
+      means[0] = first_mean[i][0];
+      for (int j = 1; j < 6; j++) {
+        means[j] = means[0] + j * gap_spacing[i][0];
+      }
+
+      my_hist->Draw();
+
+      gPad->SetLogy();
+      gPad->Update();
+
+      //printf("uymin %f, uymax %f\n", c1->GetUymin(), c1->GetUymax());
+
+      for (int j = 0; j < 6; j++) {
+        TLine* line = new TLine(means[j], pow(10.0, c1->GetUymin()), means[j], pow(10.0, c1->GetUymax()));
+        line->SetLineColor(kBlack);
+        line->SetLineStyle(2);
+        line->SetLineWidth(1);
+        line->Draw("SAME");
+      }
+
+
+
+      //landau->Draw("SAME");
+      //landau_ampl->Draw("SAME");
+      //gaus1->Draw("SAME");
+      //gauss1_ampl->Draw("SAME");
+      //gaus2->Draw("SAME");
+      //gaus3->Draw("SAME");
+      //gaus4->Draw("SAME");
+      //gaus5->Draw("SAME");
+
+      /*
+      Double_t yndc = 1e5;
+      TLine* p1_line = new TLine(p1, 0.0, p1, yndc);
+      p1_line->SetLineColor(kRed);
+      p1_line->SetLineStyle(2);
+      p1_line->SetLineWidth(2);
+      p1_line->Draw("SAME");
+      TLine* p2_line = new TLine(p2, 0.0, p2, yndc);
+      p2_line->SetLineColor(kRed);
+      p2_line->SetLineStyle(2);
+      p2_line->SetLineWidth(2);
+      p2_line->Draw("SAME");
+      */
+
+      /*
+      TLegend* legend = new TLegend(0.6, 0.75, 0.9, 0.9);
+      legend->AddEntry(f_landaugaus, Form("SP Gap: %.3f", sp_gap), "l");
+      legend->AddEntry("", Form("ChiSqr/NDF: %.3f", chisqr_ndfs[i]));
+      legend->Draw();
+      */
+
+      c1->SaveAs(Form("%s/channel_%i.png", file_prefix, i));
     }
 
-    my_hist->Draw();
-
-    gPad->SetLogy();
-    gPad->Update();
-
-    //printf("uymin %f, uymax %f\n", c1->GetUymin(), c1->GetUymax());
-
-    for (int j = 0; j < 6; j++) {
-      TLine* line = new TLine(means[j], pow(10.0, c1->GetUymin()), means[j], pow(10.0, c1->GetUymax()));
-      line->SetLineColor(kBlack);
-      line->SetLineStyle(2);
-      line->SetLineWidth(1);
-      line->Draw("SAME");
-    }
-
-
-
-    //landau->Draw("SAME");
-    //landau_ampl->Draw("SAME");
-    //gaus1->Draw("SAME");
-    //gauss1_ampl->Draw("SAME");
-    //gaus2->Draw("SAME");
-    //gaus3->Draw("SAME");
-    //gaus4->Draw("SAME");
-    //gaus5->Draw("SAME");
-
-    /*
-    Double_t yndc = 1e5;
-    TLine* p1_line = new TLine(p1, 0.0, p1, yndc);
-    p1_line->SetLineColor(kRed);
-    p1_line->SetLineStyle(2);
-    p1_line->SetLineWidth(2);
-    p1_line->Draw("SAME");
-    TLine* p2_line = new TLine(p2, 0.0, p2, yndc);
-    p2_line->SetLineColor(kRed);
-    p2_line->SetLineStyle(2);
-    p2_line->SetLineWidth(2);
-    p2_line->Draw("SAME");
-    */
-
-    /*
-    TLegend* legend = new TLegend(0.6, 0.75, 0.9, 0.9);
-    legend->AddEntry(f_landaugaus, Form("SP Gap: %.3f", sp_gap), "l");
-    legend->AddEntry("", Form("ChiSqr/NDF: %.3f", chisqr_ndfs[i]));
-    legend->Draw();
-    */
-
-    c1->SaveAs(Form("%s/channel_%i.png", file_prefix, i));
+    printf("thread %lu finished channel %i and gap is %f ± %f\n", my_id, i, gap_spacing[i][0], gap_spacing[i][1]); 
   }
   
   return NULL;
@@ -283,7 +292,8 @@ void fit_no_pedestal_multithread(int run_num, int n_threads) {
   if (n_threads < 1) {
     throw std::runtime_error("n_threads should be >= 1");
   }
-  ROOT::EnableThreadSafety();
+  //ROOT::EnableThreadSafety();
+  //ROOT::EnableImplicitMT();
   int n_channels = 0;
   
   gStyle->SetOptStat(0);
