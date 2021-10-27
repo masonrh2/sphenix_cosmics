@@ -47,7 +47,10 @@ Double_t fitf (Double_t *x, Double_t *par) {
   return gaussians;
 }
 
-int fit_no_pedestal (int run_num) {
+int fit_no_pedestal(int run_num) {
+  
+  ROOT::EnableImplicitMT();
+
   int n_channels = 0;
 
   gStyle->SetOptStat(0);
@@ -184,7 +187,7 @@ int fit_no_pedestal (int run_num) {
     h_alladc[i]->GetXaxis()->SetRangeUser(max_bin - 50.0, max_bin + 200.0);    
     //h_alladc[i]->GetXaxis()->SetRangeUser(1200.0, 2000.0);    
 
-    TCanvas* c1 = new TCanvas(Form("c%i", i), "", 700, 500);
+    TCanvas* c1 = new TCanvas(Form("c%i_%lu", i), "", 700, 500);
 
     Double_t means[6];
     means[0] = first_mean[i][0];

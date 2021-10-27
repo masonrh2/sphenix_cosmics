@@ -80,11 +80,16 @@ void *parallel_fit(void *ptr) {
 
     TH1D *my_hist = my_task.hist;
     int i = my_task.channel_num;
+    pthread_t my_id = pthread_self();
+
+    printf("thread %lu is working on channel %i\n", my_id, i);
 
     if (my_hist->GetEntries() < 1e2) {
       printf("***rejected channel %i for too few entries\n", i);
       continue;
     }
+
+    printf();
 
     TF1 *my_fit = new TF1(Form("f_%i", i), fitf, 1200.0, 2400.0, 14);
 
@@ -189,7 +194,7 @@ void *parallel_fit(void *ptr) {
     my_hist->GetXaxis()->SetRangeUser(max_bin - 50.0, max_bin + 200.0);    
     //my_hist->GetXaxis()->SetRangeUser(1200.0, 2000.0);    
 
-    TCanvas* c1 = new TCanvas(Form("c%i", i), "", 700, 500);
+    TCanvas* c1 = new TCanvas(Form("c%i_%lu", i, my_id), "", 700, 500);
 
     Double_t means[6];
     means[0] = first_mean[i][0];
@@ -250,7 +255,7 @@ void *parallel_fit(void *ptr) {
   return NULL;
 }
 
-void fit_no_pedestal (int run_num, int n_threads) {
+void fit_no_pedestal_multithread(int run_num, int n_threads) {
   if (n_threads < 1) {
     throw std::runtime_error("n_threads should be >= 1");
   }

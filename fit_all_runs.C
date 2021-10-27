@@ -13,7 +13,7 @@
 #include <TLine.h>
 
 #include <cmath>
-#include <stdexcept>
+#include <assert.h>
 #include <sys/stat.h>
 
 // divides to errorful arrays of numbers x + dx / y + dy and puts result in z, dz
