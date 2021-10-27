@@ -5,9 +5,16 @@
 #include <map>
 #include <algorithm>
 #include <stdexcept>
+#include <filesystem>
 
 #include <assert.h>
 #include <string.h>
+#include <sys/stat.h>
+
+#include <TSystem.h>
+#include <TFile.h>
+#include <TH1D.h>
+
 
 std::vector<std::string> split_string(std::string s, std::string delimiter) {
   size_t pos_start = 0, pos_end, delim_len = delimiter.length();
@@ -96,11 +103,65 @@ void make_dbn_mpv_map () {
 
 
   // now get mpvs
+  std::vector<std::vector<double>> mpvs(64);
+  for (auto &vec : mpvs) {
+    vec = std::vector<double>(96, -1);
+  }
 
+  const char *inDir = "./sector_data";
+  char *dir = gSystem->ExpandPathName(inDir);
+  void *dirp = gSystem->OpenDirectory(dir);
 
+  const char *entry;
+  const char *filename;
+  Int_t n = 0;
+  char const *start = "sector";
+  TFile *hist_file;
 
+  
+
+  while ((entry = (char*) gSystem->GetDirEntry(dirp))) {
+    filename = gSystem->ConcatFileName(dir, entry);
+    TFile *hist_file;
+    int sector = 0;
+    char str[64];
+    int res = sscanf(entry, "sector%i%s", &sector, str);
+    if (res == 2 && !strcmp(str, ".root") && (hist_file = TFile::Open(filename))) {
+      printf("found sector file %s ...\n", entry);
+      TH1D* data;
+      hist_file->GetObject(Form("h_run%i_block;1", sector), data);
+      if (!data) {
+        std::cerr << "  unable to get histogram" << std::endl;
+        continue;       
+      }
+      for (int i = 0; i < data->GetNcells(); i++) {
+        double content = data->GetBinContent(i);
+        int block_num = data->GetBinLowEdge(i);
+        // first check if this is data we are interested in...
+        if (block_num < 0 || block_num >= 96) {
+          std::cout << "  block " << block_num << " was out of range" << std::endl;
+          continue;
+        } else if (content <= 0 || content >= 1000) {
+          std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
+          continue;
+        }
+        //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
+        mpvs[sector - 1][block_num] = content;
+      }
+    }
+  }
 
   // and write to csv file
-  std::ofstream outfile("dbn_mpv_mp.csv");
-
+  FILE *outfile = fopen("dbn_mpv_mpv.csv", "w+");
+  fprintf(outfile, "DBN, MPV");
+  for (short sector = 0; sector < 64; sector++) {
+    for (short block = 0; block < 96; block++) {
+      std::string dbn = dbns[sector][block];
+      double mpv = mpvs[sector][block];
+      if (dbn != "" && mpv > 0) {
+        fprintf(outfile, "\n%s, %f", dbn.c_str(), mpv);
+      }
+    }
+  }
+  fclose(outfile);
 }
