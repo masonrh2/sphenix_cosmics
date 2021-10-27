@@ -73,7 +73,8 @@
       "fit_no_pedestal.C": "cpp",
       "fit_no_pedestal copy.C": "cpp",
       "hists_15750.C": "cpp",
-      "make_dbn_mpv_map.C": "cpp"
+      "make_dbn_mpv_map.C": "cpp",
+      "fit_no_pedestal_multithread.C": "cpp"
     },
     "C_Cpp.default.includePath": [
       "${default}",

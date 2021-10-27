@@ -105,7 +105,7 @@ void make_dbn_mpv_map () {
   // now get mpvs
   std::vector<std::vector<double>> mpvs(64);
   for (auto &vec : mpvs) {
-    vec = std::vector<double>(96, -1);
+    vec = std::vector<double>(96, -1.0);
   }
 
   const char *inDir = "./sector_data";
@@ -114,11 +114,7 @@ void make_dbn_mpv_map () {
 
   const char *entry;
   const char *filename;
-  Int_t n = 0;
-  char const *start = "sector";
   TFile *hist_file;
-
-  
 
   while ((entry = (char*) gSystem->GetDirEntry(dirp))) {
     filename = gSystem->ConcatFileName(dir, entry);
@@ -152,7 +148,7 @@ void make_dbn_mpv_map () {
   }
 
   // and write to csv file
-  FILE *outfile = fopen("dbn_mpv_mpv.csv", "w+");
+  FILE *outfile = fopen("dbn_mpv.csv", "w+");
   fprintf(outfile, "DBN, MPV");
   for (short sector = 0; sector < 64; sector++) {
     for (short block = 0; block < 96; block++) {
