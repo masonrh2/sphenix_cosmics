@@ -145,22 +145,20 @@ void *parallel_fit(void *ptr) {
     fitter.SetFunction(g);
     ROOT::Fit::BinData d; 
     ROOT::Fit::FillData(d, my_hist);
-    
-    fitter.
 
-    my_fit->SetParameter(0, 28.0); // par[0] = gap spacing
-    my_fit->SetParLimits(0, 18.0, 36.0);
-    my_fit->SetParameter(1, 1e4); // par[1] = first peak amplitude
-    my_fit->SetParLimits(1, 10.0, 1e6);
-    my_fit->SetParameter(2, 1500.0); // par[2] = first peak mean
-    my_fit->SetParLimits(2, 1200.0, 1800.0);
-    my_fit->SetParameter(3, 8.0); // par[3] = first peak sigma
-    my_fit->SetParLimits(3, 5.0, 10.0);
+    fitter.Config().ParSettings(0).SetValue(28.0); // par[0] = gap spacing
+    fitter.Config().ParSettings(0).SetLimits(18.0, 36.0);
+    fitter.Config().ParSettings(1).SetValue(1e4); // par[1] = first peak amplitude
+    fitter.Config().ParSettings(1).SetLimits(10.0, 1e6);
+    fitter.Config().ParSettings(2).SetValue(1500.0); // par[2] = first peak mean
+    fitter.Config().ParSettings(2).SetLimits(1200.0, 1800.0);
+    fitter.Config().ParSettings(3).SetValue(8.0); // par[3] = first peak sigma
+    fitter.Config().ParSettings(3).SetLimits(5.0, 10.0);
     for (int j = 0; j < 5; j++) {
-      my_fit->SetParameter(2*j+4, 1e4); // par[4,6,8,10,12] = other peak amplitudes
-      my_fit->SetParLimits(2*j+4, 10.0, 1e6);
-      my_fit->SetParameter(2*j+5, 8.0); // par[5,7,9,11,13] = other peak sigmas
-      my_fit->SetParLimits(2*j+5, 5.0, 10.0);
+      fitter.Config().ParSettings(2*j+4).SetValue(1e4); // par[4,6,8,10,12] = other peak amplitudes
+      fitter.Config().ParSettings(2*j+4).SetLimits(10.0, 1e6);
+      fitter.Config().ParSettings(2*j+5).SetValue(8.0); // par[5,7,9,11,13] = other peak sigmas
+      fitter.Config().ParSettings(2*j+5).SetLimits(5.0, 10.0);
     }
 
 
@@ -270,8 +268,6 @@ void *parallel_fit(void *ptr) {
         line->Draw("SAME");
       }
 
-
-
       //landau->Draw("SAME");
       //landau_ampl->Draw("SAME");
       //gaus1->Draw("SAME");
@@ -307,7 +303,7 @@ void *parallel_fit(void *ptr) {
 
     printf("thread %lu finished channel %i and gap is %f ± %f\n", my_id, i, gap_spacing[i][0], gap_spacing[i][1]);
   }
-  
+  printf("thread %lu EXITED!!!\n", pthread_self());
   return NULL;
 }
 
@@ -338,7 +334,7 @@ void fit_no_pedestal_multithread(int run_num, int n_threads) {
   TF1 *f_singlepixels[384];
 
 
-  for (int i = 0; i < 384; i++) {
+  for (int i = 0; i < 8; i++) {
     task_t t = {i, h_alladc[i]};
     tasks.push(t);
   }
@@ -363,6 +359,72 @@ void fit_no_pedestal_multithread(int run_num, int n_threads) {
 
 
   // threads complete
+
+  // now we can single-threadedly save all histograms
+  for (int i = 0; i < 8; i++) {
+    TH1D *my_hist = h_alladc[i];
+    double max_bin = my_hist->GetMaximumBin();
+
+    my_hist->GetXaxis()->SetRangeUser(max_bin - 50.0, max_bin + 200.0);    
+    //my_hist->GetXaxis()->SetRangeUser(1200.0, 2000.0);    
+
+    TCanvas* c1 = new TCanvas(Form("c%i", i), "", 700, 500);
+
+    Double_t means[6];
+    means[0] = first_mean[i][0];
+    for (int j = 1; j < 6; j++) {
+      means[j] = means[0] + j * gap_spacing[i][0];
+    }
+
+    my_hist->Draw();
+
+    gPad->SetLogy();
+    gPad->Update();
+
+    //printf("uymin %f, uymax %f\n", c1->GetUymin(), c1->GetUymax());
+
+    for (int j = 0; j < 6; j++) {
+      TLine* line = new TLine(means[j], pow(10.0, c1->GetUymin()), means[j], pow(10.0, c1->GetUymax()));
+      line->SetLineColor(kBlack);
+      line->SetLineStyle(2);
+      line->SetLineWidth(1);
+      line->Draw("SAME");
+    }
+
+
+
+    //landau->Draw("SAME");
+    //landau_ampl->Draw("SAME");
+    //gaus1->Draw("SAME");
+    //gauss1_ampl->Draw("SAME");
+    //gaus2->Draw("SAME");
+    //gaus3->Draw("SAME");
+    //gaus4->Draw("SAME");
+    //gaus5->Draw("SAME");
+
+    /*
+    Double_t yndc = 1e5;
+    TLine* p1_line = new TLine(p1, 0.0, p1, yndc);
+    p1_line->SetLineColor(kRed);
+    p1_line->SetLineStyle(2);
+    p1_line->SetLineWidth(2);
+    p1_line->Draw("SAME");
+    TLine* p2_line = new TLine(p2, 0.0, p2, yndc);
+    p2_line->SetLineColor(kRed);
+    p2_line->SetLineStyle(2);
+    p2_line->SetLineWidth(2);
+    p2_line->Draw("SAME");
+    */
+
+    /*
+    TLegend* legend = new TLegend(0.6, 0.75, 0.9, 0.9);
+    legend->AddEntry(f_landaugaus, Form("SP Gap: %.3f", sp_gap), "l");
+    legend->AddEntry("", Form("ChiSqr/NDF: %.3f", chisqr_ndfs[i]));
+    legend->Draw();
+    */
+
+    c1->SaveAs(Form("%s/channel_%i.png", file_prefix, i));
+  }
 
   FILE *outfile = fopen(Form("%s/no_pedestal_params.csv", file_prefix), "w+");
   fprintf(outfile, "channel, gap spacing, gap spacing err, 1st peak amplitude, 1st peak amplitude err, 1st peak mean, 1st peak mean err, 1st peak sigma, 1st peak sigma err, 2nd peak amplitudes, 2nd peak amplitudes err, 2nd peak sigmas, 2nd peak sigmas err, 3rd peak amplitudes, 3rd peak amplitudes err, 3rd peak sigmas, 3rd peak sigmas err, 4th peak amplitudes, 4th peak amplitudes err, 4th peak sigmas, 4th peak sigmas err, 5th peak amplitudes, 5th peak amplitudes err, 5th peak sigmas, 5th peak sigmas err, 6th peak amplitudes, 6th peak amplitudes err, 6th peak sigmas, 6th peak sigmas err");
