@@ -329,7 +329,7 @@ void fit_no_pedestal(int run_num) {
     block_gaps_err[i] /= 4;
   }
   TGraphErrors *gap_graph = new TGraphErrors(96, blocks, block_gaps, blocks_err, block_gaps_err);
-  gap_graph->SetTitle(Form("Run %i Single Pixel Gaps (No Pedestal)", run_num));
+  gap_graph->SetTitle(Form("Run %i Single Pixel Gaps (No Pedestal Sub.)", run_num));
   gap_graph->GetXaxis()->SetTitle("Block");
   gap_graph->GetYaxis()->SetTitle("Single Pixel Gap");
   gap_graph->GetXaxis()->SetRangeUser(0.0, 96.0);
@@ -363,7 +363,7 @@ void fit_no_pedestal(int run_num) {
     gap_diffs_err[i] /= 4;
   }
   TGraphErrors *gap_diff_graph = new TGraphErrors(96, blocks, gap_diffs, blocks_err, gap_diffs_err);
-  gap_diff_graph->SetTitle(Form("Run %i First Gap - Other Gaps (No Pedestal)", run_num));
+  gap_diff_graph->SetTitle(Form("Run %i First Gap - Other Gaps (No Pedestal Sub.)", run_num));
   gap_diff_graph->GetXaxis()->SetTitle("Block");
   gap_diff_graph->GetYaxis()->SetTitle("First Gap - Other Gaps");
   gap_diff_graph->GetXaxis()->SetRangeUser(0.0, 96.0);
@@ -401,7 +401,7 @@ void fit_no_pedestal(int run_num) {
     peak_ratios_err[i] /= 4;
   }
   TGraphErrors *peak_ratio_graph = new TGraphErrors(96, blocks, peak_ratios, blocks_err, peak_ratios_err);
-  peak_ratio_graph->SetTitle(Form("Run %i 1st Peak / 2nd Peak (No Pedestal)", run_num));
+  peak_ratio_graph->SetTitle(Form("Run %i 1st Peak / 2nd Peak (No Pedestal Sub.)", run_num));
   peak_ratio_graph->GetXaxis()->SetTitle("Block");
   peak_ratio_graph->GetYaxis()->SetTitle("1st Peak / 2nd Peak");
   peak_ratio_graph->GetXaxis()->SetRangeUser(0.0, 96.0);
@@ -437,13 +437,13 @@ void fit_no_pedestal(int run_num) {
     }
   }
   TGraphErrors *chi2_block_graph = new TGraphErrors(96, blocks, chi2_block, blocks_err, chi2_block_err);
-  chi2_block_graph->SetTitle(Form("Run %i Chi2/NDF (No Pedestal)", run_num));
+  chi2_block_graph->SetTitle(Form("Run %i Chi2/NDF (No Pedestal Sub.)", run_num));
   chi2_block_graph->GetXaxis()->SetTitle("Block");
   chi2_block_graph->GetYaxis()->SetTitle("Chi2/NDF");
   chi2_block_graph->GetXaxis()->SetRangeUser(0.0, 96.0);
   chi2_block_graph->SetMarkerStyle(21);
   chi2_block_graph->SetMarkerColor(kBlue);
-  chi2_block_graph->GetYaxis()->SetRangeUser(0.0, max_chi2 * 1.2);
+  chi2_block_graph->GetYaxis()->SetRangeUser(0.0, 50.0);
   TCanvas *c5 = new TCanvas("c5", "", 700, 500);
   chi2_block_graph->Draw("AP");
   gPad->Update();
@@ -456,6 +456,22 @@ void fit_no_pedestal(int run_num) {
   }
   c5->SetGridy();
   c5->SaveAs(Form("%s/chi2_block.png", file_prefix));
+
+  // plot ratio as a function of chi2
+  TGraphErrors *ratio_by_chi2_graph = new TGraphErrors(96, chi2_block, peak_ratios, chi2_block_err, peak_ratios_err);
+  ratio_by_chi2_graph->SetTitle(Form("Run %i 1st Peak / 2nd Peak by Chi2/NDF (No Pedestal Sub.)", run_num));
+  ratio_by_chi2_graph->GetXaxis()->SetTitle("Chi2/NDF");
+  ratio_by_chi2_graph->GetYaxis()->SetTitle("1st Peak / 2nd Peak");
+  ratio_by_chi2_graph->GetXaxis()->SetLimits(0.0, 50.0);
+  ratio_by_chi2_graph->SetMarkerStyle(33);
+  ratio_by_chi2_graph->SetMarkerSize(1.0);
+  ratio_by_chi2_graph->SetMarkerColor(kBlue);
+  ratio_by_chi2_graph->GetYaxis()->SetRangeUser(0.0, 3.0);
+  TCanvas *c6 = new TCanvas("c6", "", 700, 500);
+  ratio_by_chi2_graph->Draw("AP");
+  gPad->Update();
+  c6->SetGridy();
+  c6->SaveAs(Form("%s/ratio_by_chi2.png", file_prefix));
 
   int n_conv = 0;
   printf("<-- THESE FITS CONVERGED -->\n");
