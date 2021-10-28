@@ -20,6 +20,7 @@
 
 #define RUN_NUM 16945
 #define SAVE_PLOTS true
+#define BOUND_TOL 0.01
 
 // TODO: multithreading
 
@@ -48,6 +49,17 @@ Double_t fitf (Double_t *x, Double_t *par) {
 
   return gaussians;
 }
+
+Double_t first_gap_initial_guess = 22.0;
+Double_t first_gap_bounds[2] = {18.0, 32.0};
+Double_t other_gap_initial_guess = 30.0;
+Double_t other_gap_bounds[2] = {20.0, 36.0};
+Double_t first_two_peaks_initial_guess = 1e4;
+Double_t first_two_peaks_bounds[2] = {1e3, 1e5};
+Double_t other_peaks_initial_guess = 1e3;
+Double_t other_peaks_bounds[2] = {10, 1e5};
+Double_t sigma_initial_guess = 8.0;
+Double_t sigma_bounds[2] = {2.0, 20.0};
 
 void fit_no_pedestal(int run_num) {
   ROOT::EnableImplicitMT();
@@ -78,6 +90,7 @@ void fit_no_pedestal(int run_num) {
   Double_t other_ampl[384][5][2];
   Double_t other_sigma[384][5][2];
 
+
   bool fit_success[384] = {false};
 
   for (int i = 0; i < 384; i++) {
@@ -106,29 +119,28 @@ void fit_no_pedestal(int run_num) {
 
     f_singlepixels[i] = new TF1(Form("f_%i", i), fitf, left, right, 15);
 
-    f_singlepixels[i]->SetParameter(0, 22.0);
-    f_singlepixels[i]->SetParLimits(0, 18.0, 26.0);
-    f_singlepixels[i]->SetParameter(1, 28.0);
-    f_singlepixels[i]->SetParLimits(1, 24.0, 32.0);
-    f_singlepixels[i]->SetParameter(2, 1e4);
-    f_singlepixels[i]->SetParLimits(2, 1e3, 1e5);
+    f_singlepixels[i]->SetParameter(0, first_gap_initial_guess);
+    f_singlepixels[i]->SetParLimits(0, first_gap_bounds[0], first_gap_bounds[1]);
+    f_singlepixels[i]->SetParameter(1, other_gap_initial_guess);
+    f_singlepixels[i]->SetParLimits(1, other_gap_bounds[0], other_gap_bounds[1]);
+    f_singlepixels[i]->SetParameter(2, first_two_peaks_initial_guess);
+    f_singlepixels[i]->SetParLimits(2, first_two_peaks_bounds[0], first_two_peaks_bounds[1]);
     f_singlepixels[i]->SetParameter(3, mean_guesses[0]);
     f_singlepixels[i]->SetParLimits(3, mean_guesses[0] - 5, mean_guesses[0] + 5);
-    f_singlepixels[i]->SetParameter(4, 8.0);
-    f_singlepixels[i]->SetParLimits(4, 5.0, 20.0);
+    f_singlepixels[i]->SetParameter(4, sigma_initial_guess);
+    f_singlepixels[i]->SetParLimits(4, sigma_bounds[0], sigma_bounds[1]);
     
-    f_singlepixels[i]->SetParameter(5, 1e4);
-    f_singlepixels[i]->SetParLimits(5, 1e3, 1e5);
-    f_singlepixels[i]->SetParameter(6, 8.0);
-    f_singlepixels[i]->SetParLimits(6, 5.0, 20.0);
+    f_singlepixels[i]->SetParameter(5, first_two_peaks_initial_guess);
+    f_singlepixels[i]->SetParLimits(5, first_two_peaks_bounds[0], first_two_peaks_bounds[1]);
+    f_singlepixels[i]->SetParameter(6, sigma_initial_guess);
+    f_singlepixels[i]->SetParLimits(6, sigma_bounds[0], sigma_bounds[1]);
     for (int j = 1; j < 5; j++) {
-      f_singlepixels[i]->SetParameter(2*j+5, 1e4);
-      f_singlepixels[i]->SetParLimits(2*j+5, 10.0, 1e6);
-      f_singlepixels[i]->SetParameter(2*j+6, 8.0);
-      f_singlepixels[i]->SetParLimits(2*j+6, 5.0, 20.0);
+      f_singlepixels[i]->SetParameter(2*j+5, other_peaks_initial_guess);
+      f_singlepixels[i]->SetParLimits(2*j+5, other_peaks_bounds[0], other_peaks_bounds[1]);
+      f_singlepixels[i]->SetParameter(2*j+6, sigma_initial_guess);
+      f_singlepixels[i]->SetParLimits(2*j+6, sigma_bounds[0], sigma_bounds[1]);
     }
 
-    
     f_singlepixels[i]->SetLineWidth(2);
 
     TFitResultPtr sp_fit = h_alladc[i]->Fit(f_singlepixels[i], "Q S L M", "", left, right);
@@ -156,6 +168,58 @@ void fit_no_pedestal(int run_num) {
       other_ampl[i][j][1] = sp_fit->ParError(2*j+5);
       other_sigma[i][j][0] = sp_fit->Parameter(2*j+6);
       other_sigma[i][j][1] = sp_fit->ParError(2*j+6);
+    }
+
+    // gaps
+    if (first_gap[i][0] - first_gap_bounds[0] < BOUND_TOL) {
+      printf("***channel %i: first gap (%f) at lower bound!\n", i, first_gap[i][0]);
+    } else if (first_gap_bounds[1] - first_gap[i][0] < BOUND_TOL) {
+      printf("***channel %i: first gap (%f) at upper bound!\n", i, first_gap[i][0]);
+    }
+    if (other_gaps[i][0] - other_gap_bounds[0] < BOUND_TOL) {
+      printf("***channel %i: other gaps (%f) at lower bound!\n", i, other_gaps[i][0]);
+    } else if (other_gap_bounds[1] - other_gaps[i][0] < BOUND_TOL) {
+      printf("***channel %i: other gaps (%f) at upper bound!\n", i, other_gaps[i][0]);
+    }
+    // first peak
+    if (first_ampl[i][0] - first_two_peaks_bounds[0] < BOUND_TOL) {
+      printf("***channel %i: first ampl (%f) at lower bound!\n", i, first_ampl[i][0]);
+    } else if (first_two_peaks_bounds[1] - first_ampl[i][0] < BOUND_TOL) {
+      printf("***channel %i: first ampl (%f) at upper bound!\n", i, first_ampl[i][0]);
+    }
+    if (first_mean[i][0] - left < BOUND_TOL) {
+      printf("***channel %i: first mean (%f) at lower bound!\n", i, first_mean[i][0]);
+    } else if (right - first_mean[i][0] < BOUND_TOL) {
+      printf("***channel %i: first mean (%f) at upper bound!\n", i, first_mean[i][0]);
+    }
+    if (first_sigma[i][0] - sigma_bounds[0] < BOUND_TOL) {
+      printf("***channel %i: first sigma (%f) at lower bound!\n", i, first_sigma[i][0]);
+    } else if (sigma_bounds[1] - first_sigma[i][0] < BOUND_TOL) {
+      printf("***channel %i: first sigma (%f) at upper bound!\n", i, first_sigma[i][0]);
+    }
+    // second peak
+    if (other_ampl[i][0][0] - first_two_peaks_bounds[0] < BOUND_TOL) {
+      printf("***channel %i: second ampl (%f) at lower bound!\n", i, other_ampl[i][0][0]);
+    } else if (first_two_peaks_bounds[1] - other_ampl[i][0][0] < BOUND_TOL) {
+      printf("***channel %i: second ampl (%f) at upper bound!\n", i, other_ampl[i][0][0]);
+    }
+    if (other_sigma[i][0][0] - sigma_bounds[0] < BOUND_TOL) {
+      printf("***channel %i: second sigma (%f) at lower bound!\n", i, other_sigma[i][0][0]);
+    } else if (sigma_bounds[1] - other_sigma[i][0][0] < BOUND_TOL) {
+      printf("***channel %i: second sigma (%f) at upper bound!\n", i, other_sigma[i][0][0]);
+    }
+    // other peaks
+    for (int j = 1; j < 5; j++) {
+      if (other_ampl[i][j][0] - other_peaks_bounds[0] < BOUND_TOL) {
+        printf("***channel %i: %ith ampl (%f) at lower bound!\n", i, j+2, other_ampl[i][j][0]);
+      } else if (other_peaks_bounds[1] - other_ampl[i][j][0] < BOUND_TOL) {
+        printf("***channel %i: %ith ampl (%f) at upper bound!\n", i, j+2, other_ampl[i][j][0]);
+      }
+      if (other_sigma[i][j][0] - sigma_bounds[0] < BOUND_TOL) {
+        printf("***channel %i: %ith sigma (%f) at lower bound!\n", i, j+2, other_sigma[i][j][0]);
+      } else if (sigma_bounds[1] - other_sigma[i][j][0] < BOUND_TOL) {
+        //printf("***channel %i: %ith sigma (%f) at upper bound!\n", i, j+2, other_sigma[i][j][0]);
+      }
     }
     
     Double_t gaus_ampl[6];
@@ -318,6 +382,80 @@ void fit_no_pedestal(int run_num) {
   }
   c3->SetGridy();
   c3->SaveAs(Form("%s/gap_diffs.png", file_prefix));
+
+  // compute ratio between 1st and 2nd peak
+  Double_t peak_ratios[96];
+  for (int i = 0; i < 96; i++) {
+    peak_ratios[i] = 0.0;
+    for (int j = 0; j < 4; j++) {
+      peak_ratios[i] += first_ampl[4*i + j][0] / other_ampl[4*i + j][0][0];
+    }
+    peak_ratios[i] /= 4;
+  }
+  Double_t peak_ratios_err[96];
+  for (int i = 0; i < 96; i++) {
+    peak_ratios_err[i] = 0.0;
+    for (int j = 0; j < 4; j++) {
+      peak_ratios_err[i] += peak_ratios[i]*pow(pow(first_ampl[4*i + j][1]/first_ampl[4*i + j][0], 2.0) + pow(other_ampl[4*i + j][0][1]/other_ampl[4*i + j][0][0], 2.0), 0.5);
+    }
+    peak_ratios_err[i] /= 4;
+  }
+  TGraphErrors *peak_ratio_graph = new TGraphErrors(96, blocks, peak_ratios, blocks_err, peak_ratios_err);
+  peak_ratio_graph->SetTitle(Form("Run %i 1st Peak / 2nd Peak (No Pedestal)", run_num));
+  peak_ratio_graph->GetXaxis()->SetTitle("Block");
+  peak_ratio_graph->GetYaxis()->SetTitle("1st Peak / 2nd Peak");
+  peak_ratio_graph->GetXaxis()->SetRangeUser(0.0, 96.0);
+  peak_ratio_graph->SetMarkerStyle(21);
+  peak_ratio_graph->SetMarkerColor(kBlue);
+  peak_ratio_graph->GetYaxis()->SetRangeUser(0.0, 3.0);
+  TCanvas *c4 = new TCanvas("c4", "", 700, 500);
+  peak_ratio_graph->Draw("AP");
+  gPad->Update();
+  for (int j = 1; j < 6; j++) {
+    TLine* line = new TLine(j*16, c4->GetUymin(), j*16, c4->GetUymax());
+    line->SetLineColor(kBlack);
+    line->SetLineStyle(2);
+    line->SetLineWidth(1);
+    line->Draw("SAME");
+  }
+  c4->SetGridy();
+  c4->SaveAs(Form("%s/peak_ratios.png", file_prefix));
+
+  // compute ratio between 1st and 2nd peak
+  Double_t chi2_block[96];
+  Double_t chi2_block_err[96];
+  Double_t max_chi2 = 0.0;
+  for (int i = 0; i < 96; i++) {
+    chi2_block[i] = 0.0;
+    chi2_block_err[i] = 0.0;
+    for (int j = 0; j < 4; j++) {
+      chi2_block[i] += f_singlepixels[4*i + j]->GetChisquare() / f_singlepixels[4*i + j]->GetNDF();
+    }
+    chi2_block[i] /= 4;
+    if (chi2_block[i] > max_chi2) {
+      max_chi2 = chi2_block[i];
+    }
+  }
+  TGraphErrors *chi2_block_graph = new TGraphErrors(96, blocks, chi2_block, blocks_err, chi2_block_err);
+  chi2_block_graph->SetTitle(Form("Run %i Chi2/NDF (No Pedestal)", run_num));
+  chi2_block_graph->GetXaxis()->SetTitle("Block");
+  chi2_block_graph->GetYaxis()->SetTitle("Chi2/NDF");
+  chi2_block_graph->GetXaxis()->SetRangeUser(0.0, 96.0);
+  chi2_block_graph->SetMarkerStyle(21);
+  chi2_block_graph->SetMarkerColor(kBlue);
+  chi2_block_graph->GetYaxis()->SetRangeUser(0.0, max_chi2 * 1.2);
+  TCanvas *c5 = new TCanvas("c5", "", 700, 500);
+  chi2_block_graph->Draw("AP");
+  gPad->Update();
+  for (int j = 1; j < 6; j++) {
+    TLine* line = new TLine(j*16, c5->GetUymin(), j*16, c5->GetUymax());
+    line->SetLineColor(kBlack);
+    line->SetLineStyle(2);
+    line->SetLineWidth(1);
+    line->Draw("SAME");
+  }
+  c5->SetGridy();
+  c5->SaveAs(Form("%s/chi2_block.png", file_prefix));
 
   int n_conv = 0;
   printf("<-- THESE FITS CONVERGED -->\n");
