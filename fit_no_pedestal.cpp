@@ -131,7 +131,7 @@ void fit_no_pedestal(int run_num) {
     
     f_singlepixels[i]->SetLineWidth(2);
 
-    TFitResultPtr sp_fit = h_alladc[i]->Fit(f_singlepixels[i], "Q S", "", left, right);
+    TFitResultPtr sp_fit = h_alladc[i]->Fit(f_singlepixels[i], "Q S L M", "", left, right);
     if (sp_fit->IsEmpty()) {
       printf("channel %i: fit result empty!\n", i);
       success = false;
@@ -243,6 +243,7 @@ void fit_no_pedestal(int run_num) {
       fprintf(outfile, ",%f,%f,%f,%f", other_ampl[i][j][0], other_ampl[i][j][1], other_sigma[i][j][0], other_sigma[i][j][1]);
     }
   }
+  
   fclose(outfile);
 
   // compute block gaps
@@ -284,8 +285,21 @@ void fit_no_pedestal(int run_num) {
   }
   c2->SaveAs(Form("%s/gaps.png", file_prefix));
 
-  
-
+  int n_conv = 0;
+  printf("<-- THESE FITS CONVERGED -->\n");
+  for (int i = 0; i < 384; i++) {
+    if (fit_success[i]) {
+      printf("channel %3i: gap %2.2f ± %3.2f, ratio %4.3f, chi2 %8.2f\n", i, other_gaps[i][0], other_gaps[i][1], first_ampl[i][0]/other_ampl[i][0][0], f_singlepixels[i]->GetChisquare()/f_singlepixels[i]->GetNDF()); 
+      n_conv++;
+    }
+  }
+  printf("<-- THESE FITS DO NOT CONVERGE -->\n");
+  for (int i = 0; i < 384; i++) {
+    if (!fit_success[i]) {
+      printf("channel %3i: gap %2.2f ± %3.2f, ratio %4.3f, chi2 %8.2f\n", i, other_gaps[i][0], other_gaps[i][1], first_ampl[i][0]/other_ampl[i][0][0], f_singlepixels[i]->GetChisquare()/f_singlepixels[i]->GetNDF()); 
+    }
+  }
+  printf("%i/384 fits converged!\n", n_conv);
   //printf("max chisqr_ndf: %f (channel %i); min chisqr_ndf: %f (channel %i)\n", max_chisqr_ndf, max_chisqr_idx, min_chisqr_ndf, min_chisqr_idx);
 
   /*
