@@ -141,15 +141,36 @@ void *parallel_fit(void *ptr) {
 
     ROOT::Fit::Fitter fitter;
     six_gauss g;
-    fitter.Config().SetMinimizer("Minuit2");
+    fitter.Config().SetMinimizer("GSLMultiMin");
     fitter.SetFunction(g);
     ROOT::Fit::BinData d; 
     ROOT::Fit::FillData(d, my_hist);
-    //fitter.Config().Set
+    
+    fitter.
+
+    my_fit->SetParameter(0, 28.0); // par[0] = gap spacing
+    my_fit->SetParLimits(0, 18.0, 36.0);
+    my_fit->SetParameter(1, 1e4); // par[1] = first peak amplitude
+    my_fit->SetParLimits(1, 10.0, 1e6);
+    my_fit->SetParameter(2, 1500.0); // par[2] = first peak mean
+    my_fit->SetParLimits(2, 1200.0, 1800.0);
+    my_fit->SetParameter(3, 8.0); // par[3] = first peak sigma
+    my_fit->SetParLimits(3, 5.0, 10.0);
+    for (int j = 0; j < 5; j++) {
+      my_fit->SetParameter(2*j+4, 1e4); // par[4,6,8,10,12] = other peak amplitudes
+      my_fit->SetParLimits(2*j+4, 10.0, 1e6);
+      my_fit->SetParameter(2*j+5, 8.0); // par[5,7,9,11,13] = other peak sigmas
+      my_fit->SetParLimits(2*j+5, 5.0, 10.0);
+    }
+
+
+
     bool sp_fit = fitter.Fit(d);
     if (!sp_fit) {
       printf("no fit result!\n");
     }
+
+    printf("thread %lu fitted channel %i \n", my_id, i);
 
     gap_spacing[i][0] = fitter.Result().Parameter(0); //par[0] = gap spacing
     gap_spacing[i][1] = fitter.Result().ParError(0); //par[0] = gap spacing
@@ -166,7 +187,9 @@ void *parallel_fit(void *ptr) {
       other_sigma[i][j][1] = fitter.Result().ParError(2*j+5);
     }
 
+    printf("thread %lu saved fit params for channel %i \n", my_id, i);
 
+    
 
     /*
     TF1 *landau = new TF1("landau", "landau", 0.0, 200.0);
@@ -282,7 +305,7 @@ void *parallel_fit(void *ptr) {
       c1->SaveAs(Form("%s/channel_%i.png", file_prefix, i));
     }
 
-    printf("thread %lu finished channel %i and gap is %f ± %f\n", my_id, i, gap_spacing[i][0], gap_spacing[i][1]); 
+    printf("thread %lu finished channel %i and gap is %f ± %f\n", my_id, i, gap_spacing[i][0], gap_spacing[i][1]);
   }
   
   return NULL;
@@ -292,7 +315,7 @@ void fit_no_pedestal_multithread(int run_num, int n_threads) {
   if (n_threads < 1) {
     throw std::runtime_error("n_threads should be >= 1");
   }
-  //ROOT::EnableThreadSafety();
+  ROOT::EnableThreadSafety();
   //ROOT::EnableImplicitMT();
   int n_channels = 0;
   
