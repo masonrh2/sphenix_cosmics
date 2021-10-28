@@ -263,8 +263,6 @@ void fit_no_pedestal(int run_num) {
     block_gaps[i] /= 4;
     block_gaps_err[i] /= 4;
   }
-  
-
   TGraphErrors *gap_graph = new TGraphErrors(96, blocks, block_gaps, blocks_err, block_gaps_err);
   gap_graph->SetTitle(Form("Run %i Single Pixel Gaps (No Pedestal)", run_num));
   gap_graph->GetXaxis()->SetTitle("Block");
@@ -283,7 +281,42 @@ void fit_no_pedestal(int run_num) {
     line->SetLineWidth(1);
     line->Draw("SAME");
   }
+  c2->SetGridy();
   c2->SaveAs(Form("%s/gaps.png", file_prefix));
+
+  // compute difference between first gap and other gaps
+  Double_t gap_diffs[96];
+  Double_t gap_diffs_err[96];
+  for (int i = 0; i < 96; i++) {
+    gap_diffs[i] = 0.0;
+    gap_diffs_err[i] = 0.0;
+    for (int j = 0; j < 4; j++) {
+      gap_diffs[i] += (first_gap[4*i + j][0] - other_gaps[4*i + j][0]);
+      gap_diffs_err[i] += first_gap[4*i + j][1] + other_gaps[4*i + j][1];
+    }
+    gap_diffs[i] /= 4;
+    gap_diffs_err[i] /= 4;
+  }
+  TGraphErrors *gap_diff_graph = new TGraphErrors(96, blocks, gap_diffs, blocks_err, gap_diffs_err);
+  gap_diff_graph->SetTitle(Form("Run %i First Gap - Other Gaps (No Pedestal)", run_num));
+  gap_diff_graph->GetXaxis()->SetTitle("Block");
+  gap_diff_graph->GetYaxis()->SetTitle("First Gap - Other Gaps");
+  gap_diff_graph->GetXaxis()->SetRangeUser(0.0, 96.0);
+  gap_diff_graph->SetMarkerStyle(21);
+  gap_diff_graph->SetMarkerColor(kBlue);
+  gap_diff_graph->GetYaxis()->SetRangeUser(-20.0, 20.0);
+  TCanvas *c3 = new TCanvas("c3", "", 700, 500);
+  gap_diff_graph->Draw("AP");
+  gPad->Update();
+  for (int j = 1; j < 6; j++) {
+    TLine* line = new TLine(j*16, c3->GetUymin(), j*16, c3->GetUymax());
+    line->SetLineColor(kBlack);
+    line->SetLineStyle(2);
+    line->SetLineWidth(1);
+    line->Draw("SAME");
+  }
+  c3->SetGridy();
+  c3->SaveAs(Form("%s/gap_diffs.png", file_prefix));
 
   int n_conv = 0;
   printf("<-- THESE FITS CONVERGED -->\n");
