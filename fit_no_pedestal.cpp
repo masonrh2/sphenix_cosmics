@@ -185,7 +185,7 @@ void fit_no_pedestal(int run_num) {
       gPad->Update();
 
       
-
+      /*
       for (int j = 0; j < 6; j++) {
         TLine* line = new TLine(mean_guesses[j], pow(10.0, c1->GetUymin()), mean_guesses[j], pow(10.0, c1->GetUymax()));
         line->SetLineColor(kBlue);
@@ -193,6 +193,7 @@ void fit_no_pedestal(int run_num) {
         line->SetLineWidth(1);
         line->Draw("SAME");
       }
+      */
 
       Double_t fit_means[6];
       fit_means[0] = first_mean[i][0];
