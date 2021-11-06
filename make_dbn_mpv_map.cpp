@@ -15,6 +15,14 @@
 #include <TFile.h>
 #include <TH1D.h>
 
+std::vector<std::pair<int, int>> new_sector_runs = {
+  {20, 16163},
+  {21, 16231},
+  {22, 16366},
+  {23, 16720},
+  {24, 16535},
+  {25, 17063}
+};
 
 std::vector<std::string> split_string(std::string s, std::string delimiter) {
   size_t pos_start = 0, pos_end, delim_len = delimiter.length();
@@ -116,6 +124,7 @@ void make_dbn_mpv_map () {
   const char *filename;
   TFile *hist_file;
 
+  // do tim's old sector data
   while ((entry = (char*) gSystem->GetDirEntry(dirp))) {
     filename = gSystem->ConcatFileName(dir, entry);
     TFile *hist_file;
@@ -144,6 +153,43 @@ void make_dbn_mpv_map () {
         //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
         mpvs[sector - 1][block_num] = content;
       }
+    }
+  }
+
+  // do new sectors from runs
+  const char *run_inDir = "./all_runs";
+  char *run_dir = gSystem->ExpandPathName(run_inDir);
+  char run_filename[32];
+  for (std::pair<int, int> p : new_sector_runs) {
+    int sector = p.first;
+    int run_num = p.second;
+    sprintf(run_filename, "qa_output_000%i/histograms.root", run_num);
+    filename = gSystem->ConcatFileName(run_dir, run_filename);
+    TFile *hist_file;
+    if ((hist_file = TFile::Open(filename))) {
+      printf("found sector file %d ...\n", sector);
+      TH1D* data;
+      hist_file->GetObject("h_allblocks;1", data);
+      if (!data) {
+        std::cerr << "  unable to get histogram" << std::endl;
+        continue;       
+      }
+      for (int i = 0; i < data->GetNcells(); i++) {
+        double content = data->GetBinContent(i);
+        int block_num = data->GetBinLowEdge(i);
+        // first check if this is data we are interested in...
+        if (block_num < 0 || block_num >= 96) {
+          std::cout << "  block " << block_num << " was out of range" << std::endl;
+          continue;
+        } else if (content <= 0 || content >= 1000) {
+          std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
+          continue;
+        }
+        //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
+        mpvs[sector - 1][block_num] = content;
+      }
+    } else {
+      printf("FAILED to find sector %d file (%s)\n", sector, filename);
     }
   }
 
