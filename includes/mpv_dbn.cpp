@@ -101,6 +101,9 @@ std::vector<std::vector<double>> get_mpvs() {
             if (DEBUG) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
           }
           //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
+          if (mpvs[sector - 1][block_num - 1] != -1) {
+            throw std::runtime_error(Form("would overwrite mpv data at sector %i block %i (is there a repeated sector?)", sector, block_num));
+          }
           mpvs[sector - 1][block_num - 1] = content;
         }
       } else {
@@ -127,6 +130,9 @@ std::vector<std::vector<double>> get_mpvs() {
             if (DEBUG) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
           }
           //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
+          if (mpvs[sector - 1][block_num - 1] != -1) {
+            throw std::runtime_error(Form("would overwrite mpv data at sector %i block %i (is there a repeated sector?)", sector, block_num));
+          }
           mpvs[sector - 1][block_num - 1] = content;
         }
       } else {
@@ -147,7 +153,7 @@ void get_map() {
       double mpv = mpvs[sector][block];
       if (dbn != "" && mpv > 0) {
         if (dbn_mpv_map.find(dbn) != dbn_mpv_map.end()) {
-          throw std::runtime_error(Form("duplicate dbn: %s", dbn.c_str()));
+          throw std::runtime_error(Form("duplicate dbn: %s (sector %i block %i)", dbn.c_str(), sector + 1, block + 1));
         } else {
          dbn_mpv_map[dbn] = mpv; 
         }
