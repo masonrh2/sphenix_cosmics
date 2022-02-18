@@ -80,7 +80,9 @@
     },
     "C_Cpp.default.includePath": [
       "${default}",
-      "/home/masonrh2/root_build/include"
+      "/home/masonrh2/root_build/include",
+      "/home/masonrh2/Downloads/curlpp-0.8.1/include/",
+      "/home/masonrh2/Downloads/curl/include"
     ]
   },
   "extensions": {

@@ -137,7 +137,7 @@ std::vector<std::vector<double>> get_mpvs() {
   return mpvs;
 }
 
-void get_map() {
+std::map<std::string, double> get_map() {
   std::map<std::string, double> dbn_mpv_map;
   auto dbns = get_dbns();
   auto mpvs = get_mpvs();
@@ -154,6 +154,7 @@ void get_map() {
       }
     }
   }
+  return dbn_mpv_map;
 }
 
 void write_map_to_file() {

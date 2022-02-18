@@ -56,7 +56,7 @@ std::vector<std::pair<int, int>> new_sector_runs = {
 
 std::vector<std::vector<std::string>> get_dbns();
 std::vector<std::vector<double>> get_mpvs();
-void get_map();
+std::map<std::string, double> get_map();
 void write_map_to_file();
 
 #include "mpv_dbn.cpp"
