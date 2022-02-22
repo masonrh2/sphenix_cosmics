@@ -2,6 +2,63 @@
 
 #define DEBUG 0
 
+std::vector<std::pair<int, int>> read_physics_runs() {
+  std::vector<std::pair<int, int>> new_sector_runs(64);
+  std::fstream runs_file;
+  runs_file.open("files/physics_runs.csv", std::ios::in);
+  std::pair<int, int> *row;
+  std::string line, word;
+  int line_num = 1;
+  std::cout << "reading sector map" << std::endl;
+  while (std::getline(runs_file, line) && line_num <= 65) {
+    if (line_num == 1) {
+      line_num++;
+      continue;
+    }
+    std::stringstream s(line);
+    int sector;
+    int run;
+    if (sscanf(line.c_str(), "%i, %i", &sector, &run) != 2) {
+      throw std::runtime_error("failed to parse 'int, int' in physics_runs.csv");
+    }
+    // else we have read ints sector, run
+    new_sector_runs[line_num - 2] = std::make_pair(sector, run);
+    line_num++;
+  }
+  return new_sector_runs;
+}
+
+void get_physics_runs() {
+  std::vector<std::pair<int, int>> sector_runs = read_physics_runs();
+  for (int i = 0; i < 64; i++) {
+    int sector = sector_runs[i].first;
+    int run = sector_runs[i].second;
+    if (run > 0) {
+      // check if local folder exists
+      char *local_folder_name = Form("physics_runs/qa_output_000%05d", run);
+      if (opendir(local_folder_name)) {
+        // folder exists locally!
+        continue;
+      } else if (errno == ENOENT) {
+        // folder does not exist locally
+        char *server_folder_name = Form("/gpfs/mnt/gpfs02/sphenix/user/trinn/sPHENIX_emcal_cosmics_sector0/macros/qa_output_000%05d", run);
+        system(Form("cp %s physics_runs", server_folder_name));
+        // check if it worked...
+        if (opendir(local_folder_name)) {
+          // it worked!
+          continue;
+        } else if (errno == ENOENT) {
+          throw std::runtime_error(Form("failed to cp %s -> physics_runs", server_folder_name));
+        } else {
+          throw std::runtime_error(Form("opendir failed"));
+        }
+      } else {
+        throw std::runtime_error(Form("opendir failed"));
+      }
+    } // else we don't have the info OR it's in sector_data already
+  }
+}
+
 std::vector<std::vector<std::string>> get_dbns() {
   std::fstream sector_map_file;
   sector_map_file.open("files/Blocks database - Sectors.csv", std::ios::in);
@@ -76,7 +133,7 @@ std::vector<std::vector<double>> get_mpvs() {
 
   TFile *hist_file;
   char filename[64];
-  for (std::pair<int, int> p : new_sector_runs) {
+  for (std::pair<int, int> p : read_physics_runs()) {
     int sector = p.first;
     int run_num = p.second;
     if (run_num < 0) {
