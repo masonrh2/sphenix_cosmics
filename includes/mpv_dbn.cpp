@@ -41,7 +41,7 @@ void get_physics_runs() {
         continue;
       } else if (errno == ENOENT) {
         // folder does not exist locally
-        char *server_folder_name = Form("/gpfs/mnt/gpfs02/sphenix/user/trinn/sPHENIX_emcal_cosmics_sector0/macros/qa_output_000%05d", run);
+        char *server_folder_name = Form("/gpfs/mnt/gpfs02/sphenix/user/trinn/sPHENIX_emcal_cosmics_sector0/macros/qa_output_000%05d/", run);
         // check if server folder exists!
         if (opendir(server_folder_name)) {
           // it worked!
