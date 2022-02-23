@@ -42,6 +42,14 @@ void get_physics_runs() {
       } else if (errno == ENOENT) {
         // folder does not exist locally
         char *server_folder_name = Form("/gpfs/mnt/gpfs02/sphenix/user/trinn/sPHENIX_emcal_cosmics_sector0/macros/qa_output_000%05d", run);
+        // check if server folder exists!
+        if (opendir(server_folder_name)) {
+          // it worked!
+        } else if (errno == ENOENT) {
+          throw std::runtime_error(Form("%s does not exist!", server_folder_name));
+        } else {
+          throw std::runtime_error(Form("opendir failed"));
+        }
         system(Form("cp %s physics_runs", server_folder_name));
         // check if it worked...
         if (opendir(local_folder_name)) {
