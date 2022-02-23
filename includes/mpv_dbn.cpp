@@ -33,7 +33,6 @@ void get_physics_runs() {
   for (int i = 0; i < 64; i++) {
     int sector = sector_runs[i].first;
     int run = sector_runs[i].second;
-    /*
     if (run > 0) {
       // check if local folder exists
       char *local_folder_name = Form("physics_runs/qa_output_000%05d", run);
@@ -65,7 +64,6 @@ void get_physics_runs() {
         throw std::runtime_error(Form("opendir failed"));
       }
     } // else we don't have the info OR it's in sector_data already
-    */
   }
 }
 
