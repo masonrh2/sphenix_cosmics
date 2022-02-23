@@ -1,0 +1,232 @@
+
+
+ struct emcxy {
+   int x;
+   int y;
+ };
+
+
+void compareruns()
+{
+
+
+
+
+
+
+  int emcadc[8][8] = {
+    62,60,46,44,30,28,14,12,
+    63,61,47,45,31,29,15,13,
+    58,56,42,40,26,24,10,8,
+    59,57,43,41,27,25,11,9,
+    54,52,38,36,22,20,6,4,
+    55,53,39,37,23,21,7,5,
+    50,48,34,32,18,16,2,0,
+    51,49,35,33,19,17,3,1
+  };
+  
+  emcxy adcxy[64];
+  
+  
+  int i = 0;
+  for (int ix = 0; ix < 8; ix++ ){
+    for (int iy = 0; iy < 8; iy++ ){
+      adcxy[ emcadc[ix][iy] ].x = ix;
+      adcxy[ emcadc[ix][iy] ].y = iy;
+      i++;
+    }
+  }
+  
+  int emc_timadc[48][8];
+  
+  for (int i =0; i < 8;i++)
+    {
+      for (int j = 0 ; j < 8;j++)
+	{
+	  emc_timadc[i][j] = emcadc[i][j];
+	  emc_timadc[i+8][j] = emcadc[i][j]+64;
+	  emc_timadc[i+16][j] = emcadc[i][j]+128;
+	  emc_timadc[i+24][j] = emcadc[i][j]+192;
+	  emc_timadc[i+32][j] = emcadc[i][j]+256;
+	  emc_timadc[i+40][j] = emcadc[i][j]+320;
+	}
+    }
+  
+  int rowmap[384];
+  
+  int columnmap[384];
+  
+  for (int i = 0;i < 384;i++)
+    {
+      for (int j = 0;j < 48;j++)
+	{
+	  for (int k = 0;k < 8;k++)
+   	     {
+   	       if ( i == emc_timadc[j][k])
+   		 {
+   		   rowmap[i] = j;
+   		   columnmap[i] = k;
+   		 }
+   	     }
+   	 }
+    }
+  
+  
+  
+  int panelmap[384];
+  for (int i = 0;i < 384;i++)
+    {
+      int row =  rowmap[i];
+      if (row < 8)
+	{
+	  panelmap[i] = 0;
+	}
+      if (row > 7 && row < 16)
+	{
+	  panelmap[i] = 1;
+	}
+      if (row > 15 && row < 24)
+	{
+	  panelmap[i] = 2;
+	}
+      if (row > 23 && row < 32)
+	{
+	  panelmap[i] = 3;
+	}
+      if (row > 31 && row < 40)
+	{
+	  panelmap[i] = 4;
+	}
+      if (row > 39 && row < 48)
+	{
+	  panelmap[i] = 5;
+	}
+    }
+  
+  
+  
+
+
+   int blockmap[384];
+   for (int i =0 ; i < 384;i++)
+     {
+       int row = rowmap[i];
+       int column = columnmap[i];
+
+
+
+       int blockrow = int(row/2);
+       int blockcolumn = int(column/2);
+
+       blockmap[i] = blockcolumn + 4* blockrow;
+
+     }
+
+
+
+
+
+
+
+
+
+
+
+
+  gStyle->SetOptFit(1);
+  gStyle->SetOptStat(0);
+// gStyle->SetOptFit(1011);
+  TFile*infile1= TFile::Open("histograms.root");
+
+  TH1D* h_cosmics_1 = (TH1D*)infile1->Get("h_allchannels");
+  TH1D* h_sp_1 = (TH1D*)infile1->Get("h_sp_perchnl");
+
+
+
+  // TFile*infile2= TFile::Open("../qa_output_00017804/histograms.root");
+  // TFile*infile2= TFile::Open("../qa_output_00017899/histograms.root");
+  TFile*infile2= TFile::Open("../qa_output_00017995/histograms.root");
+
+  TH1D* h_cosmics_2 = (TH1D*)infile2->Get("h_allchannels");
+  TH1D* h_sp_2 = (TH1D*)infile2->Get("h_sp_perchnl");
+
+
+
+
+
+
+
+
+  TH2D* h_sp_2dmap = new TH2D("h_sp_2dmap","",48,0,48,8,0,8);
+
+
+
+  h_cosmics_1->Divide(h_cosmics_2);
+
+
+
+
+
+
+  TCanvas*c1 = new TCanvas("c1","",700,500);
+  h_cosmics_1->SetAxisRange(0.8,1.2,"Y");
+  h_cosmics_1->Draw();
+  // h_cosmics_1->Fit("pol0");
+
+  TH1D* h_proj = new TH1D("h_proj","",80,0.5,0.9);
+  h_proj->Sumw2();
+  for (int i =65; i <= 319;i++)
+    {
+      h_proj->Fill(h_cosmics_1->GetBinContent(i));
+    }
+
+  TCanvas*c2 = new TCanvas("c2","",500,500);
+  h_proj->Draw();
+  h_proj->Fit("gaus");
+
+
+
+  h_sp_1->Divide(h_sp_2);
+
+
+
+  for (int i = 0 ;i < 384;i++)
+    {
+      cout << i << " , " <<  rowmap[i] << " , " << columnmap[i] << endl;
+      h_sp_2dmap->SetBinContent(rowmap[i]+1,8-columnmap[i], h_sp_1->GetBinContent(i+1));
+
+    }
+
+  TCanvas*c3 = new TCanvas("c3","",700,500);
+  h_sp_1->SetAxisRange(0.8,1.2,"Y");
+  h_sp_1->Draw();
+  // h_sp_1->Fit("pol0");
+
+  TH1D* h_projsp = new TH1D("h_projsp","",80,0.8,0.9);
+  h_projsp->Sumw2();
+  for (int i =64; i <= 319;i++)
+    {
+      h_projsp->Fill(h_sp_1->GetBinContent(i));
+    }
+
+  TCanvas*c4 = new TCanvas("c4","",500,500);
+  h_projsp->Draw();
+  h_projsp->Fit("gaus");
+
+  gStyle->SetPalette(kRainBow);
+  TCanvas*ctest = new TCanvas("ctest","",1200,500);
+  h_sp_2dmap->SetAxisRange(0.8,0.9,"Z");
+  h_sp_2dmap->Draw("COLZ");
+
+
+
+  TH2D* h_corr = new TH2D("h_corr","",30,0.8,0.9,30,0.6,0.8);
+  for (int i = 1;i <=384;i++)
+    {
+      h_corr->Fill(h_sp_1->GetBinContent(i),h_cosmics_1->GetBinContent(i));
+    }
+
+  TCanvas*c5 = new TCanvas("c5","",700,500);
+  h_corr->Draw("COLZ");
+
+}
