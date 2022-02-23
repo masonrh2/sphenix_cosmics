@@ -50,7 +50,7 @@ void get_physics_runs() {
         } else {
           throw std::runtime_error(Form("opendir failed"));
         }
-        system(Form("cp %s physics_runs", server_folder_name));
+        system(Form("cp -r %s physics_runs", server_folder_name));
         // check if it worked...
         if (opendir(local_folder_name)) {
           // it worked!
