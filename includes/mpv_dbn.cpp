@@ -54,6 +54,7 @@ void get_physics_runs() {
         // check if it worked...
         if (opendir(local_folder_name)) {
           // it worked!
+          printf("got new physics fun for sector %2d", sector);
           continue;
         } else if (errno == ENOENT) {
           throw std::runtime_error(Form("failed to cp %s -> physics_runs", server_folder_name));
