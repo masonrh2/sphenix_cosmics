@@ -174,11 +174,11 @@ std::vector<std::vector<double>> get_mpvs() {
       } else {
         printf("FAILED to find sector %d file (%s)\n", sector, filename);
       }
-    } else {
+    } else if (run_num > 0) {
       // get data from the run number
-      sprintf(filename, "./all_runs/qa_output_000%i/histograms.root", run_num);
+      sprintf(filename, "physics_runs/qa_output_000%i/histograms.root", run_num);
       if ((hist_file = TFile::Open(filename))) {
-        printf("found run file for sector %i: all_runs/qa_output_000%i/histograms.root\n", sector, run_num);
+        printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
         TH1D* data;
         hist_file->GetObject("h_allblocks;1", data);
         if (!data) {
@@ -234,12 +234,17 @@ void write_map_to_file() {
   auto dbns = get_dbns();
   auto mpvs = get_mpvs();
   for (short sector = 0; sector < 64; sector++) {
+    int n_blocks = 0;
     for (short block = 0; block < 96; block++) {
       std::string dbn = dbns[sector][block];
       double mpv = mpvs[sector][block];
       if (dbn != "" && mpv > 0) {
         fprintf(outfile, "\n%s, %f", dbn.c_str(), mpv);
+        n_blocks++;
       }
+    }
+    if (n_blocks > 0) {
+      printf("sector %2d: got dbn, mpv for %2d/96 blocks\n", sector, n_blocks);
     }
   }
   fclose(outfile);
