@@ -54,7 +54,7 @@ void get_physics_runs() {
         // check if it worked...
         if (opendir(local_folder_name)) {
           // it worked!
-          printf("got new physics fun for sector %2d", sector);
+          printf("got new physics fun for sector %2d\n", sector);
           continue;
         } else if (errno == ENOENT) {
           throw std::runtime_error(Form("failed to cp %s -> physics_runs", server_folder_name));
@@ -245,7 +245,7 @@ void write_map_to_file() {
       }
     }
     if (n_blocks > 0) {
-      printf("sector %2d: got dbn, mpv for %2d/96 blocks\n", sector, n_blocks);
+      printf("sector %2d: got dbn, mpv for %2d/96 blocks\n", sector + 1, n_blocks);
     }
   }
   fclose(outfile);
