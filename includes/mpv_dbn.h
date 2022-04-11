@@ -19,6 +19,7 @@ std::vector<std::pair<int, int>> read_physics_runs();
 void get_physics_runs();
 std::vector<std::vector<std::string>> get_dbns();
 std::vector<std::vector<double>> get_mpvs();
+std::vector<std::vector<double>> get_sp_gaps();
 std::map<std::string, double> get_map();
 void write_map_to_file();
 
