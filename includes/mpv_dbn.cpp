@@ -1,9 +1,10 @@
 #include "mpv_dbn.h"
+#include <TMath.h>
 
 #define DEBUG 0
 
-std::vector<std::pair<int, int>> read_physics_runs() {
-  std::vector<std::pair<int, int>> new_sector_runs(64);
+std::map<int, int> read_physics_runs() {
+  std::map<int, int> new_sector_runs;
   std::fstream runs_file;
   runs_file.open("files/physics_runs.csv", std::ios::in);
   std::pair<int, int> *row;
@@ -22,17 +23,16 @@ std::vector<std::pair<int, int>> read_physics_runs() {
       throw std::runtime_error("failed to parse 'int, int' in physics_runs.csv");
     }
     // else we have read ints sector, run
-    new_sector_runs[line_num - 2] = std::make_pair(sector, run);
+    new_sector_runs[sector] = run;
     line_num++;
   }
   return new_sector_runs;
 }
 
 void get_physics_runs() {
-  std::vector<std::pair<int, int>> sector_runs = read_physics_runs();
-  for (int i = 0; i < 64; i++) {
-    int sector = sector_runs[i].first;
-    int run = sector_runs[i].second;
+  std::map<int, int> sector_runs = read_physics_runs();
+  for (int sector = 1; sector <= 64; sector++) {
+    int run = sector_runs[sector];
     if (run > 0) {
       // check if local folder exists
       char *local_folder_name = Form("physics_runs/qa_output_000%05d", run);
@@ -134,7 +134,7 @@ std::vector<std::vector<std::string>> get_dbns() {
   return dbns;
 }
 
-std::vector<std::vector<double>> get_mpvs() {
+std::vector<std::vector<double>> get_mpvs(bool write = false) {
   std::vector<std::vector<double>> mpvs(64);
   for (auto &vec : mpvs) {
     vec = std::vector<double>(96, -1.0);
@@ -206,7 +206,121 @@ std::vector<std::vector<double>> get_mpvs() {
       }
     }
   }
+  std::map<int, int> sector_runs = read_physics_runs();
+  if (write) {
+    FILE *mean_outfile = fopen("files/mpv_avg_ib_mean.csv", "w+");
+    FILE *sigma_outfile = fopen("files/mpv_avg_ib_sigma.csv", "w+");
+    fprintf(mean_outfile, "SECTOR, RUN, IB0, IB1, IB2, IB3, IB4, IB5");
+    fprintf(sigma_outfile, "SECTOR, RUN, IB0, IB1, IB2, IB3, IB4, IB5");
+    for (short sector = 0; sector < 64; sector++) {
+      fprintf(mean_outfile, "\n%i, %i", sector + 1, sector_runs[sector + 1]);
+      fprintf(sigma_outfile, "\n%i, %i", sector + 1, sector_runs[sector + 1]);
+      for (short ib = 0; ib < 6; ib++) {
+        std::vector<double> entries;
+        for (short block = 0; block < 16; block++) {
+          double mpv = mpvs[sector][ib*16 + block];
+          if (mpv != -1) {
+            entries.push_back(mpv);
+          }
+        }
+        if (entries.size() > 0) {
+          fprintf(mean_outfile, ", %f", TMath::Mean(entries.begin(), entries.end()));
+          fprintf(sigma_outfile, ", %f", TMath::StdDev(entries.begin(), entries.end()));
+        } else {
+          fprintf(mean_outfile, ", ");
+          fprintf(sigma_outfile, ", ");
+        }
+      }
+    }
+    fclose(mean_outfile);
+    fclose(sigma_outfile);
+  }
   return mpvs;
+}
+
+std::vector<std::vector<double>> get_sp_gaps(bool write = false) {
+  std::vector<std::vector<double>> sp_gaps(64);
+  for (auto &vec : sp_gaps) {
+    vec = std::vector<double>(96, -1.0);
+  }
+
+  TFile *hist_file;
+  char filename[64];
+  for (std::pair<int, int> p : read_physics_runs()) {
+    int sector = p.first;
+    int run_num = p.second;
+    if (run_num > 0) {
+      // get data from the run number
+      sprintf(filename, "physics_runs/qa_output_000%i/histograms.root", run_num);
+      if ((hist_file = TFile::Open(filename))) {
+        printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
+        TH1D* data;
+        hist_file->GetObject("h_sp_perchnl;1", data);
+        if (!data) {
+          std::cerr << "  unable to get sp histogram" << std::endl;
+          continue;       
+        }
+        for (int block_num = 1; block_num <= 96; block_num++) {
+          double avg_sp_gap = 0;
+          for (int i = 1; i <= 4; i++) {
+            double content = data->GetBinContent((block_num - 1)*4 + i);
+            if (content <= 0) {
+              printf("complaint at sector %i channel %i: %f\n", sector, (block_num - 1)*4 + i, content);
+            }
+            avg_sp_gap += content;
+          }
+          
+          // first check if this is data we are interested in...
+          /*
+          if (content <= 0 || content >= 1000) {
+            if (DEBUG) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
+            continue;
+          } else {
+            if (DEBUG) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
+          }
+          */
+          //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
+          if (sp_gaps[sector - 1][block_num - 1] != -1) {
+            throw std::runtime_error(Form("would overwrite mpv data at sector %i block %i (is there a repeated sector?)", sector, block_num));
+          }
+          sp_gaps[sector - 1][block_num - 1] = avg_sp_gap/4;
+        }
+      } else {
+        printf("FAILED to find run file for sector %i: qa_output_000%i/histograms.root\n", sector, run_num);
+      }
+    }
+  }
+  std::map<int, int> sector_runs = read_physics_runs();
+  if (write) {
+    FILE *mean_outfile = fopen("files/sp_gap_avg_ib_mean.csv", "w+");
+    FILE *sigma_outfile = fopen("files/sp_gap_avg_ib_sigma.csv", "w+");
+    fprintf(mean_outfile, "SECTOR, RUN, IB0, IB1, IB2, IB3, IB4, IB5");
+    fprintf(sigma_outfile, "SECTOR, RUN, IB0, IB1, IB2, IB3, IB4, IB5");
+    for (short sector = 0; sector < 64; sector++) {
+      fprintf(mean_outfile, "\n%i, %i", sector + 1, sector_runs[sector + 1]);
+      fprintf(sigma_outfile, "\n%i, %i", sector + 1, sector_runs[sector + 1]);
+      for (short ib = 0; ib < 6; ib++) {
+        std::vector<double> entries;
+        for (short block = 0; block < 16; block++) {
+          double content = sp_gaps[sector][ib*16 + block];
+          if (content > 0) {
+            entries.push_back(content);
+          }
+        }
+        if (entries.size() > 0) {
+          fprintf(mean_outfile, ", %f", TMath::Mean(entries.begin(), entries.end()));
+          fprintf(sigma_outfile, ", %f", TMath::StdDev(entries.begin(), entries.end()));
+        } else {
+          fprintf(mean_outfile, ", ");
+          fprintf(sigma_outfile, ", ");
+        }
+      }
+    }
+    fclose(mean_outfile);
+    fclose(sigma_outfile);
+  }
+
+  return sp_gaps;
 }
 
 std::map<std::string, double> get_map() {
