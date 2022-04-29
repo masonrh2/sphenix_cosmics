@@ -4,6 +4,7 @@
 #define DEBUG 0
 
 std::map<int, int> read_physics_runs() {
+  printf("READING PHYSICS RUNS\n");
   std::map<int, int> new_sector_runs;
   std::fstream runs_file;
   runs_file.open("files/physics_runs.csv", std::ios::in);
@@ -30,6 +31,7 @@ std::map<int, int> read_physics_runs() {
 }
 
 void get_physics_runs() {
+  printf("GETTING PHYSICS RUNS\n");
   std::map<int, int> sector_runs = read_physics_runs();
   for (int sector = 1; sector <= 64; sector++) {
     int run = sector_runs[sector];
@@ -69,6 +71,7 @@ void get_physics_runs() {
 }
 
 std::vector<std::vector<std::string>> get_dbns() {
+  printf("GETTING DBNS...\n");
   std::fstream sector_map_file;
   sector_map_file.open("files/Blocks database - Sectors.csv", std::ios::in);
   std::vector<std::vector<std::string>> all_data(24);
@@ -131,10 +134,23 @@ std::vector<std::vector<std::string>> get_dbns() {
       }
     }
   }
+  for (short sector = 0; sector < 64; sector++) {
+    int n_blocks = 0;
+    for (short block = 0; block < 96; block++) {
+      std::string dbn = dbns[sector][block];
+      if (dbn != "") {
+        n_blocks++;
+      }
+    }
+    if (n_blocks > 0) {
+      printf("sector %2d: got dbn for %2d/96 blocks\n", sector + 1, n_blocks);
+    }
+  }
   return dbns;
 }
 
 std::vector<std::vector<double>> get_mpvs(bool write = false) {
+  printf("GETTING MPVS...\n");
   std::vector<std::vector<double>> mpvs(64);
   for (auto &vec : mpvs) {
     vec = std::vector<double>(96, -1.0);
@@ -234,6 +250,18 @@ std::vector<std::vector<double>> get_mpvs(bool write = false) {
     }
     fclose(mean_outfile);
     fclose(sigma_outfile);
+  }
+  for (short sector = 0; sector < 64; sector++) {
+    int n_blocks = 0;
+    for (short block = 0; block < 96; block++) {
+      double mpv = mpvs[sector][block];
+      if (mpv > 0) {
+        n_blocks++;
+      }
+    }
+    if (n_blocks > 0) {
+      printf("sector %2d: got mpv for %2d/96 blocks\n", sector + 1, n_blocks);
+    }
   }
   return mpvs;
 }

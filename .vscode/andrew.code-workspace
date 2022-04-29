@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "C_Cpp.default.includePath": [
+      "${default}",
+      "/home/andrewkim999/root/include"
+    ]
+  },
+  "folders": [
+    {
+      "path": ".."
+    }
+  ]
+}
