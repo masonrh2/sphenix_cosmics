@@ -373,7 +373,7 @@ std::map<std::string, double> get_map() {
 
 void write_map_to_file() {
   FILE *outfile = fopen("files/dbn_mpv.csv", "w+");
-  fprintf(outfile, "DBN, MPV");
+  fprintf(outfile, "SECTOR, BLOCK, DBN, MPV");
   auto dbns = get_dbns();
   auto mpvs = get_mpvs();
   for (short sector = 0; sector < 64; sector++) {
@@ -382,7 +382,7 @@ void write_map_to_file() {
       std::string dbn = dbns[sector][block];
       double mpv = mpvs[sector][block];
       if (dbn != "" && mpv > 0) {
-        fprintf(outfile, "\n%s, %f", dbn.c_str(), mpv);
+        fprintf(outfile, "\n%i, %i, %s, %f", sector + 1, block + 1, dbn.c_str(), mpv);
         n_blocks++;
       }
     }
