@@ -1,7 +1,7 @@
 #include "mpv_dbn.h"
 #include <TMath.h>
 
-#define DEBUG 0
+constexpr bool debug = false;
 
 std::map<int, int> read_physics_runs() {
   printf("READING PHYSICS RUNS\n");
@@ -177,10 +177,10 @@ std::vector<std::vector<double>> get_mpvs(bool write = false) {
           double content = data->GetBinContent(block_num);
           // first check if this is data we are interested in...
           if (content <= 0 || content >= 1000) {
-            if (DEBUG) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
+            if (debug) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
             continue;
           } else {
-            if (DEBUG) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
+            if (debug) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
           }
           //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
           if (mpvs[sector - 1][block_num - 1] != -1) {
@@ -206,10 +206,10 @@ std::vector<std::vector<double>> get_mpvs(bool write = false) {
           double content = data->GetBinContent(block_num);
           // first check if this is data we are interested in...
           if (content <= 0 || content >= 1000) {
-            if (DEBUG) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
+            if (debug) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
             continue;
           } else {
-            if (DEBUG) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
+            if (debug) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
           }
           //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
           if (mpvs[sector - 1][block_num - 1] != -1) {
@@ -301,10 +301,10 @@ std::vector<std::vector<double>> get_sp_gaps(bool write = false) {
           // first check if this is data we are interested in...
           /*
           if (content <= 0 || content >= 1000) {
-            if (DEBUG) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
+            if (debug) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
             continue;
           } else {
-            if (DEBUG) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
+            if (debug) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
           }
           */
           //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
