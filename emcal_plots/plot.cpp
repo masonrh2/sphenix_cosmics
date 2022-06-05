@@ -396,3 +396,5 @@ void plot() {
     plot_helper(all_blocks, cfg);
   }
 }
+
+// TODO: consider plotting all sectors side-by-side in order of run date...
