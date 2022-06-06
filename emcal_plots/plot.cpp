@@ -173,7 +173,7 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
 
   c1->SaveAs(Form("emcal_plots/plot_colz_%s.pdf", cfg.file_name.c_str()));
   
-  gStyle->SetImageScaling(4.);
+  gStyle->SetImageScaling(2.0);
   // h->SetMinimum(0);
   
   TCanvas* c2 = new TCanvas();
