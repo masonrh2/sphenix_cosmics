@@ -176,7 +176,7 @@ std::vector<std::vector<double>> get_mpvs(bool write = false) {
         for (int block_num = 1; block_num <= 96; block_num++) {
           double content = data->GetBinContent(block_num);
           // first check if this is data we are interested in...
-          if (content <= 0 || content >= 1000) {
+          if (content <= 0 || content >= 1000) { // am I sure that these cutoffs are gucci?
             if (debug) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
             continue;
           } else {
