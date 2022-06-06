@@ -135,6 +135,9 @@ void plot_sector_and_block_labels() {
 }
 
 void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
+  gStyle->SetOptStat(0);
+  gStyle->SetLineScalePS(0.5);
+  
   TH2D* h = new TH2D("", "", 128, 0, 128, 48, 0, 48);
   TH2D* h_psr = new TH2D("", "", 128, -0.1, 0.1, 48, 0, 48);
 
@@ -231,16 +234,12 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   h->GetZaxis()->SetTitleOffset(1.2);
 
   TCanvas* c2 = new TCanvas("c2", "", 900, 500);
-  gStyle->SetOptStat(0);
-  gStyle->SetLineScalePS(0.5);
   h->SetLineColorAlpha(kBlack, 1.0);
   h->SetTitle(title.c_str());
   h->Draw("LEGO2 0");
   c2->SaveAs(Form("emcal_plots/plot_lego_%s.png", cfg.file_name.c_str()));
 
   TCanvas* c3 = new TCanvas("c3", "", 900, 500);
-  gStyle->SetOptStat(0);
-  gStyle->SetLineScalePS(0.5);
   h->SetLineColorAlpha(kBlack, 1.0);
   h->SetFillColorAlpha(kBlue, 1.0);
   h->SetTitle(title.c_str());
@@ -248,8 +247,6 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   c3->SaveAs(Form("emcal_plots/plot_cyl_%s.png", cfg.file_name.c_str()));
   
   TCanvas* c4 = new TCanvas("c4", "", 900, 500);
-  gStyle->SetOptStat(0);
-  gStyle->SetLineScalePS(0.5);
   h_psr->SetLineColorAlpha(kBlack, 1.0);
   h_psr->SetFillColorAlpha(kBlue, 1.0);
   h_psr->SetTitle(title.c_str());
@@ -261,6 +258,8 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   delete c2;
   delete c3;
   delete c4;
+
+  gStyle->SetImageScaling(1.0);
 }
 
 void plot() {
