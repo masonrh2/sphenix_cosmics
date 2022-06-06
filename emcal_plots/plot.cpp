@@ -34,63 +34,26 @@ typedef struct PlotConfig {
   double plot_min;
 } PlotConfig;
 
-void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
-  TH2D* h = new TH2D("", "", 128, 0, 128, 48, 0, 48);
-  TH2D* h_psr = new TH2D("", "", 128, -0.1, 0.1, 48, 0, 48);
-
-  double min_value = std::numeric_limits<double>::infinity();
-  for (const Block& block : all_blocks) {
-    bool is_north = block.sector % 2 == 0;
-    unsigned int x_offset = (block.block_number - 1) % 4;
-    if (!is_north) {
-      x_offset = 3 - x_offset;
-    }
-    x_offset += 4*((block.sector - 1) / 2);
-    unsigned int y_offset;
-    unsigned int y_idx = (block.block_number - 1) / 4;
-    if (is_north) {
-      y_offset = 23 - y_idx;
-    } else {
-      y_offset = 24 + y_idx;
-    }
-    std::pair<bool, double> p = cfg.get_value(block);
-    if (p.first) {
-      double value = p.second;
-      h->SetBinContent(x_offset + 1, y_offset + 1, value);
-      h_psr->SetBinContent(x_offset + 1, y_offset + 1, value);
-      if (value < min_value) {
-        min_value = value;
-      }
-      printf("set bin content for %3d, %3d = sector %2d, block_num %2d\n", x_offset, y_offset, block.sector, block.block_number);
-    } else {
-      printf("SKIPPED bin content for %3d, %3d\n", x_offset, y_offset);
-    }
+std::pair<unsigned int, unsigned int> get_plot_indices(Block block) {
+  bool is_north = block.sector % 2 == 0;
+  unsigned int x_offset = (block.block_number - 1) % 4;
+  if (!is_north) {
+    x_offset = 3 - x_offset;
   }
-  printf("min value for %s was %f\n", cfg.file_name.c_str(), min_value);
+  x_offset += 4*((block.sector - 1) / 2);
+  unsigned int y_offset;
+  unsigned int y_idx = (block.block_number - 1) / 4;
+  if (is_north) {
+    y_offset = 23 - y_idx;
+  } else {
+    y_offset = 24 + y_idx;
+  }
+  return std::make_pair(x_offset, y_offset);
+}
 
-  std::string title = Form("sPHENIX EMCAL %s;#phi [Blocks];#eta [Blocks];%s%s", cfg.title.c_str(), cfg.title.c_str(), cfg.units.c_str());
-
-  TCanvas* c1 = new TCanvas();
-  c1->SetGrid();
-  gStyle->SetOptStat(0);
-  h->SetTitle(title.c_str());
-  // h->SetMinimum(min_value);
-  h->SetMinimum(cfg.plot_min);
-  h->SetAxisRange(0, 128 - 1, "X");
-  h->SetAxisRange(0, 48 - 1, "Y");
-  // h->GetXaxis()->SetRange(0, 128);
-  // h->GetYaxis()->SetRange(0, 48);
-  h->GetXaxis()->SetNdivisions(32, false);
-  h->GetYaxis()->SetNdivisions(2, false);
-  h->GetXaxis()->SetLabelOffset(999.0);
-  h->GetYaxis()->SetLabelOffset(999.0);
-  h->GetXaxis()->SetTickLength(0);
-  h->GetYaxis()->SetTickLength(0);
-  h->Draw("COLZ0");
-
+void plot_sector_and_block_labels() {
   double sector_box_width = 3;
   double sector_box_height = 1.5;
-
   // odd sectors
   for (unsigned int i = 0; i < 32; i++) {
     double x_center = 2 + 4*i;
@@ -137,7 +100,7 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   }
 
   double label_box_width = 1;
-  double label_box_height = 0.7;
+  double label_box_height = 0.8;
 
   // south ABCD
   std::vector<std::string> south_labels = {"A", "B", "C", "D"};
@@ -169,14 +132,105 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
       text->Draw();
     }
   }
+}
 
+void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
+  TH2D* h = new TH2D("", "", 128, 0, 128, 48, 0, 48);
+  TH2D* h_psr = new TH2D("", "", 128, -0.1, 0.1, 48, 0, 48);
 
-  c1->SaveAs(Form("emcal_plots/plot_colz_%s.pdf", cfg.file_name.c_str()));
+  double min_value = std::numeric_limits<double>::infinity();
+  for (const Block& block : all_blocks) {
+    auto offsets = get_plot_indices(block);
+    unsigned int x_offset = offsets.first;
+    unsigned int y_offset = offsets.second;
+    std::pair<bool, double> p = cfg.get_value(block);
+    if (p.first) {
+      double value = p.second;
+      h->SetBinContent(x_offset + 1, y_offset + 1, value);
+      h_psr->SetBinContent(x_offset + 1, y_offset + 1, value);
+      if (value < min_value) {
+        min_value = value;
+      }
+      // printf("set bin content for %3d, %3d = sector %2d, block_num %2d\n", x_offset, y_offset, block.sector, block.block_number);
+    } else {
+      // printf("SKIPPED bin content for %3d, %3d\n", x_offset, y_offset);
+    }
+  }
+  printf("min value for %s was %f\n", cfg.file_name.c_str(), min_value);
+
+  std::string title = Form("sPHENIX EMCAL %s;#phi [Blocks];#eta [Blocks];%s%s", cfg.title.c_str(), cfg.title.c_str(), cfg.units.c_str());
+
+  TCanvas* c0 = new TCanvas("c0", "", 700, 500);
+  c0->SetRightMargin(0.125);
+  c0->SetGrid();
+  gStyle->SetOptStat(0);
+  h->SetTitle(title.c_str());
+  // h->SetMinimum(min_value);
+  h->SetMinimum(cfg.plot_min);
+  h->SetAxisRange(0, 128 - 1, "X");
+  h->SetAxisRange(0, 48 - 1, "Y");
+  // h->GetXaxis()->SetRange(0, 128);
+  // h->GetYaxis()->SetRange(0, 48);
+  h->GetXaxis()->SetNdivisions(32, false);
+  h->GetYaxis()->SetNdivisions(2, false);
+  h->GetXaxis()->SetLabelOffset(999.0);
+  h->GetYaxis()->SetLabelOffset(999.0);
+  h->GetXaxis()->SetTickLength(0);
+  h->GetYaxis()->SetTickLength(0);
+  h->Draw("COLZ0");
+  plot_sector_and_block_labels();
+  c0->SaveAs(Form("emcal_plots/plot_colz_%s.pdf", cfg.file_name.c_str()));
+
+  TCanvas* c1 = new TCanvas("c1", "", 1200, 500);
+  c1->SetRightMargin(0.125);
+  c1->SetGrid();
+  gStyle->SetOptStat(0);
+  h->SetTitle(title.c_str());
+  // h->SetMinimum(min_value);
+  h->SetMinimum(cfg.plot_min);
+  h->SetAxisRange(0, 128 - 1, "X");
+  h->SetAxisRange(0, 48 - 1, "Y");
+  // h->GetXaxis()->SetRange(0, 128);
+  // h->GetYaxis()->SetRange(0, 48);
+  h->GetXaxis()->SetNdivisions(32, false);
+  h->GetYaxis()->SetNdivisions(2, false);
+  h->GetXaxis()->SetLabelOffset(999.0);
+  h->GetYaxis()->SetLabelOffset(999.0);
+  h->GetXaxis()->SetTickLength(0);
+  h->GetYaxis()->SetTickLength(0);
+  h->Draw("COLZ0");
+
+  plot_sector_and_block_labels();
+
+  // dbns
+  unsigned int max_strlen = 0;
+  for (const Block& block : all_blocks) {
+    auto offsets = get_plot_indices(block);
+    double x_center = offsets.first + 0.5;
+    double y_center = offsets.second + 0.5;
+    TPaveText *text = new TPaveText(x_center - 2.5, y_center - 2.5, x_center + 2.5, y_center + 2.5, "NB");
+    text->SetTextFont(102);
+    text->SetTextSize(0.0035);
+    text->SetFillColorAlpha(0, 0);
+    unsigned int len = strlen(block.dbn.c_str());
+    if (len > max_strlen) {
+      max_strlen = len;
+      // printf("'%s' IS NOW THE LONGEST AT %u\n", block.dbn.c_str(), len);
+    }
+    text->AddText(Form("%s", block.dbn.c_str()));
+    text->SetTextAlign(22);
+    text->Draw();
+  }
+  // printf("MAX STRLEN IS %u\n", max_strlen);
+
+  c1->SaveAs(Form("emcal_plots/plot_colz_dbn_%s.pdf", cfg.file_name.c_str()));
   
   gStyle->SetImageScaling(2.0);
   // h->SetMinimum(0);
   
-  TCanvas* c2 = new TCanvas();
+  h->GetZaxis()->SetTitleOffset(1.2);
+
+  TCanvas* c2 = new TCanvas("c2", "", 900, 500);
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(0.5);
   h->SetLineColorAlpha(kBlack, 1.0);
@@ -184,7 +238,7 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   h->Draw("LEGO2 0");
   c2->SaveAs(Form("emcal_plots/plot_lego_%s.png", cfg.file_name.c_str()));
 
-  TCanvas* c3 = new TCanvas();
+  TCanvas* c3 = new TCanvas("c3", "", 900, 500);
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(0.5);
   h->SetLineColorAlpha(kBlack, 1.0);
@@ -193,7 +247,7 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   h->Draw("LEGO1 CYL 0");
   c3->SaveAs(Form("emcal_plots/plot_cyl_%s.png", cfg.file_name.c_str()));
   
-  TCanvas* c4 = new TCanvas();
+  TCanvas* c4 = new TCanvas("c4", "", 900, 500);
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(0.5);
   h_psr->SetLineColorAlpha(kBlack, 1.0);
@@ -201,6 +255,12 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   h_psr->SetTitle(title.c_str());
   h_psr->Draw("LEGO1 PSR 0");
   c4->SaveAs(Form("emcal_plots/plot_psr_%s.png", cfg.file_name.c_str()));
+  
+  delete c0;
+  delete c1;
+  delete c2;
+  delete c3;
+  delete c4;
 }
 
 void plot() {
@@ -232,7 +292,6 @@ void plot() {
 
     // std::getline(csvStream, s, ',');
     
-
     std::getline(csvStream, tmp, ',');
     std::istringstream(tmp) >> sector;
 
@@ -295,6 +354,9 @@ void plot() {
     }
 
 
+    // dbn.erase(std::remove(dbn.begin(), dbn.end(), '\n'), dbn.end());
+    // dbn.erase(std::remove(dbn.begin(), dbn.end(), '\r'), dbn.end());
+    // dbn.erase(std::remove(dbn.begin(), dbn.end(), ' '), dbn.end());
 
     all_blocks.push_back({sector, block_number, dbn, mpv, density, fiber_count, fiber_t1_count, fiber_t2_count, fiber_t3_count, fiber_t4_count, scint_ratio});
     line_num++;
