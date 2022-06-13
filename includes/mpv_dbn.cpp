@@ -298,7 +298,10 @@ std::vector<std::vector<double>> get_mpv_errs() {
           continue;       
         }
         for (int block_num = 1; block_num <= 96; block_num++) {
-          double err = data->GetBinError(block_num);
+          double err = 0;
+          for (int tower = 0; tower < 4; tower++) {
+            err += data->GetBinError(4*(block_num - 1) + tower + 1);
+          }
           if (mpv_errs[sector - 1][block_num - 1] != -1) {
             throw std::runtime_error(Form("would overwrite mpv_err data at sector %i block %i (is there a repeated sector?)", sector, block_num));
           }
@@ -424,9 +427,13 @@ void write_map_to_file() {
     for (short block = 0; block < 96; block++) {
       std::string dbn = dbns[sector][block];
       double mpv = mpvs[sector][block];
-      if (dbn != "" && mpv > 0) {
-        fprintf(outfile, "\n%i, %i, %s, %f", sector + 1, block + 1, dbn.c_str(), mpv);
-        n_blocks++;
+      if (dbn != "") {
+        if (mpv > 0) {
+          fprintf(outfile, "\n%i, %i, %s, %f", sector + 1, block + 1, dbn.c_str(), mpv);
+          n_blocks++;
+        } else {
+          fprintf(outfile, "\n%i, %i, %s, ", sector + 1, block + 1, dbn.c_str());
+        }
       }
     }
     if (debug) {
