@@ -15,6 +15,7 @@ typedef struct Block {
   unsigned int block_number;
   std::string dbn;
   double mpv;
+  double mpv_err;
   double density;
   double fiber_count;
   double fiber_t1_count;
@@ -273,6 +274,7 @@ void plot() {
     unsigned int block_number;
     std::string dbn;
     double mpv;
+    double mpv_err;
     double density;
     double fiber_count;
     double fiber_t1_count;
@@ -295,7 +297,18 @@ void plot() {
     std::istringstream(tmp) >> dbn;
 
     std::getline(csvStream, tmp, ',');
-    std::istringstream(tmp) >> mpv;
+    if (tmp == "") {
+      mpv = -1;
+    } else {
+      std::istringstream(tmp) >> mpv;
+    }
+
+    std::getline(csvStream, tmp, ',');
+    if (tmp == "") {
+      mpv_err = -1;
+    } else {
+      std::istringstream(tmp) >> mpv_err;
+    }
 
     std::getline(csvStream, tmp, ',');
     if (tmp == "") {
@@ -351,7 +364,8 @@ void plot() {
     // dbn.erase(std::remove(dbn.begin(), dbn.end(), '\r'), dbn.end());
     // dbn.erase(std::remove(dbn.begin(), dbn.end(), ' '), dbn.end());
 
-    all_blocks.push_back({sector, block_number, dbn, mpv, density, fiber_count, fiber_t1_count, fiber_t2_count, fiber_t3_count, fiber_t4_count, scint_ratio});
+    all_blocks.push_back({sector, block_number, dbn, mpv, mpv_err, density, fiber_count, fiber_t1_count, fiber_t2_count, fiber_t3_count, fiber_t4_count, scint_ratio});
+    // printf("sector %2d block %2d mpv %f +/- %f\n", sector, block_number, mpv, mpv_err);
     line_num++;
   }
 
@@ -382,7 +396,7 @@ void plot() {
         double value = block.density;
         return std::make_pair(value >= 0, value);
       },
-      8.5
+      8.4
     }
   };
 
@@ -390,7 +404,3 @@ void plot() {
     plot_helper(all_blocks, cfg);
   }
 }
-
-// TODO: consider plotting all sectors side-by-side in order of run date...
-// also, why ignore density, etc for block with no mpv? is this correct?
-//  is there a simple way to incorporate other blocks?...

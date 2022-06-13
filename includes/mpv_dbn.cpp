@@ -272,7 +272,7 @@ std::vector<std::vector<double>> get_mpvs(bool write_ib = false) {
  * 
  * @return std::vector<std::vector<double>> sector[block number] -> mpv error.
  */
-std::vector<std::vector<double>> get_mpv_errs() {
+std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> mpvs) {
   std::vector<std::vector<double>> mpv_errs(64);
   for (auto &vec : mpv_errs) {
     vec = std::vector<double>(96, -1.0);
@@ -293,20 +293,34 @@ std::vector<std::vector<double>> get_mpv_errs() {
         }
         TH1D* data;
         hist_file->GetObject("h_allchannels;1", data);
+        TH1D* data_b;
+        hist_file->GetObject("h_allblocks;1", data_b);
         if (!data) {
           std::cerr << "  unable to get histogram" << std::endl;
           continue;       
         }
         for (int block_num = 1; block_num <= 96; block_num++) {
           double err = 0;
+          double avg_mpv = 0;
+          int n_blocks = 0;
           for (int tower = 0; tower < 4; tower++) {
             err += data->GetBinError(4*(block_num - 1) + tower + 1);
+            // avg_mpv += data->GetBinContent(4*(block_num - 1) + tower + 1);
+            // printf("accessed bin # %3d -> %f +/- %f\n", 4*(block_num - 1) + tower + 1, data->GetBinContent(4*(block_num - 1) + tower + 1), data->GetBinError(4*(block_num - 1) + tower + 1));
+            if (data->GetBinContent(4*(block_num - 1) + tower + 1) != 0) {
+              n_blocks++;
+            }
+          }
+          if (n_blocks != 0) {
+            err /= n_blocks;
           }
           if (mpv_errs[sector - 1][block_num - 1] != -1) {
             throw std::runtime_error(Form("would overwrite mpv_err data at sector %i block %i (is there a repeated sector?)", sector, block_num));
           }
-          printf("sector %2d, block %2d, mpv_err = %f\n", sector, block_num, err);
-          mpv_errs[sector - 1][block_num - 1] = err;
+          // printf("sector %2d, block %2d, mpv_err = %f, mpv c: %f, b: %f\n", sector, block_num, err, avg_mpv/n_blocks, data_b->GetBinContent(block_num));
+          if (mpvs[sector -1][block_num -1] > 0) {
+            mpv_errs[sector - 1][block_num - 1] = err;
+          } // else we don't care what the error is
         }
       } else {
         printf("FAILED to find run file for sector %i: qa_output_000%i/histograms.root\n", sector, run_num);
@@ -419,20 +433,22 @@ std::vector<std::vector<double>> get_sp_gaps(bool write_ib = false) {
  */
 void write_map_to_file() {
   FILE *outfile = fopen("files/dbn_mpv.csv", "w+");
-  fprintf(outfile, "SECTOR, BLOCK, DBN, MPV");
+  fprintf(outfile, "sector, block, dbn, mpv, mpv_err");
   auto dbns = get_dbns();
   auto mpvs = get_mpvs();
+  auto mpv_errs = get_mpv_errs(mpvs);
   for (short sector = 0; sector < 64; sector++) {
     int n_blocks = 0;
     for (short block = 0; block < 96; block++) {
       std::string dbn = dbns[sector][block];
       double mpv = mpvs[sector][block];
+      double mpv_err = mpv_errs[sector][block];
       if (dbn != "") {
         if (mpv > 0) {
-          fprintf(outfile, "\n%i, %i, %s, %f", sector + 1, block + 1, dbn.c_str(), mpv);
+          fprintf(outfile, "\n%i, %i, %s, %f, %f", sector + 1, block + 1, dbn.c_str(), mpv, mpv_err);
           n_blocks++;
         } else {
-          fprintf(outfile, "\n%i, %i, %s, ", sector + 1, block + 1, dbn.c_str());
+          fprintf(outfile, "\n%i, %i, %s, , ", sector + 1, block + 1, dbn.c_str());
         }
       }
     }
