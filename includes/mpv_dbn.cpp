@@ -3,15 +3,20 @@
 
 constexpr bool debug = false;
 
+/**
+ * @brief Get run numbers for each sector from csv.
+
+ * NOTE: depends on files/physics_runs.csv.
+ * 
+ * @return std::map<int, int> (sector, run number).
+ */
 std::map<int, int> read_physics_runs() {
-  printf("READING PHYSICS RUNS\n");
   std::map<int, int> new_sector_runs;
   std::fstream runs_file;
   runs_file.open("files/physics_runs.csv", std::ios::in);
   std::pair<int, int> *row;
   std::string line, word;
   int line_num = 1;
-  std::cout << "reading sector map" << std::endl;
   while (std::getline(runs_file, line) && line_num <= 65) {
     if (line_num == 1) {
       line_num++;
@@ -30,8 +35,12 @@ std::map<int, int> read_physics_runs() {
   return new_sector_runs;
 }
 
+/**
+ * @brief Copy Tim's run folders that don't exist locally.
+ * 
+ * NOTE: must be run on SDCC.
+ */
 void get_physics_runs() {
-  printf("GETTING PHYSICS RUNS\n");
   std::map<int, int> sector_runs = read_physics_runs();
   for (int sector = 1; sector <= 64; sector++) {
     int run = sector_runs[sector];
@@ -70,15 +79,20 @@ void get_physics_runs() {
   }
 }
 
+/**
+ * @brief Get DBNs for each block for each sector.
+ * 
+ * NOTE: depends on files/Blocks database - Sectors.csv.
+ * 
+ * @return std::vector<std::vector<std::string>> sector[block number] -> dbn, or "" if none.
+ */
 std::vector<std::vector<std::string>> get_dbns() {
-  printf("GETTING DBNS...\n");
   std::fstream sector_map_file;
   sector_map_file.open("files/Blocks database - Sectors.csv", std::ios::in);
   std::vector<std::vector<std::string>> all_data(24);
   std::vector<std::string> *row;
   std::string line, word;
   int line_num = 1;
-  std::cout << "reading sector map" << std::endl;
   while (std::getline(sector_map_file, line) && line_num < 26) {
     if (line_num == 1) {
       line_num++;
@@ -142,15 +156,26 @@ std::vector<std::vector<std::string>> get_dbns() {
         n_blocks++;
       }
     }
-    if (n_blocks > 0) {
-      printf("sector %2d: got dbn for %2d/96 blocks\n", sector + 1, n_blocks);
+    if (debug) {
+      if (n_blocks == 96) {
+        printf("sector %2d: got dbn for all blocks!\n", sector + 1);
+      } else if (n_blocks > 0) {
+        printf("sector %2d: got dbn for %2d/96 blocks\n", sector + 1, n_blocks);
+      }
     }
   }
   return dbns;
 }
 
-std::vector<std::vector<double>> get_mpvs(bool write = false) {
-  printf("GETTING MPVS...\n");
+/**
+ * @brief Get MPVs for each block for each sector.
+ * 
+ * NOTE: rejects MPVs <= 0 and >= 1000.
+ * 
+ * @param write_ib write IB mean and sigma to csv file.
+ * @return std::vector<std::vector<double>> sector[block number] -> mpv, or -1 if none.
+ */
+std::vector<std::vector<double>> get_mpvs(bool write_ib = false) {
   std::vector<std::vector<double>> mpvs(64);
   for (auto &vec : mpvs) {
     vec = std::vector<double>(96, -1.0);
@@ -158,44 +183,17 @@ std::vector<std::vector<double>> get_mpvs(bool write = false) {
 
   TFile *hist_file;
   char filename[64];
-  for (std::pair<int, int> p : read_physics_runs()) {
+  std::map<int, int> physics_runs = read_physics_runs();
+  for (std::pair<int, int> p : physics_runs) {
     int sector = p.first;
     int run_num = p.second;
-    if (run_num < 0) {
-      // use tim's old data
-      sprintf(filename, "./sector_data/sector%i.root", sector);
-      hist_file = TFile::Open(filename);
-      if ((hist_file = TFile::Open(filename))) {
-        printf("found file for sector %i: sector_data/sector%i.root\n", sector, sector);
-        TH1D* data;
-        hist_file->GetObject(Form("h_run%i_block;1", sector), data);
-        if (!data) {
-          std::cerr << "  unable to get histogram" << std::endl;
-          continue;       
-        }
-        for (int block_num = 1; block_num <= 96; block_num++) {
-          double content = data->GetBinContent(block_num);
-          // first check if this is data we are interested in...
-          if (content <= 0 || content >= 1000) { // am I sure that these cutoffs are gucci?
-            if (debug) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
-            continue;
-          } else {
-            if (debug) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
-          }
-          //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
-          if (mpvs[sector - 1][block_num - 1] != -1) {
-            throw std::runtime_error(Form("would overwrite mpv data at sector %i block %i (is there a repeated sector?)", sector, block_num));
-          }
-          mpvs[sector - 1][block_num - 1] = content;
-        }
-      } else {
-        printf("FAILED to find sector %d file (%s)\n", sector, filename);
-      }
-    } else if (run_num > 0) {
+    if (run_num > 0) {
       // get data from the run number
-      sprintf(filename, "physics_runs/qa_output_000%i/histograms.root", run_num);
+      sprintf(filename, "physics_runs/qa_output_000%i/histograms.root ", run_num);
       if ((hist_file = TFile::Open(filename))) {
-        printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
+        if (debug) {
+          printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
+        }
         TH1D* data;
         hist_file->GetObject("h_allblocks;1", data);
         if (!data) {
@@ -209,9 +207,9 @@ std::vector<std::vector<double>> get_mpvs(bool write = false) {
             if (debug) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
             continue;
           } else {
-            if (debug) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
+            // if (debug) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
           }
-          //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
+          // std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
           if (mpvs[sector - 1][block_num - 1] != -1) {
             throw std::runtime_error(Form("would overwrite mpv data at sector %i block %i (is there a repeated sector?)", sector, block_num));
           }
@@ -222,15 +220,14 @@ std::vector<std::vector<double>> get_mpvs(bool write = false) {
       }
     }
   }
-  std::map<int, int> sector_runs = read_physics_runs();
-  if (write) {
+  if (write_ib) {
     FILE *mean_outfile = fopen("files/mpv_avg_ib_mean.csv", "w+");
     FILE *sigma_outfile = fopen("files/mpv_avg_ib_sigma.csv", "w+");
     fprintf(mean_outfile, "SECTOR, RUN, IB0, IB1, IB2, IB3, IB4, IB5");
     fprintf(sigma_outfile, "SECTOR, RUN, IB0, IB1, IB2, IB3, IB4, IB5");
     for (short sector = 0; sector < 64; sector++) {
-      fprintf(mean_outfile, "\n%i, %i", sector + 1, sector_runs[sector + 1]);
-      fprintf(sigma_outfile, "\n%i, %i", sector + 1, sector_runs[sector + 1]);
+      fprintf(mean_outfile, "\n%i, %i", sector + 1, physics_runs[sector + 1]);
+      fprintf(sigma_outfile, "\n%i, %i", sector + 1, physics_runs[sector + 1]);
       for (short ib = 0; ib < 6; ib++) {
         std::vector<double> entries;
         for (short block = 0; block < 16; block++) {
@@ -259,14 +256,86 @@ std::vector<std::vector<double>> get_mpvs(bool write = false) {
         n_blocks++;
       }
     }
-    if (n_blocks > 0) {
-      printf("sector %2d: got mpv for %2d/96 blocks\n", sector + 1, n_blocks);
+    if (debug) {
+      if (n_blocks == 96) {
+        printf("sector %2d: got mpv for all blocks!\n", sector + 1);
+      } else if (n_blocks > 0) {
+        printf("sector %2d: got mpv for %2d/96 blocks\n", sector + 1, n_blocks);
+      }
     }
   }
   return mpvs;
 }
 
-std::vector<std::vector<double>> get_sp_gaps(bool write = false) {
+/**
+ * @brief Get MPV errors for each block for each sector.
+ * 
+ * @return std::vector<std::vector<double>> sector[block number] -> mpv error.
+ */
+std::vector<std::vector<double>> get_mpv_errs() {
+  std::vector<std::vector<double>> mpv_errs(64);
+  for (auto &vec : mpv_errs) {
+    vec = std::vector<double>(96, -1.0);
+  }
+
+  TFile *hist_file;
+  char filename[64];
+  std::map<int, int> physics_runs = read_physics_runs();
+  for (std::pair<int, int> p : physics_runs) {
+    int sector = p.first;
+    int run_num = p.second;
+    if (run_num > 0) {
+      // get data from the run number
+      sprintf(filename, "physics_runs/qa_output_000%i/histograms.root ", run_num);
+      if ((hist_file = TFile::Open(filename))) {
+        if (debug) {
+          printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
+        }
+        TH1D* data;
+        hist_file->GetObject("h_allchannels;1", data);
+        if (!data) {
+          std::cerr << "  unable to get histogram" << std::endl;
+          continue;       
+        }
+        for (int block_num = 1; block_num <= 96; block_num++) {
+          double err = data->GetBinError(block_num);
+          if (mpv_errs[sector - 1][block_num - 1] != -1) {
+            throw std::runtime_error(Form("would overwrite mpv_err data at sector %i block %i (is there a repeated sector?)", sector, block_num));
+          }
+          printf("sector %2d, block %2d, mpv_err = %f\n", sector, block_num, err);
+          mpv_errs[sector - 1][block_num - 1] = err;
+        }
+      } else {
+        printf("FAILED to find run file for sector %i: qa_output_000%i/histograms.root\n", sector, run_num);
+      }
+    }
+  }
+  // for (short sector = 0; sector < 64; sector++) {
+  //   int n_blocks = 0;
+  //   for (short block = 0; block < 96; block++) {
+  //     double mpv = mpv_errs[sector][block];
+  //     if (mpv > 0) {
+  //       n_blocks++;
+  //     }
+  //   }
+  //   if (debug) {
+  //     if (n_blocks == 96) {
+  //       printf("sector %2d: got mpv_err for all blocks!\n", sector + 1);
+  //     } else if (n_blocks > 0) {
+  //       printf("sector %2d: got mpv_err for %2d/96 blocks\n", sector + 1, n_blocks);
+  //     }
+  //   }
+  // }
+  return mpv_errs;
+}
+
+/**
+ * @brief Get single pixel gaps for each block for each sector (average of block's four towers).
+ * 
+ * @param write_ib write IB mean and sigma to csv file.
+ * @return std::vector<std::vector<double>> sector[block number] -> gap.
+ */
+std::vector<std::vector<double>> get_sp_gaps(bool write_ib = false) {
   std::vector<std::vector<double>> sp_gaps(64);
   for (auto &vec : sp_gaps) {
     vec = std::vector<double>(96, -1.0);
@@ -274,14 +343,17 @@ std::vector<std::vector<double>> get_sp_gaps(bool write = false) {
 
   TFile *hist_file;
   char filename[64];
-  for (std::pair<int, int> p : read_physics_runs()) {
+  std::map<int, int> physics_runs = read_physics_runs();
+  for (std::pair<int, int> p : physics_runs) {
     int sector = p.first;
     int run_num = p.second;
     if (run_num > 0) {
       // get data from the run number
       sprintf(filename, "physics_runs/qa_output_000%i/histograms.root", run_num);
       if ((hist_file = TFile::Open(filename))) {
-        printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
+        if (debug) {
+          printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
+        }
         TH1D* data;
         hist_file->GetObject("h_sp_perchnl;1", data);
         if (!data) {
@@ -293,23 +365,12 @@ std::vector<std::vector<double>> get_sp_gaps(bool write = false) {
           for (int i = 1; i <= 4; i++) {
             double content = data->GetBinContent((block_num - 1)*4 + i);
             if (content <= 0) {
-              printf("complaint at sector %i channel %i: %f\n", sector, (block_num - 1)*4 + i, content);
+              printf("complaint at sector %i channel %i: sp_gap < 0 (%f)\n", sector, (block_num - 1)*4 + i, content);
             }
             avg_sp_gap += content;
           }
-          
-          // first check if this is data we are interested in...
-          /*
-          if (content <= 0 || content >= 1000) {
-            if (debug) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
-            continue;
-          } else {
-            if (debug) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
-          }
-          */
-          //std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
           if (sp_gaps[sector - 1][block_num - 1] != -1) {
-            throw std::runtime_error(Form("would overwrite mpv data at sector %i block %i (is there a repeated sector?)", sector, block_num));
+            throw std::runtime_error(Form("would overwrite sp_gap data at sector %i block %i (is there a repeated sector?)", sector, block_num));
           }
           sp_gaps[sector - 1][block_num - 1] = avg_sp_gap/4;
         }
@@ -318,15 +379,14 @@ std::vector<std::vector<double>> get_sp_gaps(bool write = false) {
       }
     }
   }
-  std::map<int, int> sector_runs = read_physics_runs();
-  if (write) {
+  if (write_ib) {
     FILE *mean_outfile = fopen("files/sp_gap_avg_ib_mean.csv", "w+");
     FILE *sigma_outfile = fopen("files/sp_gap_avg_ib_sigma.csv", "w+");
     fprintf(mean_outfile, "SECTOR, RUN, IB0, IB1, IB2, IB3, IB4, IB5");
     fprintf(sigma_outfile, "SECTOR, RUN, IB0, IB1, IB2, IB3, IB4, IB5");
     for (short sector = 0; sector < 64; sector++) {
-      fprintf(mean_outfile, "\n%i, %i", sector + 1, sector_runs[sector + 1]);
-      fprintf(sigma_outfile, "\n%i, %i", sector + 1, sector_runs[sector + 1]);
+      fprintf(mean_outfile, "\n%i, %i", sector + 1, physics_runs[sector + 1]);
+      fprintf(sigma_outfile, "\n%i, %i", sector + 1, physics_runs[sector + 1]);
       for (short ib = 0; ib < 6; ib++) {
         std::vector<double> entries;
         for (short block = 0; block < 16; block++) {
@@ -351,26 +411,9 @@ std::vector<std::vector<double>> get_sp_gaps(bool write = false) {
   return sp_gaps;
 }
 
-std::map<std::string, double> get_map() {
-  std::map<std::string, double> dbn_mpv_map;
-  auto dbns = get_dbns();
-  auto mpvs = get_mpvs();
-  for (short sector = 0; sector < 64; sector++) {
-    for (short block = 0; block < 96; block++) {
-      std::string dbn = dbns[sector][block];
-      double mpv = mpvs[sector][block];
-      if (dbn != "" && mpv > 0) {
-        if (dbn_mpv_map.find(dbn) != dbn_mpv_map.end()) {
-          throw std::runtime_error(Form("duplicate dbn: %s (sector %i block %i)", dbn.c_str(), sector + 1, block + 1));
-        } else {
-         dbn_mpv_map[dbn] = mpv; 
-        }
-      }
-    }
-  }
-  return dbn_mpv_map;
-}
-
+/**
+ * @brief Write "database" to file as csv. 
+ */
 void write_map_to_file() {
   FILE *outfile = fopen("files/dbn_mpv.csv", "w+");
   fprintf(outfile, "SECTOR, BLOCK, DBN, MPV");
@@ -386,8 +429,12 @@ void write_map_to_file() {
         n_blocks++;
       }
     }
-    if (n_blocks > 0) {
-      printf("sector %2d: got dbn, mpv for %2d/96 blocks\n", sector + 1, n_blocks);
+    if (debug) {
+      if (n_blocks == 96) {
+        printf("sector %2d: got (dbn, mpv) for all blocks!\n", sector + 1);
+      } else if (n_blocks > 0) {
+        printf("sector %2d: got (dbn, mpv) for %2d/96 blocks\n", sector + 1, n_blocks);
+      }
     }
   }
   fclose(outfile);

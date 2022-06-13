@@ -215,16 +215,10 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
     text->SetTextFont(102);
     text->SetTextSize(0.0035);
     text->SetFillColorAlpha(0, 0);
-    unsigned int len = strlen(block.dbn.c_str());
-    if (len > max_strlen) {
-      max_strlen = len;
-      // printf("'%s' IS NOW THE LONGEST AT %u\n", block.dbn.c_str(), len);
-    }
     text->AddText(Form("%s", block.dbn.c_str()));
     text->SetTextAlign(22);
     text->Draw();
   }
-  // printf("MAX STRLEN IS %u\n", max_strlen);
 
   c1->SaveAs(Form("emcal_plots/plot_colz_dbn_%s.pdf", cfg.file_name.c_str()));
   
