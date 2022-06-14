@@ -10,6 +10,11 @@
 #include <TStyle.h>
 #include <TPaveText.h>
 
+#include "../includes/mpv_dbn.h"
+
+/**
+ * @brief Struct that packages all information associated with a block.
+ */
 typedef struct Block {
   unsigned int sector;
   unsigned int block_number;
@@ -27,6 +32,9 @@ typedef struct Block {
 
 typedef std::function<std::pair<bool, double>(Block)> value_getter;
 
+/**
+ * @brief Struct that packages all details of a single plot (e.g., density).
+ */
 typedef struct PlotConfig {
   std::string file_name;
   std::string title;
@@ -35,6 +43,12 @@ typedef struct PlotConfig {
   double plot_min;
 } PlotConfig;
 
+/**
+ * @brief Get the (x, y) location of a block within the EMCal plot.
+ * 
+ * @param block 
+ * @return std::pair<unsigned int, unsigned int> (x, y), zero-based.
+ */
 std::pair<unsigned int, unsigned int> get_plot_indices(Block block) {
   bool is_north = block.sector % 2 == 0;
   unsigned int x_offset = (block.block_number - 1) % 4;
@@ -52,14 +66,22 @@ std::pair<unsigned int, unsigned int> get_plot_indices(Block block) {
   return std::make_pair(x_offset, y_offset);
 }
 
-void plot_sector_and_block_labels() {
+/**
+ * @brief Plot sector numbers (1 - 64) and block type (1 - 24) onto the current canvas.
+ */
+void plot_sector_and_block_labels(bool channel_lvl = false) {
   double sector_box_width = 3;
   double sector_box_height = 1.5;
   // odd sectors
   for (unsigned int i = 0; i < 32; i++) {
     double x_center = 2 + 4*i;
     double y_center = 48 + 1.5;
-    TPaveText *text = new TPaveText(x_center - sector_box_width/2, y_center - sector_box_height/2, x_center + sector_box_width/2, y_center + sector_box_height/2, "NB");
+    TPaveText *text;
+    if (!channel_lvl) {
+      text = new TPaveText(x_center - sector_box_width/2, y_center - sector_box_height/2, x_center + sector_box_width/2, y_center + sector_box_height/2, "NB");
+    } else {
+      text = new TPaveText(2*(x_center - sector_box_width/2), 2*(y_center - sector_box_height/2), 2*(x_center + sector_box_width/2), 2*(y_center + sector_box_height/2), "NB");
+    }
     text->SetTextFont(42);
     text->SetFillColorAlpha(0, 0);
     text->AddText(Form("%d", 2*i + 1));
@@ -70,7 +92,12 @@ void plot_sector_and_block_labels() {
   for (unsigned int i = 0; i < 32; i++) {
     double x_center = 2 + 4*i;
     double y_center = -1.5;
-    TPaveText *text = new TPaveText(x_center - sector_box_width/2, y_center - sector_box_height/2, x_center + sector_box_width/2, y_center + sector_box_height/2, "NB");
+    TPaveText *text;
+    if (!channel_lvl) {
+      text = new TPaveText(x_center - sector_box_width/2, y_center - sector_box_height/2, x_center + sector_box_width/2, y_center + sector_box_height/2, "NB");
+    } else {
+      text = new TPaveText(2*(x_center - sector_box_width/2), 2*(y_center - sector_box_height/2), 2*(x_center + sector_box_width/2), 2*(y_center + sector_box_height/2), "NB");
+    }
     text->SetTextFont(42);
     text->SetFillColorAlpha(0, 0);
     text->AddText(Form("%d", 2*i + 2));
@@ -83,7 +110,13 @@ void plot_sector_and_block_labels() {
   for (unsigned int i = 0; i < 24; i++) {
     double x_center1 = -2;
     double y_center1 = 23.5 - i;
-    TPaveText *text1 = new TPaveText(x_center1 - block_box_width/2, y_center1 - block_box_height/2, x_center1 + block_box_width/2, y_center1 + block_box_height/2, "NB");
+    TPaveText *text1;
+    if (!channel_lvl) {
+      text1 = new TPaveText(x_center1 - block_box_width/2, y_center1 - block_box_height/2, x_center1 + block_box_width/2, y_center1 + block_box_height/2, "NB");
+    } else {
+      text1 = new TPaveText(2*(x_center1 - block_box_width/2), 2*(y_center1 - block_box_height/2), 2*(x_center1 + block_box_width/2), 2*(y_center1 + block_box_height/2), "NB");
+    }
+    
     text1->SetTextFont(42);
     text1->SetFillColorAlpha(0, 0);
     text1->AddText(Form("%d", i + 1));
@@ -92,7 +125,12 @@ void plot_sector_and_block_labels() {
 
     double x_center2 = -2;
     double y_center2 = 24.5 + i;
-    TPaveText *text2 = new TPaveText(x_center2 - block_box_width/2, y_center2 - block_box_height/2, x_center2 + block_box_width/2, y_center2 + block_box_height/2, "NB");
+    TPaveText *text2;
+    if (!channel_lvl) {
+      text2 = new TPaveText(x_center2 - block_box_width/2, y_center2 - block_box_height/2, x_center2 + block_box_width/2, y_center2 + block_box_height/2, "NB");
+    } else {
+      text2 = new TPaveText(2*(x_center2 - block_box_width/2), 2*(y_center2 - block_box_height/2), 2*(x_center2 + block_box_width/2), 2*(y_center2 + block_box_height/2), "NB");
+    }
     text2->SetTextFont(42);
     text2->SetFillColorAlpha(0, 0);
     text2->AddText(Form("%d", i + 1));
@@ -110,7 +148,12 @@ void plot_sector_and_block_labels() {
     for (unsigned int j = 0; j < 4; j++) {
       double x_center = x_start + j;
       double y_center = 48.5;
-      TPaveText *text = new TPaveText(x_center - label_box_width/2, y_center - label_box_height/2, x_center + label_box_width/2, y_center + label_box_height/2, "NB");
+      TPaveText *text;
+      if (!channel_lvl) {
+        text = new TPaveText(x_center - label_box_width/2, y_center - label_box_height/2, x_center + label_box_width/2, y_center + label_box_height/2, "NB");
+      } else {
+        text = new TPaveText(2*(x_center - label_box_width/2), 2*(y_center - label_box_height/2), 2*(x_center + label_box_width/2), 2*(y_center + label_box_height/2), "NB");
+      }
       text->SetTextFont(82);
       text->SetFillColorAlpha(0, 0);
       text->AddText(south_labels[j].c_str());
@@ -125,7 +168,12 @@ void plot_sector_and_block_labels() {
     for (unsigned int j = 0; j < 4; j++) {
       double x_center = x_start + j;
       double y_center = -0.5;
-      TPaveText *text = new TPaveText(x_center - label_box_width/2, y_center - label_box_height/2, x_center + label_box_width/2, y_center + label_box_height/2, "NB");
+      TPaveText *text;
+      if (!channel_lvl) {
+        text = new TPaveText(x_center - label_box_width/2, y_center - label_box_height/2, x_center + label_box_width/2, y_center + label_box_height/2, "NB");
+      } else {
+        text = new TPaveText(2*(x_center - label_box_width/2), 2*(y_center - label_box_height/2), 2*(x_center + label_box_width/2), 2*(y_center + label_box_height/2), "NB");
+      }
       text->SetTextFont(82);
       text->SetFillColorAlpha(0, 0);
       text->AddText(north_labels[j].c_str());
@@ -135,6 +183,12 @@ void plot_sector_and_block_labels() {
   }
 }
 
+/**
+ * @brief Plots EMCal plots for a single value (e.g., density).
+ * 
+ * @param all_blocks all blocks in the EMCal.
+ * @param cfg plot configuration for the value to plot.
+ */
 void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(0.5);
@@ -257,6 +311,194 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   gStyle->SetImageScaling(1.0);
 }
 
+// TODO: check that the channel mapping is correct and matches Tim's (treat north and south separately)
+void plot_channel_lvl(std::vector<Block> all_blocks) {
+  std::vector<std::vector<double>> chnl_mpvs = get_chnl_mpv();
+  TH2D *h_chnl_mpv = new TH2D("", "", 256, 0, 256, 96, 0, 96);
+  for (Block &block : all_blocks) {
+    auto xy = get_plot_indices(block);
+    unsigned int x = 2*xy.first + 1;
+    unsigned int y = 2*xy.second + 1;
+
+    // the first block in a sector is in column D and is on the low rapidity edge
+    //    and also has only contributions from channel 
+
+    // in Tim's html, we are looking down at the narrow end of the block
+    // in Tim's html, blocks are arranged by 1-based number as below:
+    // D 01 05 09 ...
+    // C 02 06 10 ...
+    // B 03 07 11 ...
+    // A 04 08 12 ...
+    // in Tim's html, channels are arranged within each block as below:
+    //  2 3
+    //  0 1
+    // so, low rapidity edge has 0 and 2 and 2 -> 0 points in the direction of increasing block number
+    // so, (along long edge of sector towards low rapidity) cross (along short edge of sector towards increasing block number, or D -> A) 
+    //    gives direction of the inside of the detector (wide -> narrow)
+    // so, here, we are looking down on the outside of the detector (wide ends of blocks)
+
+    // here, top half (higher y) is South, where LHS of sector is column A and bottom is low rapidity (block 123)
+    //    bottom half (lower y) is North, where LHS of sectors is column D and top is low rapidity (block 123)    
+    // here, on the top half (South), blocks are arranged by 1-based number as below:
+    // .  .  .  .
+    // .  .  .  .
+    // .  .  .  .
+    // 12 11 10 09
+    // 08 07 06 05
+    // 04 03 02 01
+    // A  B  C  D
+    // here, on the top half (South), channels are arranged within each block as below:
+    //  1 3
+    //  0 2
+    // here, on the bottom half (North), blocks are arranged by 1-based number as below:
+    // D  C  B  A
+    // 01 02 03 04
+    // 05 06 07 08
+    // 09 10 11 12
+    // .  .  .  .
+    // .  .  .  .
+    // .  .  .  .
+    // here, on the bottom half (North), channels are arranged within each block as below:
+    //  2 0
+    //  3 1
+
+    // Tim's    This N    This S
+    //  2 3      2 0       1 3
+    //  0 1      3 1       0 2
+    auto chnls = block_to_channel(block.block_number - 1);
+    double ch0 = chnl_mpvs[block.sector - 1][chnls[0]];
+    double ch1 = chnl_mpvs[block.sector - 1][chnls[1]];
+    double ch2 = chnl_mpvs[block.sector - 1][chnls[2]];
+    double ch3 = chnl_mpvs[block.sector - 1][chnls[3]];
+    if (block.sector % 2 == 0) { // north sector
+      if (ch0 > 0) {
+        h_chnl_mpv->SetBinContent(x + 1, y + 1, ch0);
+      }
+      if (ch1 > 0) {
+        h_chnl_mpv->SetBinContent(x + 1, y, ch1);
+      }
+      if (ch2 > 0) {
+        h_chnl_mpv->SetBinContent(x, y + 1, ch2);
+      }
+      if (ch3 > 0) {
+        h_chnl_mpv->SetBinContent(x, y, ch3);
+      }
+    } else { // south sector
+      if (ch0 > 0) {
+        h_chnl_mpv->SetBinContent(x, y, ch0);
+      }
+      if (ch1 > 0) {
+        h_chnl_mpv->SetBinContent(x, y + 1, ch1);
+      }
+      if (ch2 > 0) {
+        h_chnl_mpv->SetBinContent(x + 1, y, ch2);
+      }
+      if (ch3 > 0) {
+        h_chnl_mpv->SetBinContent(x + 1, y + 1, ch3);
+      }
+    }
+    
+    // printf("sector %2d block %2d:\n\tch0: %f\n\tch1: %f\n\tch2: %f\n\tch3: %f\n", block.sector, block.block_number, ch0, ch1, ch2, ch3);
+  }
+  TCanvas *c_chnl_mpv = new TCanvas();
+  gStyle->SetOptStat(0);
+  h_chnl_mpv->GetXaxis()->SetNdivisions(32, false);
+  h_chnl_mpv->GetYaxis()->SetNdivisions(2, false);
+  h_chnl_mpv->GetXaxis()->SetLabelOffset(999.0);
+  h_chnl_mpv->GetYaxis()->SetLabelOffset(999.0);
+  h_chnl_mpv->GetXaxis()->SetTickLength(0);
+  h_chnl_mpv->GetYaxis()->SetTickLength(0);
+  h_chnl_mpv->Draw("COLZ0");
+  plot_sector_and_block_labels(true);
+  c_chnl_mpv->SaveAs("emcal_plots/chnl_mpv.pdf");
+
+  // the normal of the top surface of block points to high rapidity 
+  // 
+  // *looking at the wide end of the block*
+  //     top
+  //  ---------
+  //  \  3 4  /
+  //   \ 1 2 /
+  //    -----
+  //   bottom
+  
+  // (wide -> narrow) cross (high -> low rapidity) gives direction of increasing block number
+  //    and as before, direction of increasing block number is direction of 2 -> 0 of channels within block 
+  // in the figure above, wide -> narrow is into the page and high -> low rapidity is down, so
+  //    increasing block number is to the left
+  // this means we have the following mapping:
+  // channel <-> fiber tower
+  //       0  |  1
+  //       2  |  2
+  //       1  |  3
+  //       3  |  4
+
+  // in Tim's html, fiber towers are arranged as below:
+  //  2 4
+  //  1 3
+  // here, on the top half (South), fiber towers are arranged within each block as below:
+  //  3 4
+  //  1 2
+  // here, on the bottom half (North), fiber towers are arranged within each block as below:
+  //  2 1
+  //  4 3
+
+  TH2D *h_chnl_fiber = new TH2D("", "", 256, 0, 256, 96, 0, 96);
+  for (Block &block : all_blocks) {
+    auto xy = get_plot_indices(block);
+    unsigned int x = 2*xy.first + 1;
+    unsigned int y = 2*xy.second + 1;
+
+    double t1 = block.fiber_t1_count;
+    double t2 = block.fiber_t2_count;
+    double t3 = block.fiber_t3_count;
+    double t4 = block.fiber_t4_count;
+    if (block.sector % 2 == 0) { // north sector
+      if (t1 > 0) {
+        h_chnl_fiber->SetBinContent(x + 1, y + 1, t1);
+      }
+      if (t2 > 0) {
+        h_chnl_fiber->SetBinContent(x, y + 1, t2);
+      }
+      if (t3 > 0) {
+        h_chnl_fiber->SetBinContent(x + 1, y, t3);
+      }
+      if (t4 > 0) {
+        h_chnl_fiber->SetBinContent(x, y, t4);
+      }
+    } else { // south sector
+      if (t1 > 0) {
+        h_chnl_fiber->SetBinContent(x, y, t1);
+      }
+      if (t2 > 0) {
+        h_chnl_fiber->SetBinContent(x + 1, y, t2);
+      }
+      if (t3 > 0) {
+        h_chnl_fiber->SetBinContent(x, y + 1, t3);
+      }
+      if (t4 > 0) {
+        h_chnl_fiber->SetBinContent(x + 1, y + 1, t4);
+      }
+    }
+    
+    // printf("sector %2d block %2d:\n\tch0: %f\n\tch1: %f\n\tch2: %f\n\tch3: %f\n", block.sector, block.block_number, ch0, ch1, ch2, ch3);
+  }
+  TCanvas *c_chnl_fiber = new TCanvas();
+  gStyle->SetOptStat(0);
+  h_chnl_fiber->GetXaxis()->SetNdivisions(32, false);
+  h_chnl_fiber->GetYaxis()->SetNdivisions(2, false);
+  h_chnl_fiber->GetXaxis()->SetLabelOffset(999.0);
+  h_chnl_fiber->GetYaxis()->SetLabelOffset(999.0);
+  h_chnl_fiber->GetXaxis()->SetTickLength(0);
+  h_chnl_fiber->GetYaxis()->SetTickLength(0);
+  h_chnl_fiber->Draw("COLZ0");
+  plot_sector_and_block_labels(true);
+  c_chnl_fiber->SaveAs("emcal_plots/chnl_fiber_count.pdf");
+}
+
+/**
+ * @brief Body of macro (called when macro is executed). 
+ */
 void plot() {
   std::vector<Block> all_blocks;
   std::fstream database;
@@ -400,7 +642,8 @@ void plot() {
     }
   };
 
-  for (const PlotConfig& cfg : cfgs) {
-    plot_helper(all_blocks, cfg);
-  }
+  plot_channel_lvl(all_blocks);
+  // for (const PlotConfig& cfg : cfgs) {
+  //   plot_helper(all_blocks, cfg);
+  // }
 }

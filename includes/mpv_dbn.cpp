@@ -1,6 +1,8 @@
 #include "mpv_dbn.h"
 #include <TMath.h>
 
+constexpr bool debug = false;
+
 constexpr char PRINT_BOLD[] = "\x1b[1m";
 constexpr char PRINT_GREY[] = "\x1b[0;90m";
 constexpr char PRINT_RED[] = "\x1b[1;31m";
@@ -9,7 +11,14 @@ constexpr char PRINT_GREEN[] = "\x1b[1;32m";
 constexpr char PRINT_BLUE[] = "\x1b[1;34m";
 constexpr char PRINT_END[] = "\x1b[0m";
 
-constexpr bool debug = false;
+/**
+ * @brief The lower nonphysical threshold for MPV. MPVs <= this value will be saved as -1.
+ */
+constexpr double MPV_CUTOFF_LOW = 0.0;
+/**
+ * @brief The upper nonphysical threshold for MPV. MPVs >= this value will be saved as -1.
+ */
+constexpr double MPV_CUTOFF_HIGH = 1000.0;
 
 /**
  * @brief Get the channel numbers associated with a block.
@@ -44,7 +53,13 @@ int channel_to_block(int channel) {
   return t_x_off + 4*t_y_off;
 }
 
-std::set<int> perimeter_channels(bool drop_low_rapidity_edge = true) {
+/**
+ * @brief Get the channel numbers on the perimeter of a sector.
+ * 
+ * @param drop_low_rap_edge whether to count low rapidity edge as part of the perimeter.
+ * @return std::set<int> set of channel numbers (0-based) which are on the perimeter of a sector. 
+ */
+std::set<int> perimeter_channels(bool drop_low_rap_edge = true) {
   std::set<int> perimeter;
   std::vector<std::vector<int>> channels(48);
   for (auto &vec : channels) {
@@ -64,9 +79,9 @@ std::set<int> perimeter_channels(bool drop_low_rapidity_edge = true) {
         int channel_num = 64*ib + 4*i_block + channel;
         // printf("(%2d, %2d)\n", x_ib_off + x_block_off + x_channel_off, y_block_off + y_channel_off);
         channels[x_off][y_off] = channel_num;
-        if (!drop_low_rapidity_edge && (x_off == 47 || y_off == 0 || y_off == 7)) {          
+        if (!drop_low_rap_edge && (x_off == 47 || y_off == 0 || y_off == 7)) {          
           perimeter.insert(channel_num);
-        } else if (drop_low_rapidity_edge && (x_off == 0 || x_off == 47 || y_off == 0 || y_off == 7)) {
+        } else if (drop_low_rap_edge && (x_off == 0 || x_off == 47 || y_off == 0 || y_off == 7)) {
           perimeter.insert(channel_num);
         }
       }
@@ -82,11 +97,11 @@ std::set<int> perimeter_channels(bool drop_low_rapidity_edge = true) {
 }
 
 /**
- * @brief Get run numbers for each sector from csv.
+ * @brief Get run numbers for each sector from csv. Run numbers are 1-based.
 
  * NOTE: depends on files/physics_runs.csv.
  * 
- * @return std::map<int, int> (sector, run number).
+ * @return std::map<int, int> (sector -> run number).
  */
 std::map<int, int> read_physics_runs() {
   std::map<int, int> new_sector_runs;
@@ -162,7 +177,7 @@ void get_physics_runs() {
  * 
  * NOTE: depends on files/Blocks database - Sectors.csv.
  * 
- * @return std::vector<std::vector<std::string>> sector[block number] -> dbn, or "" if none.
+ * @return std::vector<std::vector<std::string>> [sector][block number] -> dbn, or "" if none.
  */
 std::vector<std::vector<std::string>> get_dbns() {
   std::fstream sector_map_file;
@@ -246,12 +261,10 @@ std::vector<std::vector<std::string>> get_dbns() {
 }
 
 /**
- * @brief Get MPVs for each block for each sector.
- * 
- * NOTE: rejects MPVs <= 0 and >= 1000.
+ * @brief Get MPVs for each block for each sector from h_allblocks. Returns -1 for nonphysical MPV values.
  * 
  * @param write_ib write IB mean and sigma to csv file.
- * @return std::vector<std::vector<double>> sector[block number] -> mpv, or -1 if none.
+ * @return std::vector<std::vector<double>> [sector][block number] -> mpv, or -1 if none.
  */
 std::vector<std::vector<double>> get_mpvs(bool write_ib = false) {
   std::vector<std::vector<double>> mpvs(64);
@@ -281,7 +294,7 @@ std::vector<std::vector<double>> get_mpvs(bool write_ib = false) {
         for (int block_num = 1; block_num <= 96; block_num++) {
           double content = data->GetBinContent(block_num);
           // first check if this is data we are interested in...
-          if (content <= 0 || content >= 1000) {
+          if (content <= MPV_CUTOFF_LOW || content >= MPV_CUTOFF_HIGH) {
             if (debug) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
             continue;
           } else {
@@ -346,9 +359,9 @@ std::vector<std::vector<double>> get_mpvs(bool write_ib = false) {
 }
 
 /**
- * @brief Get MPV errors for each block for each sector.
+ * @brief Get MPV errors for each block for each sector. Reconstructed from h_allchannels.
  * 
- * @return std::vector<std::vector<double>> sector[block number] -> mpv error.
+ * @return std::vector<std::vector<double>> [sector][block number] -> mpv error.
  */
 std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> mpvs) {
   std::vector<std::vector<double>> mpv_errs(64);
@@ -383,7 +396,7 @@ std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> m
           double avg_err = 0;
           double avg_mpv = 0;
           int n_blocks = 0;
-          printf("%ssector %2d block %2d%s\n", PRINT_BOLD, sector, block + 1, PRINT_END);
+          // printf("%ssector %2d block %2d%s\n", PRINT_BOLD, sector, block + 1, PRINT_END);
           for (int &channel_num : block_to_channel(block)) {
             if (perimeter.find(channel_num) == perimeter.end()) {
               double this_err = data->GetBinError(channel_num + 1);
@@ -391,7 +404,7 @@ std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> m
               avg_err += this_err;
               avg_mpv += this_mpv;
               n_blocks++;
-              printf("\t%7.3f (ch %3d)\n", this_mpv, channel_num);
+              // printf("\t%7.3f (ch %3d)\n", this_mpv, channel_num);
             }
           }
           avg_err /= n_blocks;
@@ -401,7 +414,7 @@ std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> m
             printf("\t%sMISMATCH block mpv %7.3f != tower avg %7.3f%s\n", PRINT_RED, block_mpv, avg_mpv, PRINT_END);
             // printf("sector %2d block %2d (ch %3d) [n = %1d]: %7.3f != %7.3f\n", sector, block + 1, block*4, n_blocks, block_mpv, avg_mpv);
           } else {
-            printf("\t%sthat checks out%s\n", PRINT_GREEN, PRINT_END);
+            // printf("\t%sthat checks out%s\n", PRINT_GREEN, PRINT_END);
           }
           
           // printf("sector %2d, block %2d, mpv_err = %f, mpv c: %f, b: %f\n", sector, block + 1, avg_err, avg_mpv, data_b->GetBinContent(block + 1));
@@ -418,10 +431,130 @@ std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> m
 }
 
 /**
+ * @brief Get MPV and MPV error for each block for each sector. Reconstructed from h_allchannels.
+ * 
+ * @param drop_low_rap_edge whether to drop low rapidity edge like all other edges (TRUE, better for calibration)
+ *    or keep it (FALSE, default behavior of h_allblocks).
+ * @param prune_bad_values whether to return (-1, -1) for nonphysical mpv values (TRUE) or keep them (FALSE).
+ * @return std::vector<std::vector<std::pair<double, double>>> [sector][block number] -> (mpv, mpv error).
+ */
+std::vector<std::vector<std::pair<double, double>>> get_mpv_with_err(bool drop_low_rap_edge, bool prune_bad_values) {
+  std::vector<std::vector<std::pair<double, double>>> mpv_with_err(64);
+  for (auto &vec : mpv_with_err) {
+    vec = std::vector<std::pair<double, double>>(96, std::make_pair(-1.0, -1.0));
+  }
+
+  std::set<int> perimeter = perimeter_channels(drop_low_rap_edge);
+
+  TFile *hist_file;
+  char filename[64];
+  std::map<int, int> physics_runs = read_physics_runs();
+  for (std::pair<int, int> p : physics_runs) {
+    int sector = p.first;
+    int run_num = p.second;
+    if (run_num > 0) {
+      // get data from the run number
+      sprintf(filename, "physics_runs/qa_output_000%i/histograms.root ", run_num);
+      if ((hist_file = TFile::Open(filename))) {
+        if (debug) {
+          printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
+        }
+        TH1D* data;
+        hist_file->GetObject("h_allchannels;1", data);
+        TH1D* data_b;
+        hist_file->GetObject("h_allblocks;1", data_b);
+        if (!data) {
+          std::cerr << "  unable to get histogram" << std::endl;
+          continue;       
+        }
+        for (int block = 0; block < 96; block++) {
+          double avg_err = 0;
+          double avg_mpv = 0;
+          int n_blocks = 0;
+          // printf("%ssector %2d block %2d%s\n", PRINT_BOLD, sector, block + 1, PRINT_END);
+          for (int &channel_num : block_to_channel(block)) {
+            if (perimeter.find(channel_num) == perimeter.end()) {
+              double this_err = data->GetBinError(channel_num + 1);
+              double this_mpv = data->GetBinContent(channel_num + 1);
+              avg_err += this_err;
+              avg_mpv += this_mpv;
+              n_blocks++;
+              // printf("\t%7.3f (ch %3d)\n", this_mpv, channel_num);
+            }
+          }
+          avg_err /= n_blocks;
+          avg_mpv /= n_blocks;
+          double block_mpv = data_b->GetBinContent(block + 1);
+          if (abs(block_mpv - avg_mpv) > 0.01) {
+            printf("\t%sMISMATCH block mpv %7.3f != tower avg %7.3f%s\n", PRINT_RED, block_mpv, avg_mpv, PRINT_END);
+            // printf("sector %2d block %2d (ch %3d) [n = %1d]: %7.3f != %7.3f\n", sector, block + 1, block*4, n_blocks, block_mpv, avg_mpv);
+          } else {
+            // printf("\t%sthat checks out%s\n", PRINT_GREEN, PRINT_END);
+          }
+          
+          // printf("sector %2d, block %2d, mpv_err = %f, mpv c: %f, b: %f\n", sector, block + 1, avg_err, avg_mpv, data_b->GetBinContent(block + 1));
+          if (!prune_bad_values) {
+            mpv_with_err[sector - 1][block] = std::make_pair(avg_mpv, avg_err);
+          } else if (prune_bad_values && avg_mpv > MPV_CUTOFF_LOW && avg_mpv < MPV_CUTOFF_HIGH) {
+            mpv_with_err[sector - 1][block] = std::make_pair(avg_mpv, avg_err);
+          }
+        }
+      } else {
+        printf("FAILED to find run file for sector %i: qa_output_000%i/histograms.root\n", sector, run_num);
+      }
+    }
+  }
+  return mpv_with_err;
+}
+
+/**
+ * @brief Get MPVs for each channel for each sector from h_allchannels.
+ * 
+ * @return std::vector<std::vector<double>> [sector][channel number] -> mpv 
+ */
+std::vector<std::vector<double>> get_chnl_mpv() {
+  std::vector<std::vector<double>> chnl_mpv(64);
+  for (auto &vec : chnl_mpv) {
+    vec = std::vector<double>(384, -1.0);
+  }
+
+  TFile *hist_file;
+  char filename[64];
+  std::map<int, int> physics_runs = read_physics_runs();
+  for (std::pair<int, int> p : physics_runs) {
+    int sector = p.first;
+    int run_num = p.second;
+    if (run_num > 0) {
+      // get data from the run number
+      sprintf(filename, "physics_runs/qa_output_000%i/histograms.root ", run_num);
+      if ((hist_file = TFile::Open(filename))) {
+        if (debug) {
+          printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
+        }
+        TH1D* data;
+        hist_file->GetObject("h_allchannels;1", data);
+        if (!data) {
+          std::cerr << "  unable to get histogram" << std::endl;
+          continue;       
+        }
+        for (int chnl = 0; chnl < 384; chnl++) {
+          // double this_err = data->GetBinError(chnl + 1);
+          double this_mpv = data->GetBinContent(chnl + 1);
+          chnl_mpv[sector - 1][chnl] = this_mpv;
+        }
+      } else {
+        printf("FAILED to find run file for sector %i: qa_output_000%i/histograms.root\n", sector, run_num);
+      }
+    }
+  }
+  return chnl_mpv;
+}
+
+/**
  * @brief Get single pixel gaps for each block for each sector (average of block's four towers).
  * 
  * @param write_ib write IB mean and sigma to csv file.
- * @return std::vector<std::vector<double>> sector[block number] -> gap.
+ * @return std::vector<std::vector<double>> [sector][block number] -> gap.
  */
 std::vector<std::vector<double>> get_sp_gaps(bool write_ib = false) {
   std::vector<std::vector<double>> sp_gaps(64);
@@ -448,19 +581,17 @@ std::vector<std::vector<double>> get_sp_gaps(bool write_ib = false) {
           std::cerr << "  unable to get sp histogram" << std::endl;
           continue;       
         }
-        for (int block_num = 1; block_num <= 96; block_num++) {
+        for (int block_num = 0; block_num < 96; block_num++) {
           double avg_sp_gap = 0;
-          for (int i = 1; i <= 4; i++) {
-            double content = data->GetBinContent((block_num - 1)*4 + i);
+          for (int &chnl : block_to_channel(block_num)) {
+            double content = data->GetBinContent(chnl + 1);
             if (content <= 0) {
-              printf("complaint at sector %i channel %i: sp_gap < 0 (%f)\n", sector, (block_num - 1)*4 + i, content);
+              printf("complaint at sector %i channel %i: sp_gap <= 0 (%f)\n", sector, chnl, content);
             }
             avg_sp_gap += content;
           }
-          if (sp_gaps[sector - 1][block_num - 1] != -1) {
-            throw std::runtime_error(Form("would overwrite sp_gap data at sector %i block %i (is there a repeated sector?)", sector, block_num));
-          }
-          sp_gaps[sector - 1][block_num - 1] = avg_sp_gap/4;
+          sp_gaps[sector - 1][block_num] = avg_sp_gap/4;
+          // printf("sector %2d block %2d: sp gap = %f\n", sector, block_num + 1, sp_gaps[sector - 1][block_num]);
         }
       } else {
         printf("FAILED to find run file for sector %i: qa_output_000%i/histograms.root\n", sector, run_num);
