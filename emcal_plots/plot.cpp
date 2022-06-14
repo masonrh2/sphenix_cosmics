@@ -313,8 +313,11 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
 
 // TODO: check that the channel mapping is correct and matches Tim's (treat north and south separately)
 void plot_channel_lvl(std::vector<Block> all_blocks) {
+  gStyle->SetOptStat(0);
+  gStyle->SetLineScalePS(0.5);
+  
   std::vector<std::vector<double>> chnl_mpvs = get_chnl_mpv();
-  TH2D *h_chnl_mpv = new TH2D("", "", 256, 0, 256, 96, 0, 96);
+  TH2D *h_chnl_mpv = new TH2D("", "sPHENIX EMCal Channel MPV;#phi [Channels];#eta [Channels];MPV", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
     auto xy = get_plot_indices(block);
     unsigned int x = 2*xy.first + 1;
@@ -401,7 +404,10 @@ void plot_channel_lvl(std::vector<Block> all_blocks) {
     // printf("sector %2d block %2d:\n\tch0: %f\n\tch1: %f\n\tch2: %f\n\tch3: %f\n", block.sector, block.block_number, ch0, ch1, ch2, ch3);
   }
   TCanvas *c_chnl_mpv = new TCanvas();
-  gStyle->SetOptStat(0);
+  c_chnl_mpv->SetRightMargin(0.125);
+  c_chnl_mpv->SetGrid();
+  h_chnl_mpv->SetAxisRange(0, 128*2 - 1, "X");
+  h_chnl_mpv->SetAxisRange(0, 48*2 - 1, "Y");
   h_chnl_mpv->GetXaxis()->SetNdivisions(32, false);
   h_chnl_mpv->GetYaxis()->SetNdivisions(2, false);
   h_chnl_mpv->GetXaxis()->SetLabelOffset(999.0);
@@ -443,7 +449,7 @@ void plot_channel_lvl(std::vector<Block> all_blocks) {
   //  2 1
   //  4 3
 
-  TH2D *h_chnl_fiber = new TH2D("", "", 256, 0, 256, 96, 0, 96);
+  TH2D *h_chnl_fiber = new TH2D("", "sPHENIX EMCal Tower Fiber Count;#phi [Towers];#eta [Towers];Fiber Count [%]", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
     auto xy = get_plot_indices(block);
     unsigned int x = 2*xy.first + 1;
@@ -484,7 +490,10 @@ void plot_channel_lvl(std::vector<Block> all_blocks) {
     // printf("sector %2d block %2d:\n\tch0: %f\n\tch1: %f\n\tch2: %f\n\tch3: %f\n", block.sector, block.block_number, ch0, ch1, ch2, ch3);
   }
   TCanvas *c_chnl_fiber = new TCanvas();
-  gStyle->SetOptStat(0);
+  c_chnl_fiber->SetRightMargin(0.125);
+  c_chnl_fiber->SetGrid();
+  h_chnl_mpv->SetAxisRange(0, 128*2 - 1, "X");
+  h_chnl_mpv->SetAxisRange(0, 48*2 - 1, "Y");
   h_chnl_fiber->GetXaxis()->SetNdivisions(32, false);
   h_chnl_fiber->GetYaxis()->SetNdivisions(2, false);
   h_chnl_fiber->GetXaxis()->SetLabelOffset(999.0);
