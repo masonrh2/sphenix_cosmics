@@ -16,7 +16,7 @@
 #include <TH1D.h>
 #include <TFile.h>
 
-std::set<int> perimeter_channels();
+std::set<int> perimeter_channels(bool drop_low_rapidity_edge);
 std::map<int, int> read_physics_runs();
 void get_physics_runs();
 std::vector<std::vector<std::string>> get_dbns();

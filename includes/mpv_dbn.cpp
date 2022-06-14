@@ -44,7 +44,7 @@ int channel_to_block(int channel) {
   return t_x_off + 4*t_y_off;
 }
 
-std::set<int> perimeter_channels() {
+std::set<int> perimeter_channels(bool drop_low_rapidity_edge = true) {
   std::set<int> perimeter;
   std::vector<std::vector<int>> channels(48);
   for (auto &vec : channels) {
@@ -64,7 +64,9 @@ std::set<int> perimeter_channels() {
         int channel_num = 64*ib + 4*i_block + channel;
         // printf("(%2d, %2d)\n", x_ib_off + x_block_off + x_channel_off, y_block_off + y_channel_off);
         channels[x_off][y_off] = channel_num;
-        if (x_off == 0 || x_off == 47 || y_off == 0 || y_off == 7) {
+        if (!drop_low_rapidity_edge && (x_off == 47 || y_off == 0 || y_off == 7)) {          
+          perimeter.insert(channel_num);
+        } else if (drop_low_rapidity_edge && (x_off == 0 || x_off == 47 || y_off == 0 || y_off == 7)) {
           perimeter.insert(channel_num);
         }
       }
@@ -354,7 +356,7 @@ std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> m
     vec = std::vector<double>(96, -1.0);
   }
 
-  std::set<int> perimeter = perimeter_channels();
+  std::set<int> perimeter = perimeter_channels(false);
 
   TFile *hist_file;
   char filename[64];
