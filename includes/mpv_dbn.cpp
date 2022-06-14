@@ -1,7 +1,48 @@
 #include "mpv_dbn.h"
 #include <TMath.h>
 
+constexpr char PRINT_BOLD[] = "\x1b[1m";
+constexpr char PRINT_GREY[] = "\x1b[0;90m";
+constexpr char PRINT_RED[] = "\x1b[1;31m";
+constexpr char PRINT_YELLOW[] = "\x1b[1;33m";
+constexpr char PRINT_GREEN[] = "\x1b[1;32m";
+constexpr char PRINT_BLUE[] = "\x1b[1;34m";
+constexpr char PRINT_END[] = "\x1b[0m";
+
 constexpr bool debug = false;
+
+/**
+ * @brief Get the channel numbers associated with a block.
+ * 
+ * @param block_num 0-based block number (corresponding to h_allblocks)
+ * @return std::vector<int> 0-based channel numbers (corresponding to h_allchannels)
+ */
+std::vector<int> block_to_channel(int block_num) {
+  int t_x_off = block_num%4;
+  int t_y_off = block_num/4;
+  int f_x_off = t_y_off;
+  int f_y_off = 3 - t_x_off;
+  int ib = f_x_off/4;
+  int ib_block_idx = 3 - f_x_off%4 + 4*f_y_off + 16*ib;
+  int chnl = ib_block_idx*4;
+  return {chnl, chnl + 1, chnl + 2, chnl + 3};
+}
+
+/**
+ * @brief Get the block number of a channel.
+ * 
+ * @param channel 0-based channel number (corresponding to h_allchannels)
+ * @return int 0-based block number (corresponding to h_allblocks)
+ */
+int channel_to_block(int channel) {
+  int i = channel/4;
+  int ib = i/16;
+  int f_x_off = 3 - ((i%16)%4) + 4*ib;
+  int f_y_off = (i%16)/4;
+  int t_x_off = 3 - f_y_off;
+  int t_y_off = f_x_off;
+  return t_x_off + 4*t_y_off;
+}
 
 std::set<int> perimeter_channels() {
   std::set<int> perimeter;
@@ -12,15 +53,15 @@ std::set<int> perimeter_channels() {
 
   for (int ib = 0; ib < 6; ib++) {
     int x_ib_off = 4*2*ib;
-    for (int block = 0; block < 16; block++) {
-      int x_block_off = 2*(3 - (block%4));
-      int y_block_off = 2*(block/4);
+    for (int i_block = 0; i_block < 16; i_block++) {
+      int x_block_off = 2*(3 - (i_block%4));
+      int y_block_off = 2*(i_block/4);
       for (int channel = 0; channel < 4; channel++) {
         int x_channel_off = channel%2;
         int y_channel_off = channel/2;
         int x_off = x_ib_off + x_block_off + x_channel_off;
         int y_off = y_block_off + y_channel_off;
-        int channel_num = 64*ib + 4*block + channel;
+        int channel_num = 64*ib + 4*i_block + channel;
         // printf("(%2d, %2d)\n", x_ib_off + x_block_off + x_channel_off, y_block_off + y_channel_off);
         channels[x_off][y_off] = channel_num;
         if (x_off == 0 || x_off == 47 || y_off == 0 || y_off == 7) {
@@ -29,6 +70,12 @@ std::set<int> perimeter_channels() {
       }
     }
   }
+  // for (auto &vec : channels) {
+  //   for (auto &chnl : vec) {
+  //     printf("%3d ", chnl);
+  //   }
+  //   printf("\n");
+  // }
   return perimeter;
 }
 
@@ -330,22 +377,15 @@ std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> m
           std::cerr << "  unable to get histogram" << std::endl;
           continue;       
         }
-        for (int block_num = 1; block_num <= 96; block_num++) {
-          int ib = (block_num - 1)/16;
-          int f_x_off = 3 - (((block_num - 1)%16)%4) + 4*ib;
-          int f_y_off = ((block_num - 1)%16)/4;
-          int t_x_off = 3 - f_y_off;
-          int t_y_off = f_x_off;
-          int true_block_num = t_x_off + 4*t_y_off;
+        for (int block = 0; block < 96; block++) {
           double avg_err = 0;
           double avg_mpv = 0;
           int n_blocks = 0;
-          printf("sector %2d block %2d\n", sector, true_block_num + 1);
-          for (int tower = 0; tower < 4; tower++) {
-            int channel_num = 4*(block_num - 1) + tower + 1;
-            if (perimeter.find(channel_num - 1) == perimeter.end()) {
-              double this_err = data->GetBinError(channel_num);
-              double this_mpv = data->GetBinContent(channel_num);
+          printf("%ssector %2d block %2d%s\n", PRINT_BOLD, sector, block + 1, PRINT_END);
+          for (int &channel_num : block_to_channel(block)) {
+            if (perimeter.find(channel_num) == perimeter.end()) {
+              double this_err = data->GetBinError(channel_num + 1);
+              double this_mpv = data->GetBinContent(channel_num + 1);
               avg_err += this_err;
               avg_mpv += this_mpv;
               n_blocks++;
@@ -354,17 +394,17 @@ std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> m
           }
           avg_err /= n_blocks;
           avg_mpv /= n_blocks;
-          double block_mpv = data_b->GetBinContent(true_block_num + 1);
+          double block_mpv = data_b->GetBinContent(block + 1);
           if (abs(block_mpv - avg_mpv) > 0.01) {
-            printf("\tMISMATCH block mpv %7.3f != tower avg %7.3f\n", block_mpv, avg_mpv);
-            // printf("sector %2d block %2d (ch %3d) [n = %1d]: %7.3f != %7.3f\n", sector, true_block_num + 1, (block_num - 1)*4, n_blocks, block_mpv, avg_mpv);
+            printf("\t%sMISMATCH block mpv %7.3f != tower avg %7.3f%s\n", PRINT_RED, block_mpv, avg_mpv, PRINT_END);
+            // printf("sector %2d block %2d (ch %3d) [n = %1d]: %7.3f != %7.3f\n", sector, block + 1, block*4, n_blocks, block_mpv, avg_mpv);
           } else {
-            printf("\tthat checks out :)\n");
+            printf("\t%sthat checks out%s\n", PRINT_GREEN, PRINT_END);
           }
           
-          // printf("sector %2d, block %2d, mpv_err = %f, mpv c: %f, b: %f\n", sector, block_num, avg_err, avg_mpv, data_b->GetBinContent(block_num));
-          if (mpvs[sector -1][block_num -1] > 0) {
-            mpv_errs[sector - 1][block_num - 1] = avg_err;
+          // printf("sector %2d, block %2d, mpv_err = %f, mpv c: %f, b: %f\n", sector, block + 1, avg_err, avg_mpv, data_b->GetBinContent(block + 1));
+          if (mpvs[sector -1][block] > 0) {
+            mpv_errs[sector - 1][block] = avg_err;
           } // else we don't care what the error is
         }
       } else {
@@ -372,22 +412,6 @@ std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> m
       }
     }
   }
-  // for (short sector = 0; sector < 64; sector++) {
-  //   int n_blocks = 0;
-  //   for (short block = 0; block < 96; block++) {
-  //     double mpv = mpv_errs[sector][block];
-  //     if (mpv > 0) {
-  //       n_blocks++;
-  //     }
-  //   }
-  //   if (debug) {
-  //     if (n_blocks == 96) {
-  //       printf("sector %2d: got mpv_err for all blocks!\n", sector + 1);
-  //     } else if (n_blocks > 0) {
-  //       printf("sector %2d: got mpv_err for %2d/96 blocks\n", sector + 1, n_blocks);
-  //     }
-  //   }
-  // }
   return mpv_errs;
 }
 
