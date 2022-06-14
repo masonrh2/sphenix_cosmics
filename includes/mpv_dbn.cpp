@@ -3,6 +3,35 @@
 
 constexpr bool debug = false;
 
+std::set<int> perimeter_channels() {
+  std::set<int> perimeter;
+  std::vector<std::vector<int>> channels(48);
+  for (auto &vec : channels) {
+    vec = std::vector<int>(8, -1);
+  }
+
+  for (int ib = 0; ib < 6; ib++) {
+    int x_ib_off = 4*2*ib;
+    for (int block = 0; block < 16; block++) {
+      int x_block_off = 2*(3 - (block%4));
+      int y_block_off = 2*(block/4);
+      for (int channel = 0; channel < 4; channel++) {
+        int x_channel_off = channel%2;
+        int y_channel_off = channel/2;
+        int x_off = x_ib_off + x_block_off + x_channel_off;
+        int y_off = y_block_off + y_channel_off;
+        int channel_num = 64*ib + 4*block + channel;
+        // printf("(%2d, %2d)\n", x_ib_off + x_block_off + x_channel_off, y_block_off + y_channel_off);
+        channels[x_off][y_off] = channel_num;
+        if (x_off == 0 || x_off == 47 || y_off == 0 || y_off == 7) {
+          perimeter.insert(channel_num);
+        }
+      }
+    }
+  }
+  return perimeter;
+}
+
 /**
  * @brief Get run numbers for each sector from csv.
 
@@ -278,6 +307,8 @@ std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> m
     vec = std::vector<double>(96, -1.0);
   }
 
+  std::set<int> perimeter = perimeter_channels();
+
   TFile *hist_file;
   char filename[64];
   std::map<int, int> physics_runs = read_physics_runs();
@@ -300,26 +331,40 @@ std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> m
           continue;       
         }
         for (int block_num = 1; block_num <= 96; block_num++) {
-          double err = 0;
+          int ib = (block_num - 1)/16;
+          int f_x_off = 3 - (((block_num - 1)%16)%4) + 4*ib;
+          int f_y_off = ((block_num - 1)%16)/4;
+          int t_x_off = 3 - f_y_off;
+          int t_y_off = f_x_off;
+          int true_block_num = t_x_off + 4*t_y_off;
+          double avg_err = 0;
           double avg_mpv = 0;
           int n_blocks = 0;
+          printf("sector %2d block %2d\n", sector, true_block_num + 1);
           for (int tower = 0; tower < 4; tower++) {
-            err += data->GetBinError(4*(block_num - 1) + tower + 1);
-            // avg_mpv += data->GetBinContent(4*(block_num - 1) + tower + 1);
-            // printf("accessed bin # %3d -> %f +/- %f\n", 4*(block_num - 1) + tower + 1, data->GetBinContent(4*(block_num - 1) + tower + 1), data->GetBinError(4*(block_num - 1) + tower + 1));
-            if (data->GetBinContent(4*(block_num - 1) + tower + 1) != 0) {
+            int channel_num = 4*(block_num - 1) + tower + 1;
+            if (perimeter.find(channel_num - 1) == perimeter.end()) {
+              double this_err = data->GetBinError(channel_num);
+              double this_mpv = data->GetBinContent(channel_num);
+              avg_err += this_err;
+              avg_mpv += this_mpv;
               n_blocks++;
+              printf("\t%7.3f (ch %3d)\n", this_mpv, channel_num);
             }
           }
-          if (n_blocks != 0) {
-            err /= n_blocks;
+          avg_err /= n_blocks;
+          avg_mpv /= n_blocks;
+          double block_mpv = data_b->GetBinContent(true_block_num + 1);
+          if (abs(block_mpv - avg_mpv) > 0.01) {
+            printf("\tMISMATCH block mpv %7.3f != tower avg %7.3f\n", block_mpv, avg_mpv);
+            // printf("sector %2d block %2d (ch %3d) [n = %1d]: %7.3f != %7.3f\n", sector, true_block_num + 1, (block_num - 1)*4, n_blocks, block_mpv, avg_mpv);
+          } else {
+            printf("\tthat checks out :)\n");
           }
-          if (mpv_errs[sector - 1][block_num - 1] != -1) {
-            throw std::runtime_error(Form("would overwrite mpv_err data at sector %i block %i (is there a repeated sector?)", sector, block_num));
-          }
-          // printf("sector %2d, block %2d, mpv_err = %f, mpv c: %f, b: %f\n", sector, block_num, err, avg_mpv/n_blocks, data_b->GetBinContent(block_num));
+          
+          // printf("sector %2d, block %2d, mpv_err = %f, mpv c: %f, b: %f\n", sector, block_num, avg_err, avg_mpv, data_b->GetBinContent(block_num));
           if (mpvs[sector -1][block_num -1] > 0) {
-            mpv_errs[sector - 1][block_num - 1] = err;
+            mpv_errs[sector - 1][block_num - 1] = avg_err;
           } // else we don't care what the error is
         }
       } else {

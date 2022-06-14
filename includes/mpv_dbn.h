@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <set>
 #include <string>
 //#include <filesystem>
 #include <stdexcept>
@@ -15,6 +16,7 @@
 #include <TH1D.h>
 #include <TFile.h>
 
+std::set<int> perimeter_channels();
 std::map<int, int> read_physics_runs();
 void get_physics_runs();
 std::vector<std::vector<std::string>> get_dbns();
