@@ -68,6 +68,8 @@ std::pair<unsigned int, unsigned int> get_plot_indices(Block block) {
 
 /**
  * @brief Plot sector numbers (1 - 64) and block type (1 - 24) onto the current canvas.
+ * 
+ * @param channel_lvl whether plotting on a channel/tower-level canvas (TRUE) or block-level (FALSE).
  */
 void plot_sector_and_block_labels(bool channel_lvl = false) {
   double sector_box_width = 3;
@@ -311,12 +313,16 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   gStyle->SetImageScaling(1.0);
 }
 
-// TODO: check that the channel mapping is correct and matches Tim's (treat north and south separately)
+/**
+ * @brief Plots EMCal fiber count over towers and MPV over channels.
+ * 
+ * @param all_blocks all blocks in the EMCal.
+ */
 void plot_channel_lvl(std::vector<Block> all_blocks) {
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(0.5);
   
-  std::vector<std::vector<double>> chnl_mpvs = get_chnl_mpv();
+  std::vector<std::vector<double>> chnl_mpvs = get_chnl_mpv().first;
   TH2D *h_chnl_mpv = new TH2D("", "sPHENIX EMCal Channel MPV;#phi [Channels];#eta [Channels];MPV", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
     auto xy = get_plot_indices(block);

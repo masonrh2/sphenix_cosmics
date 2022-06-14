@@ -23,7 +23,7 @@ std::vector<std::vector<std::string>> get_dbns();
 std::vector<std::vector<double>> get_mpvs(bool write_ib);
 std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> mpvs);
 std::vector<std::vector<std::pair<double, double>>> get_mpv_with_err(bool drop_low_rap_edge);
-std::vector<std::vector<double>> get_chnl_mpv();
+std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> get_chnl_mpv();
 std::vector<std::vector<double>> get_sp_gaps(bool write_ib);
 void write_map_to_file();
 

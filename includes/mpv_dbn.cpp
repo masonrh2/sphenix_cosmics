@@ -512,9 +512,13 @@ std::vector<std::vector<std::pair<double, double>>> get_mpv_with_err(bool drop_l
  * 
  * @return std::vector<std::vector<double>> [sector][channel number] -> mpv 
  */
-std::vector<std::vector<double>> get_chnl_mpv() {
+std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> get_chnl_mpv() {
   std::vector<std::vector<double>> chnl_mpv(64);
+  std::vector<std::vector<double>> chnl_mpv_err(64);
   for (auto &vec : chnl_mpv) {
+    vec = std::vector<double>(384, -1.0);
+  }
+  for (auto &vec : chnl_mpv_err) {
     vec = std::vector<double>(384, -1.0);
   }
 
@@ -538,16 +542,17 @@ std::vector<std::vector<double>> get_chnl_mpv() {
           continue;       
         }
         for (int chnl = 0; chnl < 384; chnl++) {
-          // double this_err = data->GetBinError(chnl + 1);
+          double this_err = data->GetBinError(chnl + 1);
           double this_mpv = data->GetBinContent(chnl + 1);
           chnl_mpv[sector - 1][chnl] = this_mpv;
+          chnl_mpv_err[sector - 1][chnl] = this_err;
         }
       } else {
         printf("FAILED to find run file for sector %i: qa_output_000%i/histograms.root\n", sector, run_num);
       }
     }
   }
-  return chnl_mpv;
+  return std::make_pair(chnl_mpv, chnl_mpv_err);
 }
 
 /**
@@ -630,27 +635,42 @@ std::vector<std::vector<double>> get_sp_gaps(bool write_ib = false) {
   return sp_gaps;
 }
 
+// TODO: how to handle channels with zero mpv, just a for loop to skip the edges, probably
+
 /**
  * @brief Write "database" to file as csv. 
  */
 void write_map_to_file() {
   FILE *outfile = fopen("files/dbn_mpv.csv", "w+");
-  fprintf(outfile, "sector, block, dbn, mpv, mpv_err");
+  fprintf(outfile, "sector, block, dbn, mpv, mpv_err, ch0_mpv, ch0_mpv_err, ch1_mpv, ch1_mpv_err, ch2_mpv, ch2_mpv_err, ch3_mpv, ch3_mpv_err");
   auto dbns = get_dbns();
   auto mpvs = get_mpvs();
   auto mpv_errs = get_mpv_errs(mpvs);
+  auto chnl_mpv_and_err = get_chnl_mpv();
+  auto chnl_mpvs = chnl_mpv_and_err.first;
+  auto chnl_mpv_errs = chnl_mpv_and_err.second;
   for (short sector = 0; sector < 64; sector++) {
     int n_blocks = 0;
     for (short block = 0; block < 96; block++) {
       std::string dbn = dbns[sector][block];
       double mpv = mpvs[sector][block];
       double mpv_err = mpv_errs[sector][block];
+      auto chnls = block_to_channel(block);
+      double ch0_mpv = chnl_mpvs[sector][chnls[0]];
+      double ch0_mpv_err = chnl_mpv_errs[sector][chnls[0]];
+      double ch1_mpv = chnl_mpvs[sector][chnls[1]];
+      double ch1_mpv_err = chnl_mpv_errs[sector][chnls[1]];
+      double ch2_mpv = chnl_mpvs[sector][chnls[2]];
+      double ch2_mpv_err = chnl_mpv_errs[sector][chnls[2]];
+      double ch3_mpv = chnl_mpvs[sector][chnls[3]];
+      double ch3_mpv_err = chnl_mpv_errs[sector][chnls[3]];
       if (dbn != "") {
         if (mpv > 0) {
-          fprintf(outfile, "\n%i, %i, %s, %f, %f", sector + 1, block + 1, dbn.c_str(), mpv, mpv_err);
+          fprintf(outfile, "\n%i, %i, %s, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", sector + 1, block + 1, dbn.c_str(), mpv, mpv_err,
+                  ch0_mpv, ch0_mpv_err, ch1_mpv_err, ch1_mpv_err, ch2_mpv, ch2_mpv_err, ch3_mpv, ch3_mpv_err);
           n_blocks++;
         } else {
-          fprintf(outfile, "\n%i, %i, %s, , ", sector + 1, block + 1, dbn.c_str());
+          fprintf(outfile, "\n%i, %i, %s, , , , , , , , , , ", sector + 1, block + 1, dbn.c_str());
         }
       }
     }
