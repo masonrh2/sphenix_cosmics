@@ -9,8 +9,27 @@
 #include <TCanvas.h>
 #include <TStyle.h>
 #include <TPaveText.h>
+#include <TGraph.h>
+#include <TGaxis.h>
 
 #include "../includes/mpv_dbn.h"
+#include "../includes/utils.h"
+
+/**
+ * @brief The default sector mapping (from Caroline's sector sheet).
+ */
+const std::vector<int> pseudo_sector_mapping = {
+   1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, // SOUTH
+   2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, // NORTH
+}; // we are looking at the wide ends of the blocks (the outside of EMCal)
+
+/**
+ * @brief The true sector mapping as they should appear in the final plots.
+ */
+const std::vector<int> true_sector_mapping = {
+   1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, // SOUTH
+   2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, // NORTH
+}; // we are looking at the wide ends of the blocks (the outside of EMCal)
 
 /**
  * @brief Struct that packages all information associated with a block.
@@ -58,12 +77,15 @@ typedef struct PlotConfig {
  * @return std::pair<unsigned int, unsigned int> (x, y), zero-based.
  */
 std::pair<unsigned int, unsigned int> get_plot_indices(Block block) {
-  bool is_north = block.sector % 2 == 0;
+  auto it = std::find(true_sector_mapping.begin(), true_sector_mapping.end(), block.sector);
+  int pseudo_sector = pseudo_sector_mapping[it - true_sector_mapping.begin()];
+  // printf("true sector %2d -> pseudo sector %2d\n", block.sector, pseudo_sector);
+  bool is_north = pseudo_sector % 2 == 0;
   unsigned int x_offset = (block.block_number - 1) % 4;
   if (!is_north) {
     x_offset = 3 - x_offset;
   }
-  x_offset += 4*((block.sector - 1) / 2);
+  x_offset += 4*((pseudo_sector - 1) / 2);
   unsigned int y_offset;
   unsigned int y_idx = (block.block_number - 1) / 4;
   if (is_north) {
@@ -328,7 +350,7 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
  * @param drop_low_rap_edge whether to exclude low rapidity edge like all other edges (TRUE, better for calibration)
  *    or keep it (plot it) (FALSE, default behavior of h_allblocks).
  */
-void plot_channel_lvl(std::vector<Block> all_blocks) {
+void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(0.5);
 
@@ -378,6 +400,37 @@ void plot_channel_lvl(std::vector<Block> all_blocks) {
   //  2 3      2 0       1 3
   //  0 1      3 1       0 2
 
+  // the normal of the top surface of block points to high rapidity 
+  // 
+  // *looking at the wide end of the block*
+  //     top
+  //  ---------
+  //  \  3 4  /
+  //   \ 1 2 /
+  //    -----
+  //   bottom
+  
+  // (wide -> narrow) cross (high -> low rapidity) gives direction of increasing block number
+  //    and as before, direction of increasing block number is direction of 2 -> 0 of channels within block 
+  // in the figure above, wide -> narrow is into the page and high -> low rapidity is down, so
+  //    increasing block number is to the left
+  // this means we have the following mapping:
+  // channel <-> fiber tower
+  //       0  |  1
+  //       2  |  2
+  //       1  |  3
+  //       3  |  4
+
+  // in Tim's html, fiber towers are arranged as below:
+  //  2 4
+  //  1 3
+  // here, on the top half (South), fiber towers are arranged within each block as below:
+  //  3 4
+  //  1 2
+  // here, on the bottom half (North), fiber towers are arranged within each block as below:
+  //  2 1
+  //  4 3
+
   // std::vector<std::vector<double>> chnl_mpvs = get_chnl_mpv_with_err().first;
   TH2D *h_chnl_mpv = new TH2D("", "sPHENIX EMCal Channel MPV;#phi [Channels];#eta [Channels];MPV", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
@@ -420,51 +473,7 @@ void plot_channel_lvl(std::vector<Block> all_blocks) {
     
     // printf("sector %2d block %2d:\n\tch0: %f\n\tch1: %f\n\tch2: %f\n\tch3: %f\n", block.sector, block.block_number, ch0, ch1, ch2, ch3);
   }
-  TCanvas *c_chnl_mpv = new TCanvas();
-  c_chnl_mpv->SetRightMargin(0.125);
-  c_chnl_mpv->SetGrid();
-  h_chnl_mpv->SetAxisRange(0, 128*2 - 1, "X");
-  h_chnl_mpv->SetAxisRange(0, 48*2 - 1, "Y");
-  h_chnl_mpv->GetXaxis()->SetNdivisions(32, false);
-  h_chnl_mpv->GetYaxis()->SetNdivisions(2, false);
-  h_chnl_mpv->GetXaxis()->SetLabelOffset(999.0);
-  h_chnl_mpv->GetYaxis()->SetLabelOffset(999.0);
-  h_chnl_mpv->GetXaxis()->SetTickLength(0);
-  h_chnl_mpv->GetYaxis()->SetTickLength(0);
-  h_chnl_mpv->Draw("COLZ0");
-  plot_sector_and_block_labels(true);
-  c_chnl_mpv->SaveAs("emcal_plots/chnl_mpv.pdf");
 
-  // the normal of the top surface of block points to high rapidity 
-  // 
-  // *looking at the wide end of the block*
-  //     top
-  //  ---------
-  //  \  3 4  /
-  //   \ 1 2 /
-  //    -----
-  //   bottom
-  
-  // (wide -> narrow) cross (high -> low rapidity) gives direction of increasing block number
-  //    and as before, direction of increasing block number is direction of 2 -> 0 of channels within block 
-  // in the figure above, wide -> narrow is into the page and high -> low rapidity is down, so
-  //    increasing block number is to the left
-  // this means we have the following mapping:
-  // channel <-> fiber tower
-  //       0  |  1
-  //       2  |  2
-  //       1  |  3
-  //       3  |  4
-
-  // in Tim's html, fiber towers are arranged as below:
-  //  2 4
-  //  1 3
-  // here, on the top half (South), fiber towers are arranged within each block as below:
-  //  3 4
-  //  1 2
-  // here, on the bottom half (North), fiber towers are arranged within each block as below:
-  //  2 1
-  //  4 3
 
   TH2D *h_chnl_fiber = new TH2D("", "sPHENIX EMCal Tower Fiber Count;#phi [Towers];#eta [Towers];Fiber Count [%]", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
@@ -506,20 +515,99 @@ void plot_channel_lvl(std::vector<Block> all_blocks) {
     
     // printf("sector %2d block %2d:\n\tch0: %f\n\tch1: %f\n\tch2: %f\n\tch3: %f\n", block.sector, block.block_number, ch0, ch1, ch2, ch3);
   }
-  TCanvas *c_chnl_fiber = new TCanvas();
-  c_chnl_fiber->SetRightMargin(0.125);
-  c_chnl_fiber->SetGrid();
-  h_chnl_mpv->SetAxisRange(0, 128*2 - 1, "X");
-  h_chnl_mpv->SetAxisRange(0, 48*2 - 1, "Y");
-  h_chnl_fiber->GetXaxis()->SetNdivisions(32, false);
-  h_chnl_fiber->GetYaxis()->SetNdivisions(2, false);
-  h_chnl_fiber->GetXaxis()->SetLabelOffset(999.0);
-  h_chnl_fiber->GetYaxis()->SetLabelOffset(999.0);
-  h_chnl_fiber->GetXaxis()->SetTickLength(0);
-  h_chnl_fiber->GetYaxis()->SetTickLength(0);
-  h_chnl_fiber->Draw("COLZ0");
-  plot_sector_and_block_labels(true);
-  c_chnl_fiber->SaveAs("emcal_plots/chnl_fiber_count.pdf");
+
+  if (mode == "caroline") {
+    TCanvas *c_chnl_mpv = new TCanvas();
+    c_chnl_mpv->SetRightMargin(0.125);
+    c_chnl_mpv->SetGrid();
+    h_chnl_mpv->SetAxisRange(0, 128*2 - 1, "X");
+    h_chnl_mpv->SetAxisRange(0, 48*2 - 1, "Y");
+    h_chnl_mpv->GetXaxis()->SetNdivisions(32, false);
+    h_chnl_mpv->GetYaxis()->SetNdivisions(2, false);
+    h_chnl_mpv->GetXaxis()->SetLabelOffset(999.0);
+    h_chnl_mpv->GetYaxis()->SetLabelOffset(999.0);
+    h_chnl_mpv->GetXaxis()->SetTickLength(0);
+    h_chnl_mpv->GetYaxis()->SetTickLength(0);
+    h_chnl_mpv->Draw("COLZ0");
+    plot_sector_and_block_labels(true);
+    c_chnl_mpv->SaveAs("emcal_plots/chnl_mpv.pdf");
+    
+    TCanvas *c_chnl_fiber = new TCanvas();
+    c_chnl_fiber->SetRightMargin(0.125);
+    c_chnl_fiber->SetGrid();
+    h_chnl_mpv->SetAxisRange(0, 128*2 - 1, "X");
+    h_chnl_mpv->SetAxisRange(0, 48*2 - 1, "Y");
+    h_chnl_fiber->GetXaxis()->SetNdivisions(32, false);
+    h_chnl_fiber->GetYaxis()->SetNdivisions(2, false);
+    h_chnl_fiber->GetXaxis()->SetLabelOffset(999.0);
+    h_chnl_fiber->GetYaxis()->SetLabelOffset(999.0);
+    h_chnl_fiber->GetXaxis()->SetTickLength(0);
+    h_chnl_fiber->GetYaxis()->SetTickLength(0);
+    h_chnl_fiber->Draw("COLZ0");
+    plot_sector_and_block_labels(true);
+    c_chnl_fiber->SaveAs("emcal_plots/chnl_fiber_count.pdf");
+  } else if (mode == "tim") {
+    TCanvas *c_chnl_mpv = new TCanvas();
+    c_chnl_mpv->SetRightMargin(0.125);
+    c_chnl_mpv->SetGrid();
+    h_chnl_mpv->SetAxisRange(0, 128*2 - 1, "X");
+    h_chnl_mpv->SetAxisRange(0, 48*2 - 1, "Y");
+    h_chnl_mpv->GetXaxis()->SetNdivisions(32, false);
+    h_chnl_mpv->GetYaxis()->SetNdivisions(2, false);
+    h_chnl_mpv->Draw("COLZ0");
+    
+    h_chnl_mpv->GetXaxis()->SetLabelOffset(999.0);
+    h_chnl_mpv->GetXaxis()->SetTickLength(0);
+
+    // Redraw the new axis
+    gPad->Update();
+    TGaxis *x_axis_mpv = new TGaxis(gPad->GetUxmax(),
+                                  gPad->GetUymin(),
+                                  gPad->GetUxmin(),
+                                  gPad->GetUymin(),
+                                  h_chnl_mpv->GetXaxis()->GetXmin(),
+                                  h_chnl_mpv->GetXaxis()->GetXmax(),
+                                  8 + 4*100,"N-");            
+    x_axis_mpv->SetLabelOffset(-0.025);
+    x_axis_mpv->SetLabelFont(42);
+    x_axis_mpv->SetLabelSize(0.025);
+    x_axis_mpv->Draw();
+
+    h_chnl_mpv->GetYaxis()->SetLabelOffset(999.0);
+    h_chnl_mpv->GetYaxis()->SetTickLength(0);
+    gPad->Update();
+    TGaxis *y_axis_mpv = new TGaxis(gPad->GetUxmin(),
+                                  gPad->GetUymin(),
+                                  gPad->GetUxmin(),
+                                  gPad->GetUymax(),
+                                  -48,
+                                  48,
+                                  8 + 4*100,"N-");            
+    y_axis_mpv->SetLabelOffset(0.015);
+    y_axis_mpv->SetLabelFont(42);
+    y_axis_mpv->SetLabelSize(0.025);
+    y_axis_mpv->Draw();
+
+    // plot_sector_and_block_labels(true);
+    c_chnl_mpv->SaveAs("emcal_plots/chnl_mpv.pdf");
+    
+    TCanvas *c_chnl_fiber = new TCanvas();
+    c_chnl_fiber->SetRightMargin(0.125);
+    c_chnl_fiber->SetGrid();
+    h_chnl_mpv->SetAxisRange(0, 128*2 - 1, "X");
+    h_chnl_mpv->SetAxisRange(0, 48*2 - 1, "Y");
+    // h_chnl_fiber->GetXaxis()->SetNdivisions(32, false);
+    // h_chnl_fiber->GetYaxis()->SetNdivisions(2, false);
+    // h_chnl_fiber->GetXaxis()->SetLabelOffset(999.0);
+    // h_chnl_fiber->GetYaxis()->SetLabelOffset(999.0);
+    // h_chnl_fiber->GetXaxis()->SetTickLength(0);
+    // h_chnl_fiber->GetYaxis()->SetTickLength(0);
+    h_chnl_fiber->Draw("COLZ0");
+    // plot_sector_and_block_labels(true);
+    c_chnl_fiber->SaveAs("emcal_plots/chnl_fiber_count.pdf");
+  } else {
+    throw std::runtime_error(Form("unknown mode '%s'", mode.c_str()));
+  }
 }
 
 /**
@@ -732,7 +820,7 @@ void plot() {
     }
   };
 
-  plot_channel_lvl(all_blocks);
+  plot_channel_lvl(all_blocks, "tim");
   // for (const PlotConfig& cfg : cfgs) {
   //   plot_helper(all_blocks, cfg);
   // }
