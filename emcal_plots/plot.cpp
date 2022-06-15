@@ -20,16 +20,36 @@
  */
 const std::vector<int> pseudo_sector_mapping = {
    1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, // SOUTH
-   2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, // NORTH
+   2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64  // NORTH
 }; // we are looking at the wide ends of the blocks (the outside of EMCal)
 
 /**
  * @brief The true sector mapping as they should appear in the final plots.
  */
 const std::vector<int> true_sector_mapping = {
-   1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, // SOUTH
-   2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, // NORTH
+   5, 55, 47, 21, 61, 27, 25, 11,  7, 45, 13, 15, 57, 33, 17, 63,  9, 53, 41, 31, 59, 23, 29,  1,  3, 43, 39, 35, 51, 19, 37, 49,  // SOUTH
+  12, 52, 40, 34, 56, 30, 22,  2,  4, 54, 46, 26, 36, 32, 14, 64,  6, 60, 38, 24, 50, 28, 16, 10,  8, 48, 62, 18, 58, 20, 42, 44   // NORTH
 }; // we are looking at the wide ends of the blocks (the outside of EMCal)
+
+/**
+ * @brief Check if a sector mapping is valid.
+ * 
+ * @param mapping 
+ */
+void check_sector_mapping(const std::vector<int> mapping) {
+  std::set<int> sectors;
+  if (mapping.size() != 64) {
+    throw std::runtime_error(Form("sector mapping has %zu != 64 entries", mapping.size()));
+  }
+  for (const int &sector : mapping) {
+    if (sectors.find(sector) != sectors.end()) {
+      throw std::runtime_error(Form("found repeated sector (%d) while checking mapping", sector));
+    }
+    if (sector < 1 || sector > 64) {
+      throw std::runtime_error(Form("found invalid sector (%d) while checking mapping", sector));
+    }
+  }
+}
 
 /**
  * @brief Struct that packages all information associated with a block.
@@ -212,6 +232,43 @@ void plot_sector_and_block_labels(bool channel_lvl = false) {
       text->SetTextAlign(22);
       text->Draw();
     }
+  }
+}
+
+void plot_sector_labels_debug(bool channel_lvl = false) {
+  double sector_box_width = 3;
+  double sector_box_height = 1.5;
+  // odd sectors
+  for (unsigned int i = 0; i < 32; i++) {
+    double x_center = 2 + 4*i;
+    double y_center = 48 + 1.5;
+    TPaveText *text;
+    if (!channel_lvl) {
+      text = new TPaveText(x_center - sector_box_width/2, y_center - sector_box_height/2, x_center + sector_box_width/2, y_center + sector_box_height/2, "NB");
+    } else {
+      text = new TPaveText(2*(x_center - sector_box_width/2), 2*(y_center - sector_box_height/2), 2*(x_center + sector_box_width/2), 2*(y_center + sector_box_height/2), "NB");
+    }
+    text->SetTextFont(42);
+    text->SetFillColorAlpha(0, 0);
+    text->AddText(Form("%d", 2*i + 1));
+    text->SetTextAlign(22);
+    text->Draw();
+  }
+  // even sectors
+  for (unsigned int i = 0; i < 32; i++) {
+    double x_center = 2 + 4*i;
+    double y_center = -1.5;
+    TPaveText *text;
+    if (!channel_lvl) {
+      text = new TPaveText(x_center - sector_box_width/2, y_center - sector_box_height/2, x_center + sector_box_width/2, y_center + sector_box_height/2, "NB");
+    } else {
+      text = new TPaveText(2*(x_center - sector_box_width/2), 2*(y_center - sector_box_height/2), 2*(x_center + sector_box_width/2), 2*(y_center + sector_box_height/2), "NB");
+    }
+    text->SetTextFont(42);
+    text->SetFillColorAlpha(0, 0);
+    text->AddText(Form("%d", 2*i + 2));
+    text->SetTextAlign(22);
+    text->Draw();
   }
 }
 
@@ -548,27 +605,29 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
     c_chnl_fiber->SaveAs("emcal_plots/chnl_fiber_count.pdf");
   } else if (mode == "tim") {
     TCanvas *c_chnl_mpv = new TCanvas();
-    c_chnl_mpv->SetRightMargin(0.125);
     c_chnl_mpv->SetGrid();
+    c_chnl_mpv->SetRightMargin(0.125);
     h_chnl_mpv->SetAxisRange(0, 128*2 - 1, "X");
     h_chnl_mpv->SetAxisRange(0, 48*2 - 1, "Y");
+    h_chnl_mpv->GetXaxis()->SetLabelSize(0.025);
+    h_chnl_mpv->GetYaxis()->SetLabelSize(0.025);
+    h_chnl_mpv->Draw("COLZ0");
     h_chnl_mpv->GetXaxis()->SetNdivisions(32, false);
     h_chnl_mpv->GetYaxis()->SetNdivisions(2, false);
-    h_chnl_mpv->Draw("COLZ0");
     
     h_chnl_mpv->GetXaxis()->SetLabelOffset(999.0);
     h_chnl_mpv->GetXaxis()->SetTickLength(0);
 
     // Redraw the new axis
     gPad->Update();
-    TGaxis *x_axis_mpv = new TGaxis(gPad->GetUxmax(),
+    TGaxis *x_axis_mpv = new TGaxis(gPad->GetUxmin(),
                                   gPad->GetUymin(),
-                                  gPad->GetUxmin(),
+                                  gPad->GetUxmax(),
                                   gPad->GetUymin(),
-                                  h_chnl_mpv->GetXaxis()->GetXmin(),
-                                  h_chnl_mpv->GetXaxis()->GetXmax(),
-                                  8 + 4*100,"N-");            
-    x_axis_mpv->SetLabelOffset(-0.025);
+                                  -4,
+                                  256 - 4,
+                                  8 + 4*100,"N+");            
+    x_axis_mpv->SetLabelOffset(0.01);
     x_axis_mpv->SetLabelFont(42);
     x_axis_mpv->SetLabelSize(0.025);
     x_axis_mpv->Draw();
@@ -577,13 +636,13 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
     h_chnl_mpv->GetYaxis()->SetTickLength(0);
     gPad->Update();
     TGaxis *y_axis_mpv = new TGaxis(gPad->GetUxmin(),
-                                  gPad->GetUymin(),
-                                  gPad->GetUxmin(),
-                                  gPad->GetUymax(),
-                                  -48,
-                                  48,
-                                  8 + 4*100,"N-");            
-    y_axis_mpv->SetLabelOffset(0.015);
+                                    gPad->GetUymin(),
+                                    gPad->GetUxmin(),
+                                    gPad->GetUymax(),
+                                    -48,
+                                    48,
+                                    8 + 4*100,"N-");            
+    y_axis_mpv->SetLabelOffset(0.01);
     y_axis_mpv->SetLabelFont(42);
     y_axis_mpv->SetLabelSize(0.025);
     y_axis_mpv->Draw();
@@ -614,9 +673,12 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
  * @brief Body of macro (called when macro is executed). 
  */
 void plot() {
+  check_sector_mapping(pseudo_sector_mapping);
+  check_sector_mapping(true_sector_mapping);
+  
   std::vector<Block> all_blocks;
   std::fstream database;
-  database.open("emcal_plots/sPHENIX_EMCal_blocks - dbn_mpv.csv", std::ios::in);
+  database.open("files/sPHENIX_EMCal_blocks - dbn_mpv.csv", std::ios::in);
   std::string line, word;
   int line_num = 1;
   std::cout << "reading 'new database'" << std::endl;
