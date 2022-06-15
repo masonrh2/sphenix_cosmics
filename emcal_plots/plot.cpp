@@ -21,6 +21,14 @@ typedef struct Block {
   std::string dbn;
   double mpv;
   double mpv_err;
+  double ch0_mpv;
+  double ch0_mpv_err;
+  double ch1_mpv;
+  double ch1_mpv_err;
+  double ch2_mpv;
+  double ch2_mpv_err;
+  double ch3_mpv;
+  double ch3_mpv_err;
   double density;
   double fiber_count;
   double fiber_t1_count;
@@ -317,68 +325,71 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
  * @brief Plots EMCal fiber count over towers and MPV over channels.
  * 
  * @param all_blocks all blocks in the EMCal.
+ * @param drop_low_rap_edge whether to exclude low rapidity edge like all other edges (TRUE, better for calibration)
+ *    or keep it (plot it) (FALSE, default behavior of h_allblocks).
  */
 void plot_channel_lvl(std::vector<Block> all_blocks) {
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(0.5);
-  
-  std::vector<std::vector<double>> chnl_mpvs = get_chnl_mpv().first;
+
+  // the first block in a sector is in column D and is on the low rapidity edge
+  //    and also has only contributions from channel 
+
+  // in Tim's html, we are looking down at the narrow end of the block
+  // in Tim's html, blocks are arranged by 1-based number as below:
+  // D 01 05 09 ...
+  // C 02 06 10 ...
+  // B 03 07 11 ...
+  // A 04 08 12 ...
+  // in Tim's html, channels are arranged within each block as below:
+  //  2 3
+  //  0 1
+  // so, low rapidity edge has 0 and 2 and 2 -> 0 points in the direction of increasing block number
+  // so, (along long edge of sector towards low rapidity) cross (along short edge of sector towards increasing block number, or D -> A) 
+  //    gives direction of the inside of the detector (wide -> narrow)
+  // so, here, we are looking down on the outside of the detector (wide ends of blocks)
+
+  // here, top half (higher y) is South, where LHS of sector is column A and bottom is low rapidity (block 123)
+  //    bottom half (lower y) is North, where LHS of sectors is column D and top is low rapidity (block 123)    
+  // here, on the top half (South), blocks are arranged by 1-based number as below:
+  // .  .  .  .
+  // .  .  .  .
+  // .  .  .  .
+  // 12 11 10 09
+  // 08 07 06 05
+  // 04 03 02 01
+  // A  B  C  D
+  // here, on the top half (South), channels are arranged within each block as below:
+  //  1 3
+  //  0 2
+  // here, on the bottom half (North), blocks are arranged by 1-based number as below:
+  // D  C  B  A
+  // 01 02 03 04
+  // 05 06 07 08
+  // 09 10 11 12
+  // .  .  .  .
+  // .  .  .  .
+  // .  .  .  .
+  // here, on the bottom half (North), channels are arranged within each block as below:
+  //  2 0
+  //  3 1
+
+  // Tim's    This N    This S
+  //  2 3      2 0       1 3
+  //  0 1      3 1       0 2
+
+  // std::vector<std::vector<double>> chnl_mpvs = get_chnl_mpv_with_err().first;
   TH2D *h_chnl_mpv = new TH2D("", "sPHENIX EMCal Channel MPV;#phi [Channels];#eta [Channels];MPV", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
     auto xy = get_plot_indices(block);
     unsigned int x = 2*xy.first + 1;
     unsigned int y = 2*xy.second + 1;
 
-    // the first block in a sector is in column D and is on the low rapidity edge
-    //    and also has only contributions from channel 
-
-    // in Tim's html, we are looking down at the narrow end of the block
-    // in Tim's html, blocks are arranged by 1-based number as below:
-    // D 01 05 09 ...
-    // C 02 06 10 ...
-    // B 03 07 11 ...
-    // A 04 08 12 ...
-    // in Tim's html, channels are arranged within each block as below:
-    //  2 3
-    //  0 1
-    // so, low rapidity edge has 0 and 2 and 2 -> 0 points in the direction of increasing block number
-    // so, (along long edge of sector towards low rapidity) cross (along short edge of sector towards increasing block number, or D -> A) 
-    //    gives direction of the inside of the detector (wide -> narrow)
-    // so, here, we are looking down on the outside of the detector (wide ends of blocks)
-
-    // here, top half (higher y) is South, where LHS of sector is column A and bottom is low rapidity (block 123)
-    //    bottom half (lower y) is North, where LHS of sectors is column D and top is low rapidity (block 123)    
-    // here, on the top half (South), blocks are arranged by 1-based number as below:
-    // .  .  .  .
-    // .  .  .  .
-    // .  .  .  .
-    // 12 11 10 09
-    // 08 07 06 05
-    // 04 03 02 01
-    // A  B  C  D
-    // here, on the top half (South), channels are arranged within each block as below:
-    //  1 3
-    //  0 2
-    // here, on the bottom half (North), blocks are arranged by 1-based number as below:
-    // D  C  B  A
-    // 01 02 03 04
-    // 05 06 07 08
-    // 09 10 11 12
-    // .  .  .  .
-    // .  .  .  .
-    // .  .  .  .
-    // here, on the bottom half (North), channels are arranged within each block as below:
-    //  2 0
-    //  3 1
-
-    // Tim's    This N    This S
-    //  2 3      2 0       1 3
-    //  0 1      3 1       0 2
-    auto chnls = block_to_channel(block.block_number - 1);
-    double ch0 = chnl_mpvs[block.sector - 1][chnls[0]];
-    double ch1 = chnl_mpvs[block.sector - 1][chnls[1]];
-    double ch2 = chnl_mpvs[block.sector - 1][chnls[2]];
-    double ch3 = chnl_mpvs[block.sector - 1][chnls[3]];
+    // auto chnls = block_to_channel(block.block_number - 1);
+    double ch0 = block.ch0_mpv;
+    double ch1 = block.ch1_mpv;
+    double ch2 = block.ch2_mpv;
+    double ch3 = block.ch3_mpv;
     if (block.sector % 2 == 0) { // north sector
       if (ch0 > 0) {
         h_chnl_mpv->SetBinContent(x + 1, y + 1, ch0);
@@ -532,6 +543,14 @@ void plot() {
     std::string dbn;
     double mpv;
     double mpv_err;
+    double ch0_mpv;
+    double ch0_mpv_err;
+    double ch1_mpv;
+    double ch1_mpv_err;
+    double ch2_mpv;
+    double ch2_mpv_err;
+    double ch3_mpv;
+    double ch3_mpv_err;
     double density;
     double fiber_count;
     double fiber_t1_count;
@@ -565,6 +584,62 @@ void plot() {
       mpv_err = -1;
     } else {
       std::istringstream(tmp) >> mpv_err;
+    }
+
+    std::getline(csvStream, tmp, ',');
+    if (tmp == "") {
+      ch0_mpv = -1;
+    } else {
+      std::istringstream(tmp) >> ch0_mpv;
+    }
+
+    std::getline(csvStream, tmp, ',');
+    if (tmp == "") {
+      ch0_mpv_err = -1;
+    } else {
+      std::istringstream(tmp) >> ch0_mpv_err;
+    }
+
+    std::getline(csvStream, tmp, ',');
+    if (tmp == "") {
+      ch1_mpv = -1;
+    } else {
+      std::istringstream(tmp) >> ch1_mpv;
+    }
+
+    std::getline(csvStream, tmp, ',');
+    if (tmp == "") {
+      ch1_mpv_err = -1;
+    } else {
+      std::istringstream(tmp) >> ch1_mpv_err;
+    }
+
+    std::getline(csvStream, tmp, ',');
+    if (tmp == "") {
+      ch2_mpv = -1;
+    } else {
+      std::istringstream(tmp) >> ch2_mpv;
+    }
+
+    std::getline(csvStream, tmp, ',');
+    if (tmp == "") {
+      ch2_mpv_err = -1;
+    } else {
+      std::istringstream(tmp) >> ch2_mpv_err;
+    }
+
+    std::getline(csvStream, tmp, ',');
+    if (tmp == "") {
+      ch3_mpv = -1;
+    } else {
+      std::istringstream(tmp) >> ch3_mpv;
+    }
+
+    std::getline(csvStream, tmp, ',');
+    if (tmp == "") {
+      ch3_mpv_err = -1;
+    } else {
+      std::istringstream(tmp) >> ch3_mpv_err;
     }
 
     std::getline(csvStream, tmp, ',');
@@ -621,7 +696,7 @@ void plot() {
     // dbn.erase(std::remove(dbn.begin(), dbn.end(), '\r'), dbn.end());
     // dbn.erase(std::remove(dbn.begin(), dbn.end(), ' '), dbn.end());
 
-    all_blocks.push_back({sector, block_number, dbn, mpv, mpv_err, density, fiber_count, fiber_t1_count, fiber_t2_count, fiber_t3_count, fiber_t4_count, scint_ratio});
+    all_blocks.push_back({sector, block_number, dbn, mpv, mpv_err, ch0_mpv, ch0_mpv_err, ch1_mpv, ch1_mpv_err, ch2_mpv, ch2_mpv_err, ch3_mpv, ch3_mpv_err, density, fiber_count, fiber_t1_count, fiber_t2_count, fiber_t3_count, fiber_t4_count, scint_ratio});
     // printf("sector %2d block %2d mpv %f +/- %f\n", sector, block_number, mpv, mpv_err);
     line_num++;
   }

@@ -23,8 +23,8 @@ constexpr double MPV_CUTOFF_HIGH = 1000.0;
 /**
  * @brief Get the channel numbers associated with a block.
  * 
- * @param block_num 0-based block number (corresponding to h_allblocks)
- * @return std::vector<int> 0-based channel numbers (corresponding to h_allchannels)
+ * @param block_num block number (/96, 0-based, corresponding to h_allblocks).
+ * @return std::vector<int> channel numbers (0-based, corresponding to h_allchannels).
  */
 std::vector<int> block_to_channel(int block_num) {
   int t_x_off = block_num%4;
@@ -40,8 +40,8 @@ std::vector<int> block_to_channel(int block_num) {
 /**
  * @brief Get the block number of a channel.
  * 
- * @param channel 0-based channel number (corresponding to h_allchannels)
- * @return int 0-based block number (corresponding to h_allblocks)
+ * @param channel channel number (0-based, corresponding to h_allchannels).
+ * @return int block number (/96, 0-based, corresponding to h_allblocks).
  */
 int channel_to_block(int channel) {
   int i = channel/4;
@@ -94,6 +94,24 @@ std::set<int> perimeter_channels(bool drop_low_rap_edge = true) {
   //   printf("\n");
   // }
   return perimeter;
+}
+
+/**
+ * @brief Get the channel numbers which contribute to a block's block mpv.
+ * 
+ * @param perimeter set of channels to be excluded from block mpv calculation (edges).
+ * @param block block number (/96, 0-based).
+ * @return std::vector<int> channel numbers (0-based) which contribute to block's mpv calculation.
+ */
+std::vector<int> block_contributing_channels(const std::set<int> &perimeter, int block) {
+  std::vector<int> all_chnls = block_to_channel(block);
+  std::vector<int> contributing_channels;
+  for (int &chnl : all_chnls) {
+    if (perimeter.find(chnl) == perimeter.end()) {
+      contributing_channels.push_back(chnl);
+    }
+  }
+  return contributing_channels;
 }
 
 /**
@@ -261,258 +279,11 @@ std::vector<std::vector<std::string>> get_dbns() {
 }
 
 /**
- * @brief Get MPVs for each block for each sector from h_allblocks. Returns -1 for nonphysical MPV values.
- * 
- * @param write_ib write IB mean and sigma to csv file.
- * @return std::vector<std::vector<double>> [sector][block number] -> mpv, or -1 if none.
- */
-std::vector<std::vector<double>> get_mpvs(bool write_ib = false) {
-  std::vector<std::vector<double>> mpvs(64);
-  for (auto &vec : mpvs) {
-    vec = std::vector<double>(96, -1.0);
-  }
-
-  TFile *hist_file;
-  char filename[64];
-  std::map<int, int> physics_runs = read_physics_runs();
-  for (std::pair<int, int> p : physics_runs) {
-    int sector = p.first;
-    int run_num = p.second;
-    if (run_num > 0) {
-      // get data from the run number
-      sprintf(filename, "physics_runs/qa_output_000%i/histograms.root ", run_num);
-      if ((hist_file = TFile::Open(filename))) {
-        if (debug) {
-          printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
-        }
-        TH1D* data;
-        hist_file->GetObject("h_allblocks;1", data);
-        if (!data) {
-          std::cerr << "  unable to get histogram" << std::endl;
-          continue;       
-        }
-        for (int block_num = 1; block_num <= 96; block_num++) {
-          double content = data->GetBinContent(block_num);
-          // first check if this is data we are interested in...
-          if (content <= MPV_CUTOFF_LOW || content >= MPV_CUTOFF_HIGH) {
-            if (debug) std::cout << "  block " << block_num << ": rejected bin content " << content << std::endl;
-            continue;
-          } else {
-            // if (debug) std::cout << "  block " << block_num << ": mpv " << content << std::endl;
-          }
-          // std::cout << "block " << block_num << " (DBN " << dbns[sector - 1][block_num] << "): good mpv (" << content  << ")" << std::endl;
-          if (mpvs[sector - 1][block_num - 1] != -1) {
-            throw std::runtime_error(Form("would overwrite mpv data at sector %i block %i (is there a repeated sector?)", sector, block_num));
-          }
-          mpvs[sector - 1][block_num - 1] = content;
-        }
-      } else {
-        printf("FAILED to find run file for sector %i: qa_output_000%i/histograms.root\n", sector, run_num);
-      }
-    }
-  }
-  if (write_ib) {
-    FILE *mean_outfile = fopen("files/mpv_avg_ib_mean.csv", "w+");
-    FILE *sigma_outfile = fopen("files/mpv_avg_ib_sigma.csv", "w+");
-    fprintf(mean_outfile, "SECTOR, RUN, IB0, IB1, IB2, IB3, IB4, IB5");
-    fprintf(sigma_outfile, "SECTOR, RUN, IB0, IB1, IB2, IB3, IB4, IB5");
-    for (short sector = 0; sector < 64; sector++) {
-      fprintf(mean_outfile, "\n%i, %i", sector + 1, physics_runs[sector + 1]);
-      fprintf(sigma_outfile, "\n%i, %i", sector + 1, physics_runs[sector + 1]);
-      for (short ib = 0; ib < 6; ib++) {
-        std::vector<double> entries;
-        for (short block = 0; block < 16; block++) {
-          double mpv = mpvs[sector][ib*16 + block];
-          if (mpv != -1) {
-            entries.push_back(mpv);
-          }
-        }
-        if (entries.size() > 0) {
-          fprintf(mean_outfile, ", %f", TMath::Mean(entries.begin(), entries.end()));
-          fprintf(sigma_outfile, ", %f", TMath::StdDev(entries.begin(), entries.end()));
-        } else {
-          fprintf(mean_outfile, ", ");
-          fprintf(sigma_outfile, ", ");
-        }
-      }
-    }
-    fclose(mean_outfile);
-    fclose(sigma_outfile);
-  }
-  for (short sector = 0; sector < 64; sector++) {
-    int n_blocks = 0;
-    for (short block = 0; block < 96; block++) {
-      double mpv = mpvs[sector][block];
-      if (mpv > 0) {
-        n_blocks++;
-      }
-    }
-    if (debug) {
-      if (n_blocks == 96) {
-        printf("sector %2d: got mpv for all blocks!\n", sector + 1);
-      } else if (n_blocks > 0) {
-        printf("sector %2d: got mpv for %2d/96 blocks\n", sector + 1, n_blocks);
-      }
-    }
-  }
-  return mpvs;
-}
-
-/**
- * @brief Get MPV errors for each block for each sector. Reconstructed from h_allchannels.
- * 
- * @return std::vector<std::vector<double>> [sector][block number] -> mpv error.
- */
-std::vector<std::vector<double>> get_mpv_errs(std::vector<std::vector<double>> mpvs) {
-  std::vector<std::vector<double>> mpv_errs(64);
-  for (auto &vec : mpv_errs) {
-    vec = std::vector<double>(96, -1.0);
-  }
-
-  std::set<int> perimeter = perimeter_channels(false);
-
-  TFile *hist_file;
-  char filename[64];
-  std::map<int, int> physics_runs = read_physics_runs();
-  for (std::pair<int, int> p : physics_runs) {
-    int sector = p.first;
-    int run_num = p.second;
-    if (run_num > 0) {
-      // get data from the run number
-      sprintf(filename, "physics_runs/qa_output_000%i/histograms.root ", run_num);
-      if ((hist_file = TFile::Open(filename))) {
-        if (debug) {
-          printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
-        }
-        TH1D* data;
-        hist_file->GetObject("h_allchannels;1", data);
-        TH1D* data_b;
-        hist_file->GetObject("h_allblocks;1", data_b);
-        if (!data) {
-          std::cerr << "  unable to get histogram" << std::endl;
-          continue;       
-        }
-        for (int block = 0; block < 96; block++) {
-          double avg_err = 0;
-          double avg_mpv = 0;
-          int n_blocks = 0;
-          // printf("%ssector %2d block %2d%s\n", PRINT_BOLD, sector, block + 1, PRINT_END);
-          for (int &channel_num : block_to_channel(block)) {
-            if (perimeter.find(channel_num) == perimeter.end()) {
-              double this_err = data->GetBinError(channel_num + 1);
-              double this_mpv = data->GetBinContent(channel_num + 1);
-              avg_err += this_err;
-              avg_mpv += this_mpv;
-              n_blocks++;
-              // printf("\t%7.3f (ch %3d)\n", this_mpv, channel_num);
-            }
-          }
-          avg_err /= n_blocks;
-          avg_mpv /= n_blocks;
-          double block_mpv = data_b->GetBinContent(block + 1);
-          if (abs(block_mpv - avg_mpv) > 0.01) {
-            printf("\t%sMISMATCH block mpv %7.3f != tower avg %7.3f%s\n", PRINT_RED, block_mpv, avg_mpv, PRINT_END);
-            // printf("sector %2d block %2d (ch %3d) [n = %1d]: %7.3f != %7.3f\n", sector, block + 1, block*4, n_blocks, block_mpv, avg_mpv);
-          } else {
-            // printf("\t%sthat checks out%s\n", PRINT_GREEN, PRINT_END);
-          }
-          
-          // printf("sector %2d, block %2d, mpv_err = %f, mpv c: %f, b: %f\n", sector, block + 1, avg_err, avg_mpv, data_b->GetBinContent(block + 1));
-          if (mpvs[sector -1][block] > 0) {
-            mpv_errs[sector - 1][block] = avg_err;
-          } // else we don't care what the error is
-        }
-      } else {
-        printf("FAILED to find run file for sector %i: qa_output_000%i/histograms.root\n", sector, run_num);
-      }
-    }
-  }
-  return mpv_errs;
-}
-
-/**
- * @brief Get MPV and MPV error for each block for each sector. Reconstructed from h_allchannels.
- * 
- * @param drop_low_rap_edge whether to drop low rapidity edge like all other edges (TRUE, better for calibration)
- *    or keep it (FALSE, default behavior of h_allblocks).
- * @param prune_bad_values whether to return (-1, -1) for nonphysical mpv values (TRUE) or keep them (FALSE).
- * @return std::vector<std::vector<std::pair<double, double>>> [sector][block number] -> (mpv, mpv error).
- */
-std::vector<std::vector<std::pair<double, double>>> get_mpv_with_err(bool drop_low_rap_edge, bool prune_bad_values) {
-  std::vector<std::vector<std::pair<double, double>>> mpv_with_err(64);
-  for (auto &vec : mpv_with_err) {
-    vec = std::vector<std::pair<double, double>>(96, std::make_pair(-1.0, -1.0));
-  }
-
-  std::set<int> perimeter = perimeter_channels(drop_low_rap_edge);
-
-  TFile *hist_file;
-  char filename[64];
-  std::map<int, int> physics_runs = read_physics_runs();
-  for (std::pair<int, int> p : physics_runs) {
-    int sector = p.first;
-    int run_num = p.second;
-    if (run_num > 0) {
-      // get data from the run number
-      sprintf(filename, "physics_runs/qa_output_000%i/histograms.root ", run_num);
-      if ((hist_file = TFile::Open(filename))) {
-        if (debug) {
-          printf("found run file for sector %i: physics_runs/qa_output_000%i/histograms.root\n", sector, run_num);
-        }
-        TH1D* data;
-        hist_file->GetObject("h_allchannels;1", data);
-        TH1D* data_b;
-        hist_file->GetObject("h_allblocks;1", data_b);
-        if (!data) {
-          std::cerr << "  unable to get histogram" << std::endl;
-          continue;       
-        }
-        for (int block = 0; block < 96; block++) {
-          double avg_err = 0;
-          double avg_mpv = 0;
-          int n_blocks = 0;
-          // printf("%ssector %2d block %2d%s\n", PRINT_BOLD, sector, block + 1, PRINT_END);
-          for (int &channel_num : block_to_channel(block)) {
-            if (perimeter.find(channel_num) == perimeter.end()) {
-              double this_err = data->GetBinError(channel_num + 1);
-              double this_mpv = data->GetBinContent(channel_num + 1);
-              avg_err += this_err;
-              avg_mpv += this_mpv;
-              n_blocks++;
-              // printf("\t%7.3f (ch %3d)\n", this_mpv, channel_num);
-            }
-          }
-          avg_err /= n_blocks;
-          avg_mpv /= n_blocks;
-          double block_mpv = data_b->GetBinContent(block + 1);
-          if (abs(block_mpv - avg_mpv) > 0.01) {
-            printf("\t%sMISMATCH block mpv %7.3f != tower avg %7.3f%s\n", PRINT_RED, block_mpv, avg_mpv, PRINT_END);
-            // printf("sector %2d block %2d (ch %3d) [n = %1d]: %7.3f != %7.3f\n", sector, block + 1, block*4, n_blocks, block_mpv, avg_mpv);
-          } else {
-            // printf("\t%sthat checks out%s\n", PRINT_GREEN, PRINT_END);
-          }
-          
-          // printf("sector %2d, block %2d, mpv_err = %f, mpv c: %f, b: %f\n", sector, block + 1, avg_err, avg_mpv, data_b->GetBinContent(block + 1));
-          if (!prune_bad_values) {
-            mpv_with_err[sector - 1][block] = std::make_pair(avg_mpv, avg_err);
-          } else if (prune_bad_values && avg_mpv > MPV_CUTOFF_LOW && avg_mpv < MPV_CUTOFF_HIGH) {
-            mpv_with_err[sector - 1][block] = std::make_pair(avg_mpv, avg_err);
-          }
-        }
-      } else {
-        printf("FAILED to find run file for sector %i: qa_output_000%i/histograms.root\n", sector, run_num);
-      }
-    }
-  }
-  return mpv_with_err;
-}
-
-/**
  * @brief Get MPVs for each channel for each sector from h_allchannels.
  * 
  * @return std::vector<std::vector<double>> [sector][channel number] -> mpv 
  */
-std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> get_chnl_mpv() {
+std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> get_chnl_mpv_with_err() {
   std::vector<std::vector<double>> chnl_mpv(64);
   std::vector<std::vector<double>> chnl_mpv_err(64);
   for (auto &vec : chnl_mpv) {
@@ -553,6 +324,40 @@ std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> ge
     }
   }
   return std::make_pair(chnl_mpv, chnl_mpv_err);
+}
+
+/**
+ * @brief Calculate block MPVs and error for each block for each sector from channel mpv and error.
+ * 
+ * @param chnl_mpv_with_err channel mpv and error.
+ * @param perimeter set of channels to be excluded from block mpv calculation (edges).
+ * @return std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> 
+ */
+std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> calculate_block_mpv_with_err(const std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> &chnl_mpv_with_err, const std::set<int> &perimeter) {
+  std::vector<std::vector<double>> block_mpvs(64);
+  std::vector<std::vector<double>> block_mpv_errs(64);
+  for (auto &vec : block_mpvs) {
+    vec = std::vector<double>(96, -1.0);
+  }
+  for (auto &vec : block_mpv_errs) {
+    vec = std::vector<double>(96, -1.0);
+  }
+  for (int sector = 0; sector < 64; sector++) {
+    for (int block = 0; block < 96; block++) {
+      std::vector<int> chnls = block_contributing_channels(perimeter, block);
+      double block_mpv = 0.0;
+      double block_mpv_err = 0.0;
+      for (int &chnl : chnls) {
+        block_mpv += chnl_mpv_with_err.first[sector][chnl];
+        block_mpv_err += chnl_mpv_with_err.second[sector][chnl];
+      }
+      block_mpv /= chnls.size();
+      block_mpv_err /= chnls.size();
+      block_mpvs[sector][block] = block_mpv;
+      block_mpv_errs[sector][block] = block_mpv_err;
+    }
+  }
+  return std::make_pair(block_mpvs, block_mpv_errs);
 }
 
 /**
@@ -638,36 +443,51 @@ std::vector<std::vector<double>> get_sp_gaps(bool write_ib = false) {
 // TODO: how to handle channels with zero mpv, just a for loop to skip the edges, probably
 
 /**
- * @brief Write "database" to file as csv. 
+ * @brief Write "database" to file as csv.
+ * 
+ * @param drop_low_rap_edge whether to drop low rapidity edge like all other edges (TRUE, better for calibration)
+ *    or keep it (FALSE, default behavior of h_allblocks).
  */
-void write_map_to_file() {
+void write_map_to_file(bool drop_low_rap_edge) {
   FILE *outfile = fopen("files/dbn_mpv.csv", "w+");
   fprintf(outfile, "sector, block, dbn, mpv, mpv_err, ch0_mpv, ch0_mpv_err, ch1_mpv, ch1_mpv_err, ch2_mpv, ch2_mpv_err, ch3_mpv, ch3_mpv_err");
   auto dbns = get_dbns();
-  auto mpvs = get_mpvs();
-  auto mpv_errs = get_mpv_errs(mpvs);
-  auto chnl_mpv_and_err = get_chnl_mpv();
+  // auto mpvs = get_mpvs();
+  // auto mpv_errs = get_mpv_errs(mpvs);
+  std::set<int> perimeter = perimeter_channels(drop_low_rap_edge);
+  auto chnl_mpv_and_err = get_chnl_mpv_with_err();
+  auto block_mpv_and_err = calculate_block_mpv_with_err(chnl_mpv_and_err, perimeter);
   auto chnl_mpvs = chnl_mpv_and_err.first;
   auto chnl_mpv_errs = chnl_mpv_and_err.second;
-  for (short sector = 0; sector < 64; sector++) {
+  auto block_mpvs = block_mpv_and_err.first;
+  auto block_mpv_errs = block_mpv_and_err.second;
+  for (int sector = 0; sector < 64; sector++) {
     int n_blocks = 0;
-    for (short block = 0; block < 96; block++) {
+    for (int block = 0; block < 96; block++) {
       std::string dbn = dbns[sector][block];
-      double mpv = mpvs[sector][block];
-      double mpv_err = mpv_errs[sector][block];
-      auto chnls = block_to_channel(block);
-      double ch0_mpv = chnl_mpvs[sector][chnls[0]];
-      double ch0_mpv_err = chnl_mpv_errs[sector][chnls[0]];
-      double ch1_mpv = chnl_mpvs[sector][chnls[1]];
-      double ch1_mpv_err = chnl_mpv_errs[sector][chnls[1]];
-      double ch2_mpv = chnl_mpvs[sector][chnls[2]];
-      double ch2_mpv_err = chnl_mpv_errs[sector][chnls[2]];
-      double ch3_mpv = chnl_mpvs[sector][chnls[3]];
-      double ch3_mpv_err = chnl_mpv_errs[sector][chnls[3]];
+      double mpv = block_mpvs[sector][block];
+      double mpv_err = block_mpv_errs[sector][block];
+      auto all_chnls = block_to_channel(block);
+      // double ch0_mpv = chnl_mpvs[sector][chnls[0]];
+      // double ch0_mpv_err = chnl_mpv_errs[sector][chnls[0]];
+      // double ch1_mpv = chnl_mpvs[sector][chnls[1]];
+      // double ch1_mpv_err = chnl_mpv_errs[sector][chnls[1]];
+      // double ch2_mpv = chnl_mpvs[sector][chnls[2]];
+      // double ch2_mpv_err = chnl_mpv_errs[sector][chnls[2]];
+      // double ch3_mpv = chnl_mpvs[sector][chnls[3]];
+      // double ch3_mpv_err = chnl_mpv_errs[sector][chnls[3]];
       if (dbn != "") {
         if (mpv > 0) {
-          fprintf(outfile, "\n%i, %i, %s, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", sector + 1, block + 1, dbn.c_str(), mpv, mpv_err,
-                  ch0_mpv, ch0_mpv_err, ch1_mpv_err, ch1_mpv_err, ch2_mpv, ch2_mpv_err, ch3_mpv, ch3_mpv_err);
+          fprintf(outfile, "\n%i, %i, %s, %f, %f", sector + 1, block + 1, dbn.c_str(), mpv, mpv_err);
+          for (int &chnl : all_chnls) { // order : 0, 1, 2, 3
+            if (perimeter.find(chnl) == perimeter.end()) {
+              // contributes to block mpv
+              fprintf(outfile, ", %f, %f", chnl_mpvs[sector][chnl], chnl_mpv_errs[sector][chnl]);
+            } else {
+              // does not contribute to block mpv
+              fprintf(outfile, ", , ");
+            }
+          }
           n_blocks++;
         } else {
           fprintf(outfile, "\n%i, %i, %s, , , , , , , , , , ", sector + 1, block + 1, dbn.c_str());
