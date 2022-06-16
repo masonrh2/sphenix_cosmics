@@ -16,7 +16,7 @@
 #include "../includes/utils.h"
 
 /**
- * @brief The default sector mapping (from Caroline's sector sheet).
+ * @brief The default sector mapping (from Caroline's sector sheet). NOTE: wide end of blocks (outside of detector) point out of page!
  */
 const std::vector<int> pseudo_sector_mapping = {
    1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, // SOUTH
@@ -24,7 +24,7 @@ const std::vector<int> pseudo_sector_mapping = {
 }; // we are looking at the wide ends of the blocks (the outside of EMCal)
 
 /**
- * @brief The true sector mapping as they should appear in the final plots.
+ * @brief The true sector mapping as they should appear in the final plots. NOTE: wide end of blocks (outside of detector) point out of page!
  */
 const std::vector<int> true_sector_mapping = {
    5, 55, 47, 21, 61, 27, 25, 11,  7, 45, 13, 15, 57, 33, 17, 63,  9, 53, 41, 31, 59, 23, 29,  1,  3, 43, 39, 35, 51, 19, 37, 49,  // SOUTH
@@ -117,7 +117,8 @@ std::pair<unsigned int, unsigned int> get_plot_indices(Block block) {
 }
 
 /**
- * @brief Plot sector numbers (1 - 64) and block type (1 - 24) onto the current canvas.
+ * @brief Plot sector numbers (1 - 64) and block type (1 - 24) onto the current canvas. Draws sector numbers above/below sector.
+ *    Draws block type left of y axis. NOTE: drawn numbers overlap with x and y axis number, so  one must ...->SetLabelOffset(999.0). 
  * 
  * @param channel_lvl whether plotting on a channel/tower-level canvas (TRUE) or block-level (FALSE).
  */
@@ -235,13 +236,24 @@ void plot_sector_and_block_labels(bool channel_lvl = false) {
   }
 }
 
-void plot_sector_labels_debug(bool channel_lvl = false) {
+/**
+ * @brief Plot true sector numbers (1 - 64) onto the current canvas. Draws sector numbers in the middle of sector.
+ * 
+ * @param wide_up whether wide end of block (outside of detector) points out of page (TRUE) or narrow end of block (inside of detector) does (FALSE).
+ * @param channel_lvl whether plotting on a channel/tower-level canvas (TRUE) or block-level (FALSE).
+ */
+void plot_sector_labels_debug(bool wide_up, bool channel_lvl = false) {
   double sector_box_width = 3;
   double sector_box_height = 1.5;
-  // odd sectors
+  // SOUTH (odd pseudo-sectors)
   for (unsigned int i = 0; i < 32; i++) {
-    double x_center = 2 + 4*i;
-    double y_center = 48 + 1.5;
+    double x_center;
+    if (wide_up) {
+      x_center = 2 + 4*i;
+    } else {
+      x_center = (128 - (2 + 4*i) + 4)%128;
+    }
+    double y_center = 36;
     TPaveText *text;
     if (!channel_lvl) {
       text = new TPaveText(x_center - sector_box_width/2, y_center - sector_box_height/2, x_center + sector_box_width/2, y_center + sector_box_height/2, "NB");
@@ -250,14 +262,19 @@ void plot_sector_labels_debug(bool channel_lvl = false) {
     }
     text->SetTextFont(42);
     text->SetFillColorAlpha(0, 0);
-    text->AddText(Form("%d", 2*i + 1));
+    text->AddText(Form("%d", true_sector_mapping[i]));
     text->SetTextAlign(22);
     text->Draw();
   }
-  // even sectors
+  // NORTH (even pseudo-sectors)
   for (unsigned int i = 0; i < 32; i++) {
-    double x_center = 2 + 4*i;
-    double y_center = -1.5;
+    double x_center;
+    if (wide_up) {
+      x_center = 2 + 4*i;
+    } else {
+      x_center = (128 - (2 + 4*i) + 4)%128;
+    }
+    double y_center = 12;
     TPaveText *text;
     if (!channel_lvl) {
       text = new TPaveText(x_center - sector_box_width/2, y_center - sector_box_height/2, x_center + sector_box_width/2, y_center + sector_box_height/2, "NB");
@@ -266,7 +283,7 @@ void plot_sector_labels_debug(bool channel_lvl = false) {
     }
     text->SetTextFont(42);
     text->SetFillColorAlpha(0, 0);
-    text->AddText(Form("%d", 2*i + 2));
+    text->AddText(Form("%d", true_sector_mapping[i + 32]));
     text->SetTextAlign(22);
     text->Draw();
   }
@@ -406,8 +423,9 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
  * @param all_blocks all blocks in the EMCal.
  * @param drop_low_rap_edge whether to exclude low rapidity edge like all other edges (TRUE, better for calibration)
  *    or keep it (plot it) (FALSE, default behavior of h_allblocks).
+ * @param wide_up whether wide end of block (outside of detector) points out of page (TRUE) or narrow end of block (inside of detector) does (FALSE).
  */
-void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
+void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide_up) {
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(0.5);
 
@@ -500,31 +518,63 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
     double ch1 = block.ch1_mpv;
     double ch2 = block.ch2_mpv;
     double ch3 = block.ch3_mpv;
-    if (block.sector % 2 == 0) { // north sector
-      if (ch0 > 0) {
-        h_chnl_mpv->SetBinContent(x + 1, y + 1, ch0);
+    if (wide_up) {
+      // WIDE END POINTS OUT OF PAGE (CAROLINE'S CONVENTION)
+      if (block.sector % 2 == 0) { // north sector
+        if (ch0 > 0) {
+          h_chnl_mpv->SetBinContent(x + 1, y + 1, ch0);
+        }
+        if (ch1 > 0) {
+          h_chnl_mpv->SetBinContent(x + 1, y, ch1);
+        }
+        if (ch2 > 0) {
+          h_chnl_mpv->SetBinContent(x, y + 1, ch2);
+        }
+        if (ch3 > 0) {
+          h_chnl_mpv->SetBinContent(x, y, ch3);
+        }
+      } else { // south sector
+        if (ch0 > 0) {
+          h_chnl_mpv->SetBinContent(x, y, ch0);
+        }
+        if (ch1 > 0) {
+          h_chnl_mpv->SetBinContent(x, y + 1, ch1);
+        }
+        if (ch2 > 0) {
+          h_chnl_mpv->SetBinContent(x + 1, y, ch2);
+        }
+        if (ch3 > 0) {
+          h_chnl_mpv->SetBinContent(x + 1, y + 1, ch3);
+        }
       }
-      if (ch1 > 0) {
-        h_chnl_mpv->SetBinContent(x + 1, y, ch1);
-      }
-      if (ch2 > 0) {
-        h_chnl_mpv->SetBinContent(x, y + 1, ch2);
-      }
-      if (ch3 > 0) {
-        h_chnl_mpv->SetBinContent(x, y, ch3);
-      }
-    } else { // south sector
-      if (ch0 > 0) {
-        h_chnl_mpv->SetBinContent(x, y, ch0);
-      }
-      if (ch1 > 0) {
-        h_chnl_mpv->SetBinContent(x, y + 1, ch1);
-      }
-      if (ch2 > 0) {
-        h_chnl_mpv->SetBinContent(x + 1, y, ch2);
-      }
-      if (ch3 > 0) {
-        h_chnl_mpv->SetBinContent(x + 1, y + 1, ch3);
+    } else {
+      // NARROW END POINTS OUT OF PAGE (TIM'S CONVENTION)
+      if (block.sector % 2 == 0) { // north sector
+        if (ch0 > 0) {
+          h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, ch0);
+        }
+        if (ch1 > 0) {
+          h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y, ch1);
+        }
+        if (ch2 > 0) {
+          h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, ch2);
+        }
+        if (ch3 > 0) {
+          h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, ch3);
+        }
+      } else { // south sector
+        if (ch0 > 0) {
+          h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, ch0);
+        }
+        if (ch1 > 0) {
+          h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, ch1);
+        }
+        if (ch2 > 0) {
+          h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y, ch2);
+        }
+        if (ch3 > 0) {
+          h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, ch3);
+        }
       }
     }
     
@@ -542,31 +592,61 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
     double t2 = block.fiber_t2_count;
     double t3 = block.fiber_t3_count;
     double t4 = block.fiber_t4_count;
-    if (block.sector % 2 == 0) { // north sector
-      if (t1 > 0) {
-        h_chnl_fiber->SetBinContent(x + 1, y + 1, t1);
+    if (wide_up) {
+      if (block.sector % 2 == 0) { // north sector
+        if (t1 > 0) {
+          h_chnl_fiber->SetBinContent(x + 1, y + 1, t1);
+        }
+        if (t2 > 0) {
+          h_chnl_fiber->SetBinContent(x, y + 1, t2);
+        }
+        if (t3 > 0) {
+          h_chnl_fiber->SetBinContent(x + 1, y, t3);
+        }
+        if (t4 > 0) {
+          h_chnl_fiber->SetBinContent(x, y, t4);
+        }
+      } else { // south sector
+        if (t1 > 0) {
+          h_chnl_fiber->SetBinContent(x, y, t1);
+        }
+        if (t2 > 0) {
+          h_chnl_fiber->SetBinContent(x + 1, y, t2);
+        }
+        if (t3 > 0) {
+          h_chnl_fiber->SetBinContent(x, y + 1, t3);
+        }
+        if (t4 > 0) {
+          h_chnl_fiber->SetBinContent(x + 1, y + 1, t4);
+        }
       }
-      if (t2 > 0) {
-        h_chnl_fiber->SetBinContent(x, y + 1, t2);
-      }
-      if (t3 > 0) {
-        h_chnl_fiber->SetBinContent(x + 1, y, t3);
-      }
-      if (t4 > 0) {
-        h_chnl_fiber->SetBinContent(x, y, t4);
-      }
-    } else { // south sector
-      if (t1 > 0) {
-        h_chnl_fiber->SetBinContent(x, y, t1);
-      }
-      if (t2 > 0) {
-        h_chnl_fiber->SetBinContent(x + 1, y, t2);
-      }
-      if (t3 > 0) {
-        h_chnl_fiber->SetBinContent(x, y + 1, t3);
-      }
-      if (t4 > 0) {
-        h_chnl_fiber->SetBinContent(x + 1, y + 1, t4);
+    } else {
+      if (block.sector % 2 == 0) { // north sector
+        if (t1 > 0) {
+          h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, t1);
+        }
+        if (t2 > 0) {
+          h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, t2);
+        }
+        if (t3 > 0) {
+          h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y, t3);
+        }
+        if (t4 > 0) {
+          h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, t4);
+        }
+      } else { // south sector
+        if (t1 > 0) {
+          h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, t1);
+        }
+        if (t2 > 0) {
+          h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y, t2);
+        }
+        if (t3 > 0) {
+          h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, t3);
+        }
+        if (t4 > 0) {
+          h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, t4);
+        }
       }
     }
     
@@ -618,7 +698,7 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
     h_chnl_mpv->GetXaxis()->SetLabelOffset(999.0);
     h_chnl_mpv->GetXaxis()->SetTickLength(0);
 
-    // Redraw the new axis
+    // draw axes separately (since they don't match the gridlines, which are sector boundaries)
     gPad->Update();
     TGaxis *x_axis_mpv = new TGaxis(gPad->GetUxmin(),
                                   gPad->GetUymin(),
@@ -626,7 +706,7 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
                                   gPad->GetUymin(),
                                   -4,
                                   256 - 4,
-                                  8 + 4*100,"N+");            
+                                  16 + 4*100,"N+");            
     x_axis_mpv->SetLabelOffset(0.01);
     x_axis_mpv->SetLabelFont(42);
     x_axis_mpv->SetLabelSize(0.025);
@@ -641,28 +721,59 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
                                     gPad->GetUymax(),
                                     -48,
                                     48,
-                                    8 + 4*100,"N-");            
+                                    12 + 2*100,"N-");            
     y_axis_mpv->SetLabelOffset(0.01);
     y_axis_mpv->SetLabelFont(42);
     y_axis_mpv->SetLabelSize(0.025);
     y_axis_mpv->Draw();
 
-    // plot_sector_and_block_labels(true);
+    plot_sector_labels_debug(wide_up, true);
     c_chnl_mpv->SaveAs("emcal_plots/chnl_mpv.pdf");
     
     TCanvas *c_chnl_fiber = new TCanvas();
-    c_chnl_fiber->SetRightMargin(0.125);
     c_chnl_fiber->SetGrid();
-    h_chnl_mpv->SetAxisRange(0, 128*2 - 1, "X");
-    h_chnl_mpv->SetAxisRange(0, 48*2 - 1, "Y");
-    // h_chnl_fiber->GetXaxis()->SetNdivisions(32, false);
-    // h_chnl_fiber->GetYaxis()->SetNdivisions(2, false);
-    // h_chnl_fiber->GetXaxis()->SetLabelOffset(999.0);
-    // h_chnl_fiber->GetYaxis()->SetLabelOffset(999.0);
-    // h_chnl_fiber->GetXaxis()->SetTickLength(0);
-    // h_chnl_fiber->GetYaxis()->SetTickLength(0);
+    c_chnl_fiber->SetRightMargin(0.125);
+    h_chnl_fiber->SetAxisRange(0, 128*2 - 1, "X");
+    h_chnl_fiber->SetAxisRange(0, 48*2 - 1, "Y");
+    h_chnl_fiber->GetXaxis()->SetLabelSize(0.025);
+    h_chnl_fiber->GetYaxis()->SetLabelSize(0.025);
     h_chnl_fiber->Draw("COLZ0");
-    // plot_sector_and_block_labels(true);
+    h_chnl_fiber->GetXaxis()->SetNdivisions(32, false);
+    h_chnl_fiber->GetYaxis()->SetNdivisions(2, false);
+
+    h_chnl_fiber->GetXaxis()->SetLabelOffset(999.0);
+    h_chnl_fiber->GetXaxis()->SetTickLength(0);
+
+    // draw axes separately (since they don't match the gridlines, which are sector boundaries)
+    gPad->Update();
+    TGaxis *x_axis_fiber = new TGaxis(gPad->GetUxmin(),
+                                  gPad->GetUymin(),
+                                  gPad->GetUxmax(),
+                                  gPad->GetUymin(),
+                                  -4,
+                                  256 - 4,
+                                  16 + 4*100,"N+");            
+    x_axis_fiber->SetLabelOffset(0.01);
+    x_axis_fiber->SetLabelFont(42);
+    x_axis_fiber->SetLabelSize(0.025);
+    x_axis_fiber->Draw();
+
+    h_chnl_fiber->GetYaxis()->SetLabelOffset(999.0);
+    h_chnl_fiber->GetYaxis()->SetTickLength(0);
+    gPad->Update();
+    TGaxis *y_axis_fiber = new TGaxis(gPad->GetUxmin(),
+                                    gPad->GetUymin(),
+                                    gPad->GetUxmin(),
+                                    gPad->GetUymax(),
+                                    -48,
+                                    48,
+                                    12 + 2*100,"N-");            
+    y_axis_fiber->SetLabelOffset(0.01);
+    y_axis_fiber->SetLabelFont(42);
+    y_axis_fiber->SetLabelSize(0.025);
+    y_axis_fiber->Draw();
+
+    plot_sector_labels_debug(wide_up, true);
     c_chnl_fiber->SaveAs("emcal_plots/chnl_fiber_count.pdf");
   } else {
     throw std::runtime_error(Form("unknown mode '%s'", mode.c_str()));
@@ -882,7 +993,7 @@ void plot() {
     }
   };
 
-  plot_channel_lvl(all_blocks, "tim");
+  plot_channel_lvl(all_blocks, "tim", false);
   // for (const PlotConfig& cfg : cfgs) {
   //   plot_helper(all_blocks, cfg);
   // }
