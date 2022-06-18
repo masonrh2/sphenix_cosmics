@@ -12,11 +12,11 @@ constexpr char PRINT_BLUE[] = "\x1b[1;34m";
 constexpr char PRINT_END[] = "\x1b[0m";
 
 /**
- * @brief The lower nonphysical threshold for MPV. MPVs <= this value will be saved as -1.
+ * @brief The lower nonphysical threshold for block MPV. MPVs <= this value will be saved as -1.
  */
 constexpr double MPV_CUTOFF_LOW = 0.0;
 /**
- * @brief The upper nonphysical threshold for MPV. MPVs >= this value will be saved as -1.
+ * @brief The upper nonphysical threshold for block MPV. MPVs >= this value will be saved as -1.
  */
 constexpr double MPV_CUTOFF_HIGH = 1000.0;
 

@@ -4,13 +4,17 @@
 #include <sstream>
 #include <vector>
 #include <functional>
+#include <map>
 
 #include <TH2D.h>
+#include <THStack.h>
 #include <TCanvas.h>
 #include <TStyle.h>
 #include <TPaveText.h>
 #include <TGraph.h>
 #include <TGaxis.h>
+#include <TLegend.h>
+#include <TF1.h>
 
 #include "../includes/mpv_dbn.h"
 #include "../includes/utils.h"
@@ -75,6 +79,7 @@ typedef struct Block {
   double fiber_t3_count;
   double fiber_t4_count;
   double scint_ratio;
+  std::string fiber_type;
 } Block;
 
 typedef std::function<std::pair<bool, double>(Block)> value_getter;
@@ -506,6 +511,68 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
   //  2 1
   //  4 3
 
+  gStyle->SetOptStat(1);
+  TH1D *h_mpv_dist = new TH1D("h_chnl_mpv", "Distribution of EMCal Channel MPV;MPV;Count [Channels]", 80, 0, 1000);
+  TH1D *h_fiber_count_dist = new TH1D("h_chnl_fiber", "Distribution of EMCal Tower Fiber Count;Fiber Count [%];Count [Towers]", 80, 80, 120);
+  THStack *hs_mpv_dist = new THStack("hs_chnl_mpv", "Distribution of EMCal Channel MPV;MPV;Count [Channels]");
+  TH1D *h_mpv_dist_uiuc = new TH1D("", "", 80, 0, 800);
+  TH1D *h_mpv_dist_china_sg = new TH1D("", "", 80, 0, 800);
+  TH1D *h_mpv_dist_china_k = new TH1D("", "", 80, 0, 800);
+  THStack *hs_fiber_count_dist = new THStack("hs_chnl_fiber", "Distribution of EMCal Tower Fiber Count;Fiber Count [%];Count [Towers]");
+  TH1D *h_fiber_count_dist_uiuc = new TH1D("", "", 80, 90, 105);
+  TH1D *h_fiber_count_dist_china = new TH1D("", "", 80, 90, 105);
+  gStyle->SetOptStat(0);
+
+  double min_fiber_count = std::numeric_limits<double>().infinity();
+  double min_mpv = std::numeric_limits<double>().infinity();
+  double max_fiber_count = -std::numeric_limits<double>().infinity();
+  double max_mpv = -std::numeric_limits<double>().infinity();
+  
+  std::map<std::string, int> fiber_type_counter;
+
+  for (Block &block : all_blocks) {
+    if (fiber_type_counter.find(block.fiber_type) == fiber_type_counter.end()) {
+      fiber_type_counter[block.fiber_type] = 1;
+    } else {
+      fiber_type_counter[block.fiber_type]++;
+    }
+  }
+
+  printf("FIBER TYPES:\n");
+  for (auto const& p : fiber_type_counter) {
+    printf("\t%s: %i\n", p.first.c_str(), p.second);
+  }
+
+  std::map<std::string, std::string> fiber_type_compressor = {
+    {"", ""},
+    {"I-K", "K"},
+    {"K", "K"},
+    {"P-SG", "SG"},
+    {"PSG+IK+K", ""},
+    {"SG", "SG"},
+    {"SG-B", "SG"},
+    {"SG47", "SG"},
+  };
+
+  std::map<std::string, int> fiber_type_compressed;
+
+  for (auto const& p : fiber_type_counter) {
+    if (fiber_type_compressor.find(p.first) == fiber_type_compressor.end()) {
+      throw new std::runtime_error(Form("unknown fiber type: '%s'", p.first.c_str()));
+    }
+    std::string fiber_type = fiber_type_compressor[p.first];
+    if (fiber_type_compressed.find(fiber_type) == fiber_type_compressed.end()) {
+      fiber_type_compressed[fiber_type] = p.second;
+    } else {
+      fiber_type_compressed[fiber_type] += p.second;
+    }
+  }
+
+  printf("COMPRESSED FIBER TYPES:\n");
+  for (auto const& p : fiber_type_compressed) {
+    printf("\t%s: %i\n", p.first.c_str(), p.second);
+  }
+
   // std::vector<std::vector<double>> chnl_mpvs = get_chnl_mpv_with_err().first;
   TH2D *h_chnl_mpv = new TH2D("", "sPHENIX EMCal Channel MPV;#phi [Channels];#eta [Channels];MPV", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
@@ -513,38 +580,55 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
     unsigned int x = 2*xy.first + 1;
     unsigned int y = 2*xy.second + 1;
 
+    if (fiber_type_counter.find(block.fiber_type) == fiber_type_counter.end()) {
+      fiber_type_counter[block.fiber_type] = 1;
+    } else {
+      fiber_type_counter[block.fiber_type]++;
+    }
+
     // auto chnls = block_to_channel(block.block_number - 1);
     double ch0 = block.ch0_mpv;
     double ch1 = block.ch1_mpv;
     double ch2 = block.ch2_mpv;
     double ch3 = block.ch3_mpv;
+    
+    std::vector<double> ch_mpv_added;
+
     if (wide_up) {
       // WIDE END POINTS OUT OF PAGE (CAROLINE'S CONVENTION)
       if (block.sector % 2 == 0) { // north sector
         if (ch0 > 0) {
           h_chnl_mpv->SetBinContent(x + 1, y + 1, ch0);
+          ch_mpv_added.push_back(ch0);
         }
         if (ch1 > 0) {
           h_chnl_mpv->SetBinContent(x + 1, y, ch1);
+          ch_mpv_added.push_back(ch1);
         }
         if (ch2 > 0) {
           h_chnl_mpv->SetBinContent(x, y + 1, ch2);
+          ch_mpv_added.push_back(ch2);
         }
         if (ch3 > 0) {
           h_chnl_mpv->SetBinContent(x, y, ch3);
+          ch_mpv_added.push_back(ch3);
         }
       } else { // south sector
         if (ch0 > 0) {
           h_chnl_mpv->SetBinContent(x, y, ch0);
+          ch_mpv_added.push_back(ch0);
         }
         if (ch1 > 0) {
           h_chnl_mpv->SetBinContent(x, y + 1, ch1);
+          ch_mpv_added.push_back(ch1);
         }
         if (ch2 > 0) {
           h_chnl_mpv->SetBinContent(x + 1, y, ch2);
+          ch_mpv_added.push_back(ch2);
         }
         if (ch3 > 0) {
           h_chnl_mpv->SetBinContent(x + 1, y + 1, ch3);
+          ch_mpv_added.push_back(ch3);
         }
       }
     } else {
@@ -552,32 +636,57 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
       if (block.sector % 2 == 0) { // north sector
         if (ch0 > 0) {
           h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, ch0);
+          ch_mpv_added.push_back(ch0);
         }
         if (ch1 > 0) {
           h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y, ch1);
+          ch_mpv_added.push_back(ch1);
         }
         if (ch2 > 0) {
           h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, ch2);
+          ch_mpv_added.push_back(ch2);
         }
         if (ch3 > 0) {
           h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, ch3);
+          ch_mpv_added.push_back(ch3);
         }
       } else { // south sector
         if (ch0 > 0) {
           h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, ch0);
+          ch_mpv_added.push_back(ch0);
         }
         if (ch1 > 0) {
           h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, ch1);
+          ch_mpv_added.push_back(ch1);
         }
         if (ch2 > 0) {
           h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y, ch2);
+          ch_mpv_added.push_back(ch2);
         }
         if (ch3 > 0) {
           h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, ch3);
+          ch_mpv_added.push_back(ch3);
         }
       }
     }
-    
+    for (const double& ch : ch_mpv_added) {
+      h_mpv_dist->Fill(ch);
+      if (block.dbn[0] != 'F' && block.dbn[0] != 'C') {
+        h_mpv_dist_uiuc->Fill(ch);
+      } else {
+        if (fiber_type_compressor[block.fiber_type] == "SG") {
+          h_mpv_dist_china_sg->Fill(ch);
+        } else if (fiber_type_compressor[block.fiber_type] == "K") {
+          h_mpv_dist_china_k->Fill(ch);
+        }
+      }
+      if (ch < min_mpv) {
+        min_mpv = ch;
+      }
+      if (ch > max_mpv) {
+        max_mpv = ch;
+      }
+    }
     // printf("sector %2d block %2d:\n\tch0: %f\n\tch1: %f\n\tch2: %f\n\tch3: %f\n", block.sector, block.block_number, ch0, ch1, ch2, ch3);
   }
 
@@ -592,66 +701,181 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
     double t2 = block.fiber_t2_count;
     double t3 = block.fiber_t3_count;
     double t4 = block.fiber_t4_count;
+
+    std::vector<double> tower_counts_added;
+
     if (wide_up) {
       if (block.sector % 2 == 0) { // north sector
         if (t1 > 0) {
           h_chnl_fiber->SetBinContent(x + 1, y + 1, t1);
+          tower_counts_added.push_back(t1);
         }
         if (t2 > 0) {
           h_chnl_fiber->SetBinContent(x, y + 1, t2);
+          tower_counts_added.push_back(t2);
         }
         if (t3 > 0) {
           h_chnl_fiber->SetBinContent(x + 1, y, t3);
+          tower_counts_added.push_back(t3);
         }
         if (t4 > 0) {
           h_chnl_fiber->SetBinContent(x, y, t4);
+          tower_counts_added.push_back(t4);
         }
       } else { // south sector
         if (t1 > 0) {
           h_chnl_fiber->SetBinContent(x, y, t1);
+          tower_counts_added.push_back(t1);
         }
         if (t2 > 0) {
           h_chnl_fiber->SetBinContent(x + 1, y, t2);
+          tower_counts_added.push_back(t2);
         }
         if (t3 > 0) {
           h_chnl_fiber->SetBinContent(x, y + 1, t3);
+          tower_counts_added.push_back(t3);
         }
         if (t4 > 0) {
           h_chnl_fiber->SetBinContent(x + 1, y + 1, t4);
+          tower_counts_added.push_back(t4);
         }
       }
     } else {
       if (block.sector % 2 == 0) { // north sector
         if (t1 > 0) {
           h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, t1);
+          tower_counts_added.push_back(t1);
         }
         if (t2 > 0) {
           h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, t2);
+          tower_counts_added.push_back(t2);
         }
         if (t3 > 0) {
           h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y, t3);
+          tower_counts_added.push_back(t3);
         }
         if (t4 > 0) {
           h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, t4);
+          tower_counts_added.push_back(t4);
         }
       } else { // south sector
         if (t1 > 0) {
           h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, t1);
+          tower_counts_added.push_back(t1);
         }
         if (t2 > 0) {
           h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y, t2);
+          tower_counts_added.push_back(t2);
         }
         if (t3 > 0) {
           h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, t3);
+          tower_counts_added.push_back(t3);
         }
         if (t4 > 0) {
           h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, t4);
+          tower_counts_added.push_back(t4);
         }
       }
     }
     
+    for (const double& t : tower_counts_added) {
+      h_fiber_count_dist->Fill(t);
+      if (block.dbn[0] != 'F' && block.dbn[0] != 'C') {
+        h_fiber_count_dist_uiuc->Fill(t);
+      } else {
+        h_fiber_count_dist_china->Fill(t);
+      }
+      if (t < min_fiber_count) {
+        min_fiber_count = t;
+      }
+      if (t > max_fiber_count) {
+        max_fiber_count = t;
+      }
+    }
+
     // printf("sector %2d block %2d:\n\tch0: %f\n\tch1: %f\n\tch2: %f\n\tch3: %f\n", block.sector, block.block_number, ch0, ch1, ch2, ch3);
   }
+
+  printf("MIN CHNL MPV = %f\n", min_mpv);
+  printf("MIN CHNL FIBER COUNT = %f\n", min_fiber_count);
+  printf("MAX CHNL MPV = %f\n", max_mpv);
+  printf("MAX CHNL FIBER COUNT = %f\n", max_fiber_count);
+
+  h_mpv_dist_uiuc->Fit("gaus");
+  h_mpv_dist_china_sg->Fit("gaus");
+  h_mpv_dist_china_k->Fit("gaus");
+
+  h_mpv_dist_uiuc->SetLineColorAlpha(kBlue, 1);
+  h_mpv_dist_uiuc->SetLineWidth(1.0);
+  h_mpv_dist_uiuc->SetFillColorAlpha(kBlue, 0.3);
+  // h_mpv_dist_uiuc->SetFillStyle(3354);
+  h_mpv_dist_uiuc->GetFunction("gaus")->SetLineColor(kBlue);
+  h_mpv_dist_uiuc->GetFunction("gaus")->SetLineWidth(4.0);
+  h_mpv_dist_uiuc->GetFunction("gaus")->SetLineStyle(kDashed);
+  h_mpv_dist_china_sg->SetLineColorAlpha(kRed, 1);
+  h_mpv_dist_china_sg->SetLineWidth(1.0);
+  h_mpv_dist_china_sg->SetFillColorAlpha(kRed, 0.3);
+  // h_mpv_dist_china_sg->SetFillStyle(3354);
+  h_mpv_dist_china_sg->GetFunction("gaus")->SetLineColor(kRed);
+  h_mpv_dist_china_sg->GetFunction("gaus")->SetLineWidth(4.0);
+  h_mpv_dist_china_sg->GetFunction("gaus")->SetLineStyle(kDashed);
+  h_mpv_dist_china_k->SetLineColorAlpha(kGreen, 1);
+  h_mpv_dist_china_k->SetLineWidth(1.0);
+  h_mpv_dist_china_k->SetFillColorAlpha(kGreen, 0.3);
+  // h_mpv_dist_china_k->SetFillStyle(3354);
+  h_mpv_dist_china_k->GetFunction("gaus")->SetLineColor(kGreen);
+  h_mpv_dist_china_k->GetFunction("gaus")->SetLineWidth(4.0);
+  h_mpv_dist_china_k->GetFunction("gaus")->SetLineStyle(kDashed);
+
+  hs_mpv_dist->Add(h_mpv_dist_uiuc);
+  hs_mpv_dist->Add(h_mpv_dist_china_sg);
+  hs_mpv_dist->Add(h_mpv_dist_china_k);
+  
+  TLegend *hs_mpv_leg = new TLegend(.7, .7, .85, .85);
+  hs_mpv_leg->AddEntry(h_mpv_dist_uiuc, "UIUC", "f");
+  hs_mpv_leg->AddEntry(h_mpv_dist_china_sg, "China SG", "f");
+  hs_mpv_leg->AddEntry(h_mpv_dist_china_k, "China K", "f");
+  
+  TCanvas *cs_mpv_dist = new TCanvas();
+  hs_mpv_dist->Draw("NOSTACKB");
+  hs_mpv_leg->Draw();
+  cs_mpv_dist->SaveAs("emcal_plots/chnl_mpv_dist.pdf");
+
+  h_fiber_count_dist_uiuc->Fit("gaus");
+  h_fiber_count_dist_china->Fit("gaus");
+
+  h_fiber_count_dist_uiuc->SetLineColorAlpha(kBlue, 1);
+  h_fiber_count_dist_uiuc->SetLineWidth(1.0);
+  h_fiber_count_dist_uiuc->SetFillColorAlpha(kBlue, 0.3);
+  // h_fiber_count_dist_uiuc->SetFillStyle(3354);
+  h_fiber_count_dist_uiuc->GetFunction("gaus")->SetLineColor(kBlue);
+  h_fiber_count_dist_uiuc->GetFunction("gaus")->SetLineWidth(4.0);
+  h_fiber_count_dist_uiuc->GetFunction("gaus")->SetLineStyle(kDashed);
+  h_fiber_count_dist_china->SetLineColorAlpha(kRed, 1);
+  h_fiber_count_dist_china->SetLineWidth(1.0);
+  h_fiber_count_dist_china->SetFillColorAlpha(kRed, 0.3);
+  // h_fiber_count_dist_china->SetFillStyle(3354);
+  h_fiber_count_dist_china->GetFunction("gaus")->SetLineColor(kRed);
+  h_fiber_count_dist_china->GetFunction("gaus")->SetLineWidth(4.0);
+  h_fiber_count_dist_china->GetFunction("gaus")->SetLineStyle(kDashed);
+
+  hs_fiber_count_dist->Add(h_fiber_count_dist_uiuc);
+  hs_fiber_count_dist->Add(h_fiber_count_dist_china);
+  
+  TLegend *hs_fiber_count_leg = new TLegend(.7, .7, .85, .85);
+  hs_fiber_count_leg->AddEntry(h_fiber_count_dist_uiuc, "UIUC", "f");
+  hs_fiber_count_leg->AddEntry(h_fiber_count_dist_china, "China", "f");
+  
+  TCanvas *cs_fiber_count_dist = new TCanvas();
+  hs_fiber_count_dist->Draw("NOSTACKB");
+  hs_fiber_count_leg->Draw();
+  cs_fiber_count_dist->SaveAs("emcal_plots/chnl_fiber_count_dist.pdf");
+
+  TFile *chnl_dists_file = new TFile("emcal_plots/histograms.root", "RECREATE");
+  chnl_dists_file->WriteObject(h_mpv_dist, "h_chnl_mpv");
+  chnl_dists_file->WriteObject(h_fiber_count_dist, "h_chnl_fiber_count");
+  chnl_dists_file->WriteObject(hs_mpv_dist, "hs_chnl_mpv");
+  chnl_dists_file->WriteObject(hs_fiber_count_dist, "hs_chnl_fiber_count");
 
   if (mode == "caroline") {
     TCanvas *c_chnl_mpv = new TCanvas();
@@ -737,6 +961,8 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
     h_chnl_fiber->SetAxisRange(0, 48*2 - 1, "Y");
     h_chnl_fiber->GetXaxis()->SetLabelSize(0.025);
     h_chnl_fiber->GetYaxis()->SetLabelSize(0.025);
+    h_chnl_fiber->SetMinimum(90.0);
+    h_chnl_fiber->SetMaximum(105.0);
     h_chnl_fiber->Draw("COLZ0");
     h_chnl_fiber->GetXaxis()->SetNdivisions(32, false);
     h_chnl_fiber->GetYaxis()->SetNdivisions(2, false);
@@ -819,10 +1045,9 @@ void plot() {
     double fiber_t3_count;
     double fiber_t4_count;
     double scint_ratio;
-    
-    std::string s, tmp;
+    std::string fiber_type;
 
-    // std::getline(csvStream, s, ',');
+    std::string tmp;
     
     std::getline(csvStream, tmp, ',');
     std::istringstream(tmp) >> sector;
@@ -832,6 +1057,7 @@ void plot() {
 
     std::getline(csvStream, tmp, ',');
     std::istringstream(tmp) >> dbn;
+    // printf("DBN WAS '%s'\n", dbn.c_str());
 
     std::getline(csvStream, tmp, ',');
     if (tmp == "") {
@@ -945,11 +1171,24 @@ void plot() {
       std::istringstream(tmp) >> fiber_t4_count;
     }
 
-    std::getline(csvStream, tmp);
-    if (tmp == "" || tmp == "\r") {
+    std::getline(csvStream, tmp, ',');
+    if (tmp == "") {
       scint_ratio = -1;
     } else {
       std::istringstream(tmp) >> scint_ratio;
+    }
+
+    std::getline(csvStream, tmp);
+    if (tmp == "" || tmp == "\r") {
+      // if (tmp == "") {
+      //   printf("EMPTY STRING\n");
+      // }  else {
+      //   printf("CARRIAGE RETURN\n");
+      // }
+      fiber_type = "";
+    } else {
+      std::istringstream(tmp) >> fiber_type;
+      // printf("FIBER TYPE was %s\n", fiber_type.c_str());
     }
 
 
@@ -957,7 +1196,11 @@ void plot() {
     // dbn.erase(std::remove(dbn.begin(), dbn.end(), '\r'), dbn.end());
     // dbn.erase(std::remove(dbn.begin(), dbn.end(), ' '), dbn.end());
 
-    all_blocks.push_back({sector, block_number, dbn, mpv, mpv_err, ch0_mpv, ch0_mpv_err, ch1_mpv, ch1_mpv_err, ch2_mpv, ch2_mpv_err, ch3_mpv, ch3_mpv_err, density, fiber_count, fiber_t1_count, fiber_t2_count, fiber_t3_count, fiber_t4_count, scint_ratio});
+    all_blocks.push_back({
+      sector, block_number, dbn, mpv, mpv_err,
+      ch0_mpv, ch0_mpv_err, ch1_mpv, ch1_mpv_err, ch2_mpv, ch2_mpv_err, ch3_mpv, ch3_mpv_err,
+      density, fiber_count, fiber_t1_count, fiber_t2_count, fiber_t3_count, fiber_t4_count, scint_ratio, fiber_type
+    });
     // printf("sector %2d block %2d mpv %f +/- %f\n", sector, block_number, mpv, mpv_err);
     line_num++;
   }
