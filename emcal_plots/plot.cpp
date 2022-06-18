@@ -521,6 +521,9 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
   THStack *hs_fiber_count_dist = new THStack("hs_chnl_fiber", "Distribution of EMCal Tower Fiber Count;Fiber Count [%];Count [Towers]");
   TH1D *h_fiber_count_dist_uiuc = new TH1D("", "", 80, 90, 105);
   TH1D *h_fiber_count_dist_china = new TH1D("", "", 80, 90, 105);
+  THStack *hs_fiber_count_block_dist = new THStack("hs_block_fiber", "Distribution of EMCal Block Fiber Count;Fiber Count [%];Count [Blocks]");
+  TH1D *h_fiber_count_block_dist_uiuc = new TH1D("", "", 80, 95, 101);
+  TH1D *h_fiber_count_block_dist_china = new TH1D("", "", 80, 95, 101);
   gStyle->SetOptStat(0);
 
   double min_fiber_count = std::numeric_limits<double>().infinity();
@@ -704,6 +707,12 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
 
     std::vector<double> tower_counts_added;
 
+    if (block.dbn[0] != 'F' && block.dbn[0] != 'C') {
+      h_fiber_count_block_dist_uiuc->Fill(block.fiber_count);
+    } else {
+      h_fiber_count_block_dist_china->Fill(block.fiber_count);
+    }
+
     if (wide_up) {
       if (block.sector % 2 == 0) { // north sector
         if (t1 > 0) {
@@ -841,41 +850,80 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
   hs_mpv_leg->Draw();
   cs_mpv_dist->SaveAs("emcal_plots/chnl_mpv_dist.pdf");
 
-  h_fiber_count_dist_uiuc->Fit("gaus");
-  h_fiber_count_dist_china->Fit("gaus");
+  // h_fiber_count_dist_uiuc->Fit("gaus");
+  // h_fiber_count_dist_china->Fit("gaus");
 
   h_fiber_count_dist_uiuc->SetLineColorAlpha(kBlue, 1);
   h_fiber_count_dist_uiuc->SetLineWidth(1.0);
   h_fiber_count_dist_uiuc->SetFillColorAlpha(kBlue, 0.3);
   // h_fiber_count_dist_uiuc->SetFillStyle(3354);
-  h_fiber_count_dist_uiuc->GetFunction("gaus")->SetLineColor(kBlue);
-  h_fiber_count_dist_uiuc->GetFunction("gaus")->SetLineWidth(4.0);
-  h_fiber_count_dist_uiuc->GetFunction("gaus")->SetLineStyle(kDashed);
+  // h_fiber_count_dist_uiuc->GetFunction("gaus")->SetLineColor(kBlue);
+  // h_fiber_count_dist_uiuc->GetFunction("gaus")->SetLineWidth(4.0);
+  // h_fiber_count_dist_uiuc->GetFunction("gaus")->SetLineStyle(kDashed);
   h_fiber_count_dist_china->SetLineColorAlpha(kRed, 1);
   h_fiber_count_dist_china->SetLineWidth(1.0);
   h_fiber_count_dist_china->SetFillColorAlpha(kRed, 0.3);
   // h_fiber_count_dist_china->SetFillStyle(3354);
-  h_fiber_count_dist_china->GetFunction("gaus")->SetLineColor(kRed);
-  h_fiber_count_dist_china->GetFunction("gaus")->SetLineWidth(4.0);
-  h_fiber_count_dist_china->GetFunction("gaus")->SetLineStyle(kDashed);
+  // h_fiber_count_dist_china->GetFunction("gaus")->SetLineColor(kRed);
+  // h_fiber_count_dist_china->GetFunction("gaus")->SetLineWidth(4.0);
+  // h_fiber_count_dist_china->GetFunction("gaus")->SetLineStyle(kDashed);
+
+  // h_fiber_count_dist_uiuc->Fit("gaus");
+  // h_fiber_count_dist_china->Fit("gaus");
+
+  // h_fiber_count_block_dist_uiuc->Fit("gaus");
+  // h_fiber_count_block_dist_china->Fit("gaus");
+
+  // TF1 *skewed_guas = new TF1("sguas","2.*gaus(x,[0],[1],[2])*ROOT::Math::normal_cdf([3]*x,1,0)",95,101);
+
+  // h_fiber_count_block_dist_uiuc->Fit(skewed_guas, "R");
+  // h_fiber_count_block_dist_china->Fit(skewed_guas, "R");
+
+  h_fiber_count_block_dist_uiuc->SetLineColorAlpha(kBlue, 1);
+  h_fiber_count_block_dist_uiuc->SetLineWidth(1.0);
+  h_fiber_count_block_dist_uiuc->SetFillColorAlpha(kBlue, 0.3);
+  // h_fiber_count_block_dist_uiuc->SetFillStyle(3354);
+  // h_fiber_count_block_dist_uiuc->GetFunction("gaus")->SetLineColor(kBlue);
+  // h_fiber_count_block_dist_uiuc->GetFunction("gaus")->SetLineWidth(4.0);
+  // h_fiber_count_block_dist_uiuc->GetFunction("gaus")->SetLineStyle(kDashed);
+  h_fiber_count_block_dist_china->SetLineColorAlpha(kRed, 1);
+  h_fiber_count_block_dist_china->SetLineWidth(1.0);
+  h_fiber_count_block_dist_china->SetFillColorAlpha(kRed, 0.3);
+  // h_fiber_count_block_dist_china->SetFillStyle(3354);
+  // h_fiber_count_block_dist_china->GetFunction("gaus")->SetLineColor(kRed);
+  // h_fiber_count_block_dist_china->GetFunction("gaus")->SetLineWidth(4.0);
+  // h_fiber_count_block_dist_china->GetFunction("gaus")->SetLineStyle(kDashed);
 
   hs_fiber_count_dist->Add(h_fiber_count_dist_uiuc);
   hs_fiber_count_dist->Add(h_fiber_count_dist_china);
+
+  hs_fiber_count_block_dist->Add(h_fiber_count_block_dist_uiuc);
+  hs_fiber_count_block_dist->Add(h_fiber_count_block_dist_china);
   
   TLegend *hs_fiber_count_leg = new TLegend(.7, .7, .85, .85);
   hs_fiber_count_leg->AddEntry(h_fiber_count_dist_uiuc, "UIUC", "f");
   hs_fiber_count_leg->AddEntry(h_fiber_count_dist_china, "China", "f");
   
+  TLegend *hs_fiber_count_block_leg = new TLegend(.7, .7, .85, .85);
+  hs_fiber_count_block_leg->AddEntry(h_fiber_count_block_dist_uiuc, "UIUC", "f");
+  hs_fiber_count_block_leg->AddEntry(h_fiber_count_block_dist_china, "China", "f");
+  
   TCanvas *cs_fiber_count_dist = new TCanvas();
   hs_fiber_count_dist->Draw("NOSTACKB");
   hs_fiber_count_leg->Draw();
   cs_fiber_count_dist->SaveAs("emcal_plots/chnl_fiber_count_dist.pdf");
+  
+  TCanvas *cs_fiber_count_block_dist = new TCanvas();
+  hs_fiber_count_block_dist->Draw("NOSTACKB");
+  hs_fiber_count_block_leg->Draw();
+  cs_fiber_count_block_dist->SaveAs("emcal_plots/chnl_fiber_count_block_dist.pdf");
 
   TFile *chnl_dists_file = new TFile("emcal_plots/histograms.root", "RECREATE");
   chnl_dists_file->WriteObject(h_mpv_dist, "h_chnl_mpv");
   chnl_dists_file->WriteObject(h_fiber_count_dist, "h_chnl_fiber_count");
   chnl_dists_file->WriteObject(hs_mpv_dist, "hs_chnl_mpv");
   chnl_dists_file->WriteObject(hs_fiber_count_dist, "hs_chnl_fiber_count");
+  chnl_dists_file->WriteObject(hs_fiber_count_block_dist, "hs_chnl_fiber_count_block");
 
   if (mode == "caroline") {
     TCanvas *c_chnl_mpv = new TCanvas();
