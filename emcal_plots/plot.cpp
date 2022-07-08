@@ -305,9 +305,6 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
     auto offsets = get_block_loc(block, pseudo_sector_mapping);
     unsigned int x_offset = offsets.first;
     unsigned int y_offset = offsets.second;
-    if (block.sector == 64) {
-      printf("block in sector 64 has x offset = %u\n", x_offset);
-    }
     std::pair<bool, double> p = cfg.get_value(block);
     if (p.first) {
       double value = p.second;
@@ -429,82 +426,63 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(0.5);
 
-  // the first block in a sector is in column D and is on the low rapidity edge
-  //    and also has only contributions from channel 
-
-  // in Tim's html, we are looking down at the narrow end of the block
-  // in Tim's html, blocks are arranged by 1-based number as below:
-  // D 01 05 09 ...
-  // C 02 06 10 ...
-  // B 03 07 11 ...
-  // A 04 08 12 ...
-  // in Tim's html, channels are arranged within each block as below:
+  // in Tim's html, we are looking down at the narrow end of the block and blocks are arranged by 1-based number as below:
+  // (D) 01 05 09 ...
+  // (C) 02 06 10 ...
+  // (B) 03 07 11 ...
+  // (A) 04 08 12 ...
+  // and channels are arranged within each block as below:
   //  2 3
   //  0 1
-  // so, low rapidity edge has 0 and 2 and 2 -> 0 points in the direction of increasing block number
-  // so, (along long edge of sector towards low rapidity) cross (along short edge of sector towards increasing block number, or D -> A) 
-  //    gives direction of the inside of the detector (wide -> narrow)
-  // so, here, we are looking down on the outside of the detector (wide ends of blocks)
-
-  // here, top half (higher y) is South, where LHS of sector is column A and bottom is low rapidity (block 123)
-  //    bottom half (lower y) is North, where LHS of sectors is column D and top is low rapidity (block 123)    
-  // here, on the top half (South), blocks are arranged by 1-based number as below:
+      
+  // here, on the top half (North), blocks are arranged by 1-based number as below:
   // .  .  .  .
   // .  .  .  .
   // .  .  .  .
-  // 12 11 10 09
-  // 08 07 06 05
-  // 04 03 02 01
-  // A  B  C  D
-  // here, on the top half (South), channels are arranged within each block as below:
-  //  1 3
-  //  0 2
-  // here, on the bottom half (North), blocks are arranged by 1-based number as below:
-  // D  C  B  A
-  // 01 02 03 04
-  // 05 06 07 08
   // 09 10 11 12
-  // .  .  .  .
-  // .  .  .  .
-  // .  .  .  .
-  // here, on the bottom half (North), channels are arranged within each block as below:
-  //  2 0
+  // 05 06 07 08
+  // 01 02 03 04
+  // D  C  B  A
+  // and channels are arranged within each block as below:
   //  3 1
+  //  2 0
+  // here, on the bottom half (South), blocks are arranged by 1-based number as below:
+  
+  // A  B  C  D
+  // 04 03 02 01
+  // 08 07 06 05
+  // 12 11 10 09
+  // .  .  .  .
+  // .  .  .  .
+  // .  .  .  .
+  // and channels are arranged within each block as below:
+  //  0 2
+  //  1 3
 
-  // Tim's    This N    This S
-  //  2 3      2 0       1 3
-  //  0 1      3 1       0 2
+  // MPV CHANNEL MAPPING:
+  // Tim's  here top/N  here bottom/S
+  //  2 3      3 1          0 2
+  //  0 1      2 0          1 3
 
-  // the normal of the top surface of block points to high rapidity 
-  // 
-  // *looking at the wide end of the block*
+  // the surface normal of the top surface of block points to high rapidity 
+  // the fiber towers are mapped within a block as follows:
   //     top
   //  ---------
-  //  \  3 4  /
+  //  \  3 4  /     *looking at the WIDE end of the block*
   //   \ 1 2 /
   //    -----
   //   bottom
   
-  // (wide -> narrow) cross (high -> low rapidity) gives direction of increasing block number
-  //    and as before, direction of increasing block number is direction of 2 -> 0 of channels within block 
-  // in the figure above, wide -> narrow is into the page and high -> low rapidity is down, so
-  //    increasing block number is to the left
-  // this means we have the following mapping:
   // channel <-> fiber tower
   //       0  |  1
   //       2  |  2
   //       1  |  3
   //       3  |  4
 
-  // in Tim's html, fiber towers are arranged as below:
-  //  2 4
-  //  1 3
-  // here, on the top half (South), fiber towers are arranged within each block as below:
-  //  3 4
-  //  1 2
-  // here, on the bottom half (North), fiber towers are arranged within each block as below:
-  //  2 1
-  //  4 3
+  // FIBER TOWER MAPPING:
+  // Tim's  here top/N  here bottom/S
+  //  2 4      4 3          1 2
+  //  1 3      2 1          3 4
 
   gStyle->SetOptStat(1);
   TH1D *h_mpv_dist = new TH1D("h_chnl_mpv", "Distribution of EMCal Channel MPV;MPV;Count [Channels]", 80, 0, 1000);
