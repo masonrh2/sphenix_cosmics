@@ -20,20 +20,21 @@
 #include "../includes/utils.h"
 
 /**
- * @brief The default sector mapping (from Caroline's sector sheet). NOTE: wide end of blocks (outside of detector) point out of page!
+ * @brief The default (naive) sector mapping (from Caroline's sector sheet). NOTE: we are looking down on the narrow ends of blocks / inside of detector!
  */
 const std::vector<int> pseudo_sector_mapping = {
    1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, // top of plot
    2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64  // bottom of plot
-}; // we are looking at the wide ends of the blocks (the outside of EMCal)
+};
 
 /**
- * @brief The true sector mapping as they should appear in the final plots. NOTE: wide end of blocks (outside of detector) point out of page!
+ * @brief The true sector mapping as they should appear in the final plots. NOTE: we are looking down on the narrow ends of blocks / inside of detector!
  */
 const std::vector<int> true_sector_mapping = {
+//><phi=0 is the middle of first sector on list; increasing phi to the right -->
   12, 44, 42, 20, 58, 18, 62, 48,  8, 10, 16, 28, 50, 24, 38, 60,  6, 64, 14, 32, 36, 26, 46, 54,  4,  2, 22, 30, 56, 34, 40, 52, // top of plot = North
    5, 49, 37, 19, 51, 35, 39, 43,  3,  1, 29, 23, 59, 31, 41, 53,  9, 63, 17, 33, 57, 15, 13, 45,  7, 11, 25, 27, 61, 21, 47, 55  // bottom of plot = South
-}; // we are looking at the wide ends of the blocks (the outside of EMCal)
+};
 
 /**
  * @brief Check if a sector mapping is valid.
