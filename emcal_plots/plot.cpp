@@ -99,9 +99,10 @@ typedef struct PlotConfig {
  * @brief Get the (x, y) location of a block within the EMCal plot.
  * 
  * @param block 
+ * @param wide_up whether wide end of block (outside of detector) points out of page (TRUE) or narrow end of block (inside of detector) does (FALSE).
  * @return std::pair<unsigned int, unsigned int> (x, y), zero-based.
  */
-std::pair<unsigned int, unsigned int> get_plot_indices(Block block) {
+std::pair<unsigned int, unsigned int> get_block_loc(Block block, bool wide_up) {
   auto it = std::find(true_sector_mapping.begin(), true_sector_mapping.end(), block.sector);
   int pseudo_sector = pseudo_sector_mapping[it - true_sector_mapping.begin()];
   // printf("true sector %2d -> pseudo sector %2d\n", block.sector, pseudo_sector);
@@ -309,7 +310,7 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
 
   double min_value = std::numeric_limits<double>::infinity();
   for (const Block& block : all_blocks) {
-    auto offsets = get_plot_indices(block);
+    auto offsets = get_block_loc(block);
     unsigned int x_offset = offsets.first;
     unsigned int y_offset = offsets.second;
     std::pair<bool, double> p = cfg.get_value(block);
@@ -374,7 +375,7 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   // dbns
   unsigned int max_strlen = 0;
   for (const Block& block : all_blocks) {
-    auto offsets = get_plot_indices(block);
+    auto offsets = get_block_loc(block);
     double x_center = offsets.first + 0.5;
     double y_center = offsets.second + 0.5;
     TPaveText *text = new TPaveText(x_center - 2.5, y_center - 2.5, x_center + 2.5, y_center + 2.5, "NB");
@@ -579,7 +580,7 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
   // std::vector<std::vector<double>> chnl_mpvs = get_chnl_mpv_with_err().first;
   TH2D *h_chnl_mpv = new TH2D("", "sPHENIX EMCal Channel MPV;#phi [Channels];#eta [Channels];MPV", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
-    auto xy = get_plot_indices(block);
+    auto xy = get_block_loc(block);
     unsigned int x = 2*xy.first + 1;
     unsigned int y = 2*xy.second + 1;
 
@@ -696,7 +697,7 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
 
   TH2D *h_chnl_fiber = new TH2D("", "sPHENIX EMCal Tower Fiber Count;#phi [Towers];#eta [Towers];Fiber Count [%]", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
-    auto xy = get_plot_indices(block);
+    auto xy = get_block_loc(block);
     unsigned int x = 2*xy.first + 1;
     unsigned int y = 2*xy.second + 1;
 
