@@ -23,16 +23,16 @@
  * @brief The default sector mapping (from Caroline's sector sheet). NOTE: wide end of blocks (outside of detector) point out of page!
  */
 const std::vector<int> pseudo_sector_mapping = {
-   1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, // SOUTH
-   2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64  // NORTH
+   1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 55, 57, 59, 61, 63, // top of plot
+   2,  4,  6,  8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64  // bottom of plot
 }; // we are looking at the wide ends of the blocks (the outside of EMCal)
 
 /**
  * @brief The true sector mapping as they should appear in the final plots. NOTE: wide end of blocks (outside of detector) point out of page!
  */
 const std::vector<int> true_sector_mapping = {
-   5, 55, 47, 21, 61, 27, 25, 11,  7, 45, 13, 15, 57, 33, 17, 63,  9, 53, 41, 31, 59, 23, 29,  1,  3, 43, 39, 35, 51, 19, 37, 49,  // SOUTH
-  12, 52, 40, 34, 56, 30, 22,  2,  4, 54, 46, 26, 36, 32, 14, 64,  6, 60, 38, 24, 50, 28, 16, 10,  8, 48, 62, 18, 58, 20, 42, 44   // NORTH
+  12, 44, 42, 20, 58, 18, 62, 48,  8, 10, 16, 28, 50, 24, 38, 60,  6, 64, 14, 32, 36, 26, 46, 54,  4,  2, 22, 30, 56, 34, 40, 52, // top of plot = North
+   5, 49, 37, 19, 51, 35, 39, 43,  3,  1, 29, 23, 59, 31, 41, 53,  9, 63, 17, 33, 57, 15, 13, 45,  7, 11, 25, 27, 61, 21, 47, 55  // bottom of plot = South
 }; // we are looking at the wide ends of the blocks (the outside of EMCal)
 
 /**
@@ -99,22 +99,22 @@ typedef struct PlotConfig {
  * @brief Get the (x, y) location of a block within the EMCal plot.
  * 
  * @param block 
- * @param wide_up whether wide end of block (outside of detector) points out of page (TRUE) or narrow end of block (inside of detector) does (FALSE).
+ * @param sector_mapping 
  * @return std::pair<unsigned int, unsigned int> (x, y), zero-based.
  */
-std::pair<unsigned int, unsigned int> get_block_loc(Block block, bool wide_up) {
-  auto it = std::find(true_sector_mapping.begin(), true_sector_mapping.end(), block.sector);
-  int pseudo_sector = pseudo_sector_mapping[it - true_sector_mapping.begin()];
+std::pair<unsigned int, unsigned int> get_block_loc(Block block, std::vector<int> sector_mapping) {
+  auto it = std::find(sector_mapping.begin(), sector_mapping.end(), block.sector);
+  int pseudo_sector = pseudo_sector_mapping[it - sector_mapping.begin()];
   // printf("true sector %2d -> pseudo sector %2d\n", block.sector, pseudo_sector);
-  bool is_north = pseudo_sector % 2 == 0;
+  bool is_top_half_of_plot = pseudo_sector % 2 == 1;
   unsigned int x_offset = (block.block_number - 1) % 4;
-  if (!is_north) {
+  if (!is_top_half_of_plot) {
     x_offset = 3 - x_offset;
   }
   x_offset += 4*((pseudo_sector - 1) / 2);
   unsigned int y_offset;
   unsigned int y_idx = (block.block_number - 1) / 4;
-  if (is_north) {
+  if (!is_top_half_of_plot) {
     y_offset = 23 - y_idx;
   } else {
     y_offset = 24 + y_idx;
@@ -245,20 +245,15 @@ void plot_sector_and_block_labels(bool channel_lvl = false) {
 /**
  * @brief Plot true sector numbers (1 - 64) onto the current canvas. Draws sector numbers in the middle of sector.
  * 
- * @param wide_up whether wide end of block (outside of detector) points out of page (TRUE) or narrow end of block (inside of detector) does (FALSE).
  * @param channel_lvl whether plotting on a channel/tower-level canvas (TRUE) or block-level (FALSE).
  */
-void plot_sector_labels_debug(bool wide_up, bool channel_lvl = false) {
+void plot_sector_labels_debug(bool channel_lvl = false) {
   double sector_box_width = 3;
   double sector_box_height = 1.5;
   // SOUTH (odd pseudo-sectors)
   for (unsigned int i = 0; i < 32; i++) {
     double x_center;
-    if (wide_up) {
-      x_center = 2 + 4*i;
-    } else {
-      x_center = (128 - (2 + 4*i) + 4)%128;
-    }
+    x_center = 2 + 4*i;
     double y_center = 36;
     TPaveText *text;
     if (!channel_lvl) {
@@ -275,11 +270,7 @@ void plot_sector_labels_debug(bool wide_up, bool channel_lvl = false) {
   // NORTH (even pseudo-sectors)
   for (unsigned int i = 0; i < 32; i++) {
     double x_center;
-    if (wide_up) {
-      x_center = 2 + 4*i;
-    } else {
-      x_center = (128 - (2 + 4*i) + 4)%128;
-    }
+    x_center = 2 + 4*i;
     double y_center = 12;
     TPaveText *text;
     if (!channel_lvl) {
@@ -310,9 +301,12 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
 
   double min_value = std::numeric_limits<double>::infinity();
   for (const Block& block : all_blocks) {
-    auto offsets = get_block_loc(block);
+    auto offsets = get_block_loc(block, pseudo_sector_mapping);
     unsigned int x_offset = offsets.first;
     unsigned int y_offset = offsets.second;
+    if (block.sector == 64) {
+      printf("block in sector 64 has x offset = %u\n", x_offset);
+    }
     std::pair<bool, double> p = cfg.get_value(block);
     if (p.first) {
       double value = p.second;
@@ -375,7 +369,7 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   // dbns
   unsigned int max_strlen = 0;
   for (const Block& block : all_blocks) {
-    auto offsets = get_block_loc(block);
+    auto offsets = get_block_loc(block, pseudo_sector_mapping);
     double x_center = offsets.first + 0.5;
     double y_center = offsets.second + 0.5;
     TPaveText *text = new TPaveText(x_center - 2.5, y_center - 2.5, x_center + 2.5, y_center + 2.5, "NB");
@@ -428,10 +422,9 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
  * 
  * @param all_blocks all blocks in the EMCal.
  * @param drop_low_rap_edge whether to exclude low rapidity edge like all other edges (TRUE, better for calibration)
- *    or keep it (plot it) (FALSE, default behavior of h_allblocks).
- * @param wide_up whether wide end of block (outside of detector) points out of page (TRUE) or narrow end of block (inside of detector) does (FALSE).
+ *    or keep it (plot it) (FALSE, default behavior of h_allblocks)
  */
-void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide_up) {
+void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
   gStyle->SetOptStat(0);
   gStyle->SetLineScalePS(0.5);
 
@@ -580,9 +573,11 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
   // std::vector<std::vector<double>> chnl_mpvs = get_chnl_mpv_with_err().first;
   TH2D *h_chnl_mpv = new TH2D("", "sPHENIX EMCal Channel MPV;#phi [Channels];#eta [Channels];MPV", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
-    auto xy = get_block_loc(block);
+    auto xy = get_block_loc(block, true_sector_mapping);
     unsigned int x = 2*xy.first + 1;
+
     unsigned int y = 2*xy.second + 1;
+
 
     if (fiber_type_counter.find(block.fiber_type) == fiber_type_counter.end()) {
       fiber_type_counter[block.fiber_type] = 1;
@@ -598,79 +593,39 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
     
     std::vector<double> ch_mpv_added;
 
-    if (wide_up) {
-      // WIDE END POINTS OUT OF PAGE (CAROLINE'S CONVENTION)
-      if (block.sector % 2 == 0) { // north sector
-        if (ch0 > 0) {
-          h_chnl_mpv->SetBinContent(x + 1, y + 1, ch0);
-          ch_mpv_added.push_back(ch0);
-        }
-        if (ch1 > 0) {
-          h_chnl_mpv->SetBinContent(x + 1, y, ch1);
-          ch_mpv_added.push_back(ch1);
-        }
-        if (ch2 > 0) {
-          h_chnl_mpv->SetBinContent(x, y + 1, ch2);
-          ch_mpv_added.push_back(ch2);
-        }
-        if (ch3 > 0) {
-          h_chnl_mpv->SetBinContent(x, y, ch3);
-          ch_mpv_added.push_back(ch3);
-        }
-      } else { // south sector
-        if (ch0 > 0) {
-          h_chnl_mpv->SetBinContent(x, y, ch0);
-          ch_mpv_added.push_back(ch0);
-        }
-        if (ch1 > 0) {
-          h_chnl_mpv->SetBinContent(x, y + 1, ch1);
-          ch_mpv_added.push_back(ch1);
-        }
-        if (ch2 > 0) {
-          h_chnl_mpv->SetBinContent(x + 1, y, ch2);
-          ch_mpv_added.push_back(ch2);
-        }
-        if (ch3 > 0) {
-          h_chnl_mpv->SetBinContent(x + 1, y + 1, ch3);
-          ch_mpv_added.push_back(ch3);
-        }
+    if (block.sector % 2 == 0) { // north sector = top half
+      if (ch0 > 0) {
+        h_chnl_mpv->SetBinContent(x + 1, y, ch0);
+        ch_mpv_added.push_back(ch0);
       }
-    } else {
-      // NARROW END POINTS OUT OF PAGE (TIM'S CONVENTION)
-      if (block.sector % 2 == 0) { // north sector
-        if (ch0 > 0) {
-          h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, ch0);
-          ch_mpv_added.push_back(ch0);
-        }
-        if (ch1 > 0) {
-          h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y, ch1);
-          ch_mpv_added.push_back(ch1);
-        }
-        if (ch2 > 0) {
-          h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, ch2);
-          ch_mpv_added.push_back(ch2);
-        }
-        if (ch3 > 0) {
-          h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, ch3);
-          ch_mpv_added.push_back(ch3);
-        }
-      } else { // south sector
-        if (ch0 > 0) {
-          h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, ch0);
-          ch_mpv_added.push_back(ch0);
-        }
-        if (ch1 > 0) {
-          h_chnl_mpv->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, ch1);
-          ch_mpv_added.push_back(ch1);
-        }
-        if (ch2 > 0) {
-          h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y, ch2);
-          ch_mpv_added.push_back(ch2);
-        }
-        if (ch3 > 0) {
-          h_chnl_mpv->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, ch3);
-          ch_mpv_added.push_back(ch3);
-        }
+      if (ch1 > 0) {
+        h_chnl_mpv->SetBinContent(x + 1, y + 1, ch1);
+        ch_mpv_added.push_back(ch1);
+      }
+      if (ch2 > 0) {
+        h_chnl_mpv->SetBinContent(x, y, ch2);
+        ch_mpv_added.push_back(ch2);
+      }
+      if (ch3 > 0) {
+        h_chnl_mpv->SetBinContent(x, y + 1, ch3);
+        ch_mpv_added.push_back(ch3);
+      }
+    } else { // south sector = bottom half
+      if (ch0 > 0) {
+        h_chnl_mpv->SetBinContent(x, y + 1, ch0);
+        ch_mpv_added.push_back(ch0);
+      }
+      if (ch1 > 0) {
+        h_chnl_mpv->SetBinContent(x, y, ch1);
+        ch_mpv_added.push_back(ch1);
+      }
+      if (ch2 > 0) {
+        h_chnl_mpv->SetBinContent(x + 1, y + 1, ch2);
+        ch_mpv_added.push_back(ch2);
+      }
+      if (ch3 > 0) {
+        h_chnl_mpv->SetBinContent(x + 1, y, ch3);
+        ch_mpv_added.push_back(ch3);
       }
     }
     for (const double& ch : ch_mpv_added) {
@@ -697,7 +652,7 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
 
   TH2D *h_chnl_fiber = new TH2D("", "sPHENIX EMCal Tower Fiber Count;#phi [Towers];#eta [Towers];Fiber Count [%]", 256, 0, 256, 96, 0, 96);
   for (Block &block : all_blocks) {
-    auto xy = get_block_loc(block);
+    auto xy = get_block_loc(block, true_sector_mapping);
     unsigned int x = 2*xy.first + 1;
     unsigned int y = 2*xy.second + 1;
 
@@ -714,77 +669,39 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
       h_fiber_count_block_dist_china->Fill(block.fiber_count);
     }
 
-    if (wide_up) {
-      if (block.sector % 2 == 0) { // north sector
-        if (t1 > 0) {
-          h_chnl_fiber->SetBinContent(x + 1, y + 1, t1);
-          tower_counts_added.push_back(t1);
-        }
-        if (t2 > 0) {
-          h_chnl_fiber->SetBinContent(x, y + 1, t2);
-          tower_counts_added.push_back(t2);
-        }
-        if (t3 > 0) {
-          h_chnl_fiber->SetBinContent(x + 1, y, t3);
-          tower_counts_added.push_back(t3);
-        }
-        if (t4 > 0) {
-          h_chnl_fiber->SetBinContent(x, y, t4);
-          tower_counts_added.push_back(t4);
-        }
-      } else { // south sector
-        if (t1 > 0) {
-          h_chnl_fiber->SetBinContent(x, y, t1);
-          tower_counts_added.push_back(t1);
-        }
-        if (t2 > 0) {
-          h_chnl_fiber->SetBinContent(x + 1, y, t2);
-          tower_counts_added.push_back(t2);
-        }
-        if (t3 > 0) {
-          h_chnl_fiber->SetBinContent(x, y + 1, t3);
-          tower_counts_added.push_back(t3);
-        }
-        if (t4 > 0) {
-          h_chnl_fiber->SetBinContent(x + 1, y + 1, t4);
-          tower_counts_added.push_back(t4);
-        }
+    if (block.sector % 2 == 0) { // north sector = top half
+      if (t1 > 0) {
+        h_chnl_fiber->SetBinContent(x + 1, y, t1);
+        tower_counts_added.push_back(t1);
       }
-    } else {
-      if (block.sector % 2 == 0) { // north sector
-        if (t1 > 0) {
-          h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, t1);
-          tower_counts_added.push_back(t1);
-        }
-        if (t2 > 0) {
-          h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, t2);
-          tower_counts_added.push_back(t2);
-        }
-        if (t3 > 0) {
-          h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y, t3);
-          tower_counts_added.push_back(t3);
-        }
-        if (t4 > 0) {
-          h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, t4);
-          tower_counts_added.push_back(t4);
-        }
-      } else { // south sector
-        if (t1 > 0) {
-          h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y, t1);
-          tower_counts_added.push_back(t1);
-        }
-        if (t2 > 0) {
-          h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y, t2);
-          tower_counts_added.push_back(t2);
-        }
-        if (t3 > 0) {
-          h_chnl_fiber->SetBinContent(((255 - x) + 1 + 8)%256 + 1, y + 1, t3);
-          tower_counts_added.push_back(t3);
-        }
-        if (t4 > 0) {
-          h_chnl_fiber->SetBinContent(((255 - x) + 8)%256 + 1, y + 1, t4);
-          tower_counts_added.push_back(t4);
-        }
+      if (t2 > 0) {
+        h_chnl_fiber->SetBinContent(x, y, t2);
+        tower_counts_added.push_back(t2);
+      }
+      if (t3 > 0) {
+        h_chnl_fiber->SetBinContent(x + 1, y + 1, t3);
+        tower_counts_added.push_back(t3);
+      }
+      if (t4 > 0) {
+        h_chnl_fiber->SetBinContent(x, y + 1, t4);
+        tower_counts_added.push_back(t4);
+      }
+    } else { // south sector = bottom half
+      if (t1 > 0) {
+        h_chnl_fiber->SetBinContent(x, y + 1, t1);
+        tower_counts_added.push_back(t1);
+      }
+      if (t2 > 0) {
+        h_chnl_fiber->SetBinContent(x + 1, y + 1, t2);
+        tower_counts_added.push_back(t2);
+      }
+      if (t3 > 0) {
+        h_chnl_fiber->SetBinContent(x, y, t3);
+        tower_counts_added.push_back(t3);
+      }
+      if (t4 > 0) {
+        h_chnl_fiber->SetBinContent(x + 1, y, t4);
+        tower_counts_added.push_back(t4);
       }
     }
     
@@ -901,11 +818,11 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
   hs_fiber_count_block_dist->Add(h_fiber_count_block_dist_uiuc);
   hs_fiber_count_block_dist->Add(h_fiber_count_block_dist_china);
   
-  TLegend *hs_fiber_count_leg = new TLegend(.7, .7, .85, .85);
+  TLegend *hs_fiber_count_leg = new TLegend(.15, .7, .3, .85);
   hs_fiber_count_leg->AddEntry(h_fiber_count_dist_uiuc, "UIUC", "f");
   hs_fiber_count_leg->AddEntry(h_fiber_count_dist_china, "China", "f");
   
-  TLegend *hs_fiber_count_block_leg = new TLegend(.7, .7, .85, .85);
+  TLegend *hs_fiber_count_block_leg = new TLegend(.15, .7, .3, .85);
   hs_fiber_count_block_leg->AddEntry(h_fiber_count_block_dist_uiuc, "UIUC", "f");
   hs_fiber_count_block_leg->AddEntry(h_fiber_count_block_dist_china, "China", "f");
   
@@ -1000,7 +917,7 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
     y_axis_mpv->SetLabelSize(0.025);
     y_axis_mpv->Draw();
 
-    plot_sector_labels_debug(wide_up, true);
+    plot_sector_labels_debug(true);
     c_chnl_mpv->SaveAs("emcal_plots/chnl_mpv.pdf");
     
     TCanvas *c_chnl_fiber = new TCanvas();
@@ -1048,7 +965,7 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode, bool wide
     y_axis_fiber->SetLabelSize(0.025);
     y_axis_fiber->Draw();
 
-    plot_sector_labels_debug(wide_up, true);
+    plot_sector_labels_debug(true);
     c_chnl_fiber->SaveAs("emcal_plots/chnl_fiber_count.pdf");
   } else {
     throw std::runtime_error(Form("unknown mode '%s'", mode.c_str()));
@@ -1285,8 +1202,8 @@ void plot() {
     }
   };
 
-  plot_channel_lvl(all_blocks, "tim", false);
-  // for (const PlotConfig& cfg : cfgs) {
-  //   plot_helper(all_blocks, cfg);
-  // }
+  plot_channel_lvl(all_blocks, "tim");
+  for (const PlotConfig& cfg : cfgs) {
+    plot_helper(all_blocks, cfg);
+  }
 }
