@@ -37,6 +37,20 @@ const std::vector<int> true_sector_mapping = {
 };
 
 /**
+ * @brief ...
+ */
+const std::map<std::string, std::string> fiber_type_compressor = {
+  {"", ""},
+  {"I-K", "K"},
+  {"K", "K"},
+  {"P-SG", "SG"},
+  {"PSG+IK+K", ""},
+  {"SG", "SG"},
+  {"SG-B", "SG"},
+  {"SG47", "SG"},
+};
+
+/**
  * @brief Check if a sector mapping is valid.
  * 
  * @param mapping 
@@ -81,6 +95,7 @@ typedef struct Block {
   double fiber_t4_count;
   double scint_ratio;
   std::string fiber_type;
+  std::string fiber_batch;
 } Block;
 
 typedef std::function<std::pair<bool, double>(Block)> value_getter;
@@ -519,24 +534,13 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
     printf("\t%s: %i\n", p.first.c_str(), p.second);
   }
 
-  std::map<std::string, std::string> fiber_type_compressor = {
-    {"", ""},
-    {"I-K", "K"},
-    {"K", "K"},
-    {"P-SG", "SG"},
-    {"PSG+IK+K", ""},
-    {"SG", "SG"},
-    {"SG-B", "SG"},
-    {"SG47", "SG"},
-  };
-
   std::map<std::string, int> fiber_type_compressed;
 
   for (auto const& p : fiber_type_counter) {
     if (fiber_type_compressor.find(p.first) == fiber_type_compressor.end()) {
-      throw new std::runtime_error(Form("unknown fiber type: '%s'", p.first.c_str()));
+      throw std::runtime_error(Form("unknown fiber type: '%s'", p.first.c_str()));
     }
-    std::string fiber_type = fiber_type_compressor[p.first];
+    std::string fiber_type = fiber_type_compressor.at(p.first);
     if (fiber_type_compressed.find(fiber_type) == fiber_type_compressed.end()) {
       fiber_type_compressed[fiber_type] = p.second;
     } else {
@@ -612,9 +616,9 @@ void plot_channel_lvl(std::vector<Block> all_blocks, std::string mode) {
       if (block.dbn[0] != 'F' && block.dbn[0] != 'C') {
         h_mpv_dist_uiuc->Fill(ch);
       } else {
-        if (fiber_type_compressor[block.fiber_type] == "SG") {
+        if (fiber_type_compressor.at(block.fiber_type) == "SG") {
           h_mpv_dist_china_sg->Fill(ch);
-        } else if (fiber_type_compressor[block.fiber_type] == "K") {
+        } else if (fiber_type_compressor.at(block.fiber_type) == "K") {
           h_mpv_dist_china_k->Fill(ch);
         }
       }
@@ -991,9 +995,10 @@ void plot() {
     double fiber_t4_count;
     double scint_ratio;
     std::string fiber_type;
+    std::string fiber_batch;
 
     std::string tmp;
-    
+
     std::getline(csvStream, tmp, ',');
     std::istringstream(tmp) >> sector;
 
@@ -1123,6 +1128,9 @@ void plot() {
       std::istringstream(tmp) >> scint_ratio;
     }
 
+    std::getline(csvStream, tmp, ',');
+    std::istringstream(tmp) >> fiber_type;
+
     std::getline(csvStream, tmp);
     if (tmp == "" || tmp == "\r") {
       // if (tmp == "") {
@@ -1130,12 +1138,12 @@ void plot() {
       // }  else {
       //   printf("CARRIAGE RETURN\n");
       // }
-      fiber_type = "";
+      fiber_batch = "";
     } else {
-      std::istringstream(tmp) >> fiber_type;
-      // printf("FIBER TYPE was %s\n", fiber_type.c_str());
+      std::istringstream(tmp) >> fiber_batch;
     }
 
+    // printf("DBN %s: type '%s' batch '%s'\n", dbn.c_str(), fiber_type.c_str(), fiber_batch.c_str());
 
     // dbn.erase(std::remove(dbn.begin(), dbn.end(), '\n'), dbn.end());
     // dbn.erase(std::remove(dbn.begin(), dbn.end(), '\r'), dbn.end());
