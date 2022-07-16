@@ -96,6 +96,7 @@ typedef struct Block {
   double scint_ratio;
   std::string fiber_type;
   std::string fiber_batch;
+  std::string w_powder;
 } Block;
 
 typedef std::function<std::pair<bool, double>(Block)> value_getter;
@@ -996,6 +997,7 @@ void plot() {
     double scint_ratio;
     std::string fiber_type;
     std::string fiber_batch;
+    std::string w_powder;
 
     std::string tmp;
 
@@ -1131,6 +1133,9 @@ void plot() {
     std::getline(csvStream, tmp, ',');
     std::istringstream(tmp) >> fiber_type;
 
+    std::getline(csvStream, tmp, ',');
+    std::istringstream(tmp) >> fiber_batch;
+
     std::getline(csvStream, tmp);
     if (tmp == "" || tmp == "\r") {
       // if (tmp == "") {
@@ -1138,9 +1143,9 @@ void plot() {
       // }  else {
       //   printf("CARRIAGE RETURN\n");
       // }
-      fiber_batch = "";
+      w_powder = "";
     } else {
-      std::istringstream(tmp) >> fiber_batch;
+      std::istringstream(tmp) >> w_powder;
     }
 
     // printf("DBN %s: type '%s' batch '%s'\n", dbn.c_str(), fiber_type.c_str(), fiber_batch.c_str());
