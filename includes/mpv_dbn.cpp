@@ -54,7 +54,7 @@ int channel_to_block(int channel) {
 }
 
 /**
- * @brief Get the channel numbers on the perimeter of a sector.
+ * @brief Get the channel numbers (0-based) on the perimeter of a sector.
  * 
  * @param drop_low_rap_edge whether to count low rapidity edge as part of the perimeter.
  * @return std::set<int> set of channel numbers (0-based) which are on the perimeter of a sector. 
@@ -99,7 +99,7 @@ std::set<int> perimeter_channels(bool drop_low_rap_edge = true) {
 /**
  * @brief Get the channel numbers which contribute to a block's block mpv.
  * 
- * @param perimeter set of channels to be excluded from block mpv calculation (edges).
+ * @param perimeter set of channel numbers (0-based) to be excluded from block mpv calculation (edges).
  * @param block block number (/96, 0-based).
  * @return std::vector<int> channel numbers (0-based) which contribute to block's mpv calculation.
  */
@@ -117,7 +117,7 @@ std::vector<int> block_contributing_channels(const std::set<int> &perimeter, int
 /**
  * @brief Get run numbers for each sector from csv. Run numbers are 1-based.
 
- * NOTE: depends on files/physics_runs.csv.
+ * NOTE: depends on "files/physics_runs.csv".
  * 
  * @return std::map<int, int> (sector -> run number).
  */
@@ -193,7 +193,7 @@ void get_physics_runs() {
 /**
  * @brief Get DBNs for each block for each sector.
  * 
- * NOTE: depends on files/Blocks database - Sectors.csv.
+ * NOTE: depends on "files/Blocks database - Sectors.csv".
  * 
  * @return std::vector<std::vector<std::string>> [sector][block number] -> dbn, or "" if none.
  */
@@ -230,7 +230,8 @@ std::vector<std::vector<std::string>> get_dbns() {
     size_t data_start = 4 + 8 * i;
     for (short j = 0; j < 24; j++) {
       for (short k = 0; k < 4; k++) {
-        std::string dbn = all_data[j][data_start + k];
+        // DBNs read from right to left; e.g. blocks appear as 4, 3, 2, 1
+        std::string dbn = all_data[j][data_start + 3 - k];
         if (dbn == "#N/A") {
           dbns[i].push_back("");
         } else {
@@ -330,7 +331,7 @@ std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> ge
  * @brief Calculate block MPVs and error for each block for each sector from channel mpv and error.
  * 
  * @param chnl_mpv_with_err channel mpv and error.
- * @param perimeter set of channels to be excluded from block mpv calculation (edges).
+ * @param perimeter set of channel numbers (0-based) to be excluded from block mpv calculation (edges).
  * @return std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> 
  */
 std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> calculate_block_mpv_with_err(const std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> &chnl_mpv_with_err, const std::set<int> &perimeter) {
@@ -439,8 +440,6 @@ std::vector<std::vector<double>> get_sp_gaps(bool write_ib = false) {
 
   return sp_gaps;
 }
-
-// TODO: how to handle channels with zero mpv, just a for loop to skip the edges, probably
 
 /**
  * @brief Write "database" to file as csv.
