@@ -20,6 +20,19 @@
 #include "../includes/utils.h"
 
 /**
+ * TODO:
+ * split block/tower fiber count hists by uiuc/fudan/ciae
+ * -> produce analogous plots for scint ratio and density
+ * for channel mpv hist, split uiuc into fiber batch 1-A to 16-B "S1-12" and fiber batch 21-A to 68-C "S13-64"
+ * physical location maps for block density and scintillation
+ * 
+ * TRIPLE CHECK THAT ALL MAPS ARE LOOKING AT NARROW ENDS AND ARE CORRECT
+ * 
+ * maybe correlation plots
+ * 
+ */
+
+/**
  * @brief The default sector mapping (from Caroline's sector sheet). NOTE: wide end of blocks (outside of detector) point out of page!
  */
 const std::vector<int> pseudo_sector_mapping = {
@@ -53,6 +66,75 @@ void check_sector_mapping(const std::vector<int> mapping) {
       throw std::runtime_error(Form("found invalid sector (%d) while checking mapping", sector));
     }
   }
+}
+
+class FiberType {
+  public:
+  FiberType(std::string fiber_type) {
+    size_t dash_pos = fiber_type.find('-');
+    if (dash_pos == std::string::npos) {
+      throw std::runtime_error("unable to locate '-' in fiber batch");
+    }
+    std::string numeric = fiber_type.substr(0, dash_pos);
+    std::string alpha = fiber_type.substr(dash_pos + 1, fiber_type.length() - dash_pos);
+    // check numeric is numeric
+    for (const char &x: numeric) {
+      if (!isdigit(x)) {
+        throw std::runtime_error("fiber type lhs contains a non-numeric character");
+      }
+    }
+    batch_number = std::stoi(numeric);
+    // check alpha is exactly one character
+    if (alpha.length() != 1) {
+      throw std::runtime_error("fiber type rhs contained more than one character");
+    }
+    // check alpha is alpha and is uppercase
+    for (const char &x: numeric) {
+      if (!isalpha(x) || x != toupper(x)) {
+        throw std::runtime_error("fiber type rhs contains a non-letter or is not uppercase");
+      }
+    }
+    batch_letter = alpha[0];
+  }
+  bool operator ==(const FiberType &rhs) {
+    return batch_number == rhs.batch_number && batch_letter == rhs.batch_letter;
+  }
+  bool operator !=(const FiberType &rhs) {
+    return !(*this == rhs); 
+  }
+  bool operator <(const FiberType &rhs) {
+    if (batch_number < rhs.batch_number) {
+      return true;
+    } else if (batch_number == rhs.batch_number && batch_letter < rhs.batch_letter) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  bool operator >(const FiberType &rhs) {
+    return !(*this < rhs);
+  }
+  bool operator <=(const FiberType &rhs) {
+    return (*this < rhs) || (*this == rhs);
+  }
+  bool operator >=(const FiberType &rhs) {
+    return (*this > rhs) || (*this == rhs);
+  }
+
+  int batch_number;
+  char batch_letter;
+};
+
+/**
+ * @brief Returns true if a < b (e.g., a should be sorted BEFORE b). Pass to std::sort to sort fiber type strings.
+ * 
+ * @param a 
+ * @param b 
+ * @return true a should be sorted before b
+ * @return false a should be sorted after b
+ */
+bool sort_fiber_type(std::string a, std::string b) {
+  
 }
 
 /**
@@ -1061,6 +1143,8 @@ void plot() {
   check_sector_mapping(pseudo_sector_mapping);
   check_sector_mapping(true_sector_mapping);
   
+  std::vector<std::string> TEST_BATCHES;
+
   std::vector<Block> all_blocks;
   std::fstream database;
   database.open("files/sPHENIX_EMCal_blocks - dbn_mpv.csv", std::ios::in);
@@ -1239,6 +1323,7 @@ void plot() {
       // printf("FIBER TYPE was %s\n", fiber_type.c_str());
     }
 
+    
 
     // dbn.erase(std::remove(dbn.begin(), dbn.end(), '\n'), dbn.end());
     // dbn.erase(std::remove(dbn.begin(), dbn.end(), '\r'), dbn.end());
