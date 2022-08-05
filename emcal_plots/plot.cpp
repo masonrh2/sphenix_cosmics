@@ -194,6 +194,7 @@ typedef struct PlotConfig {
   std::string units;
   value_getter get_value;
   double plot_min;
+  double plot_max;
   int color;
 } PlotConfig;
 
@@ -427,6 +428,9 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   gStyle->SetOptStat(0);
   h_pseudo->SetTitle(title.c_str());
   h_pseudo->SetMinimum(cfg.plot_min);
+  h_pseudo->SetMaximum(cfg.plot_max);
+  h_true->SetMinimum(cfg.plot_min);
+  h_true->SetMaximum(cfg.plot_max);
   h_pseudo->SetAxisRange(0, 128 - 1, "X");
   h_pseudo->SetAxisRange(0, 48 - 1, "Y");
   // h_pseudo->GetXaxis()->SetRange(0, 128);
@@ -447,6 +451,9 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   gStyle->SetOptStat(0);
   h_pseudo->SetTitle(title.c_str());
   h_pseudo->SetMinimum(cfg.plot_min);
+  h_pseudo->SetMaximum(cfg.plot_max);
+  h_true->SetMinimum(cfg.plot_min);
+  h_true->SetMaximum(cfg.plot_max);
   h_pseudo->SetAxisRange(0, 128 - 1, "X");
   h_pseudo->SetAxisRange(0, 48 - 1, "Y");
   // h_pseudo->GetXaxis()->SetRange(0, 128);
@@ -1706,6 +1713,7 @@ void plot() {
         return std::make_pair(value > 0, value);
       },
       0.0,
+      800.0,
       kAzure + 6
     },
     {
@@ -1713,7 +1721,8 @@ void plot() {
         double value = block.scint_ratio;
         return std::make_pair(value > 0, value);
       },
-      0.7,
+      0.5,
+      3.0,
       kBlue - 9
     },
     {
@@ -1721,7 +1730,8 @@ void plot() {
         double value = block.fiber_count;
         return std::make_pair(value > 0, value);
       },
-      95.0,
+      96.0,
+      100.0,
       kGreen - 9
     },
     {
@@ -1730,6 +1740,7 @@ void plot() {
         return std::make_pair(value > 0, value);
       },
       8.4,
+      10.0,
       kRed - 9
     }
   };
