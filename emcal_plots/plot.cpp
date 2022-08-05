@@ -496,7 +496,10 @@ void plot_helper(std::vector<Block> all_blocks, PlotConfig cfg) {
   h_true->SetFillColorAlpha(cfg.color, 1.0);
   h_true->SetTitle(title.c_str());
   h_true->Draw("LEGO1 CYL 0");
-  c3->SaveAs(Form("emcal_plots/plot_cyl_%s.png", cfg.file_name.c_str()));
+  c3->SaveAs(Form("emcal_plots/plot_cyl_%s_front.png", cfg.file_name.c_str()));
+  gPad->SetPhi(gPad->GetPhi() + 180);
+  gPad->Update();
+  c3->SaveAs(Form("emcal_plots/plot_cyl_%s_back.png", cfg.file_name.c_str()));
   
   TCanvas* c4 = new TCanvas("c4", "", 900, 500);
   h_true->SetLineColorAlpha(kBlack, 1.0);
