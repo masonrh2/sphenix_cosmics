@@ -562,9 +562,9 @@ void make_histograms(std::vector<Block> all_blocks) {
   TH1D *h_fiber_count_tower_dist_ciae = new TH1D("", "", 80, 90, 105);
   
   THStack *hs_density_dist = new THStack("hs_density_dist", "Distribution of EMCal Block Density;Density [g/mL];Count [Blocks]");
-  TH1D *h_density_dist_uiuc = new TH1D("", "", 80, 8, 11);
-  TH1D *h_density_dist_fudan = new TH1D("", "", 80, 8, 11);
-  TH1D *h_density_dist_ciae = new TH1D("", "", 80, 8, 11);
+  TH1D *h_density_dist_uiuc = new TH1D("", "", 30, 8, 11);
+  TH1D *h_density_dist_fudan = new TH1D("", "", 30, 8, 11);
+  TH1D *h_density_dist_ciae = new TH1D("", "", 30, 8, 11);
   
   THStack *hs_scint_ratio_dist = new THStack("hs_scint_ratio_dist", "Distribution of EMCal Block Scintillation Ratio;Scintillation Ratio;Count [Blocks]");
   TH1D *h_scint_ratio_dist_uiuc = new TH1D("", "", 80, 0, 4);
